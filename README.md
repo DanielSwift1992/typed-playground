@@ -1,43 +1,31 @@
 # The playground
 
-A static page: Swift types on the left, their reading on the right. The judge names every
-broken claim as you type, and every declared canvas draws itself — layout, text, and SMIL
-animation, all from declarations. Open `index.html` in a browser, or serve the folder with
-any static server. Nothing is hosted, nothing executes but the arbiter and the renderer.
+Swift types on the left, their reading on the right: the judge names every broken claim
+as you type, and every declared canvas draws itself, on one static page with no build,
+no server, no dependencies. `judge.js` is a line-for-line port of the repository's Swift
+judge, and the badge in the corner re-proves the port on four golden vectors at every
+load (`node check.js` replays the same four in CI).
 
-## The pieces
+Live: <https://danielswift1992.github.io/typed-playground/>, or open `index.html` from a
+checkout: the three files travel together.
 
-- `judge.js` — a line-for-line port of `Sources/Tools/Judge.swift`: one dictionary pass,
-  one lookup per reference, premises as table rows. The Swift judge stays the reference:
-  the page carries verdicts captured from it and re-proves the port on every load (the
-  badge in the corner).
-- `renderer.js` — a reading of DocumentKit's span engine over the same parsed dictionary:
-  the `SpanPx` rounding, the `HFlow` division of a given width, the kit's format strings,
-  ported operation for operation. The vocabulary is a stated subset — `SpanTrack`,
-  `SpanTrackOutlined`, `SpanHeroFace`, `SpanLabelMid`, `SpanLabelEnd`, `SpanDot`,
-  `Layered`, `Air`, `Flexible`, `HFlow`, `Group`, `Diagram`, `TimedReveal`,
-  `FrozenReveal`, `Tally`, `CanvasSize`, the unit trees — and a form outside it is
-  reported by name.
-- `index.html` — the editor and five worlds: the organization's page (hire with one
-  click and the counted cards follow), a generated company of up to 12,800, a film, a
-  landing, and the basics. The corpus the compiler proves in 199 seconds is judged here
-  in under 200 milliseconds, a lie planted 136,000 lines deep is refused by name, and
-  the fragment panel reads every rule off the judge's own tables.
+![The playground: the organization world, judged and drawn](screenshot.png)
 
-## The loop that matters
+## What to press
 
-Every tab is a real Swift file. Download it and the repository reads it back with the
-arbiters you already trust: the company through `swift run Tools judge Company.swift`,
-the drawings through `swift build` against DocumentKit. The browser preview and the
-Swift render sit as two encodings of one artifact — byte-level golden vectors for the
-renderer are the next iteration's discipline; the judge's are in place today.
+- **Hire one more**: a typed employee joins the roster and the counted cards follow.
+- **Plant a lie**: one alias flips deep in the file, and the judge refuses it by line
+  and by name.
+- **12 800** (the At scale tab): a generated roster of 12,800 people judges in about
+  0.2 seconds.
+- **Dark**: the same declarations under the dark palette.
 
-## Debts, stated
+Every tab is a real Swift file: Download it, and the repository's own arbiters read it
+back through `swift run Tools judge` and `swift build`.
 
-- The renderer's subset is visual-faithful and ported exactly, and its output is not yet
-  byte-checked against the Swift renderer per example.
-- `judge.js` accepts three forms the Swift judge does not carry yet: one-line
-  declarations (`enum X: Close {}`), atom extensions with a literal `typeName`, and
-  top-level typealiases. It also refuses a duplicate declaration by both its lines,
-  which the Swift judge does not check yet. The Swift judge grows the same forms
-  next, and the golden vectors grow with it.
+## The theory
+
+A verdict here is not a search, it is an identification: the dictionary is built once,
+and every claim is one lookup against it. That is why a lie planted 136,000 lines deep
+is refused in milliseconds. The theory, the Swift judge, and the corpus live at
+<https://danielswift1992.github.io/verification-is-identification/>.

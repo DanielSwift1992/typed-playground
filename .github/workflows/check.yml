@@ -1,0 +1,13 @@
+name: the golden vectors
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  judge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: node check.js

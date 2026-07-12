@@ -4,6 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>The playground — types in, verdicts and drawings out</title>
+<meta name="description" content="A static studio for Swift types: the judge names every broken claim as you type, and declared canvases draw themselves. No build, no server, no dependencies.">
+<meta property="og:title" content="The playground: types in, verdicts and drawings out">
+<meta property="og:description" content="A static studio for Swift types: the judge names every broken claim as you type, and declared canvases draw themselves. No build, no server, no dependencies.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://danielswift1992.github.io/typed-playground/">
+<meta property="og:image" content="https://danielswift1992.github.io/typed-playground/screenshot.png">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
 <style>
   /* the palette mirrors Design.swift's walks: paper, mist, ink at two covers, accent, action, line */
   :root {
@@ -18,8 +25,8 @@
     font: 15px/1.5 system-ui, sans-serif;
     display: flex; flex-direction: column; height: 100vh;
   }
-  header { padding: 10px 20px 8px; border-bottom: 1px solid var(--line); background: var(--paper); }
-  #head-row { display: flex; align-items: center; gap: 10px; }
+  header { padding: 10px 20px 8px; border-bottom: 1px solid var(--line); background: var(--paper); flex: none; }
+  #head-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; row-gap: 4px; }
   .grow { flex: 1; }
   header h1 { font-size: 17px; color: var(--ink); }
   #head-row button, #head-row a {
@@ -164,8 +171,10 @@
   }
   #controls button:hover { border-color: var(--action); color: var(--action); }
   #controls button.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); }
-  footer { padding: 7px 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); background: var(--paper); }
+  footer { padding: 7px 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); background: var(--paper); flex: none; }
   footer code { font-family: ui-monospace, Menlo, monospace; }
+  footer a { color: var(--action); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
   #fragment-panel {
     position: fixed; top: 0; right: -30em; width: 27em; height: 100%;
     background: var(--paper); border-left: 1px solid var(--line);
@@ -202,9 +211,9 @@
   .chip-name.people { background: var(--paper); }
   .refusal .why { float: right; color: var(--action); font-size: 11px; }
   @media (max-width: 900px) {
-    main { flex-direction: column-reverse; }
+    main { flex-direction: column; overflow-y: auto; }
+    aside { order: -1; min-width: 0; flex: none; }
     #editor-wrap { flex: none; height: 42vh; border-right: 0; border-top: 1px solid var(--line); }
-    aside { min-width: 0; }
   }
 </style>
 </head>
@@ -216,7 +225,7 @@
     <span class="grow"></span>
     <button id="fragment-button">Rules</button>
     <button id="theme">Dark</button>
-    <a id="repo-link" href="https://github.com/DanielSwift1992/verification-is-identification" target="_blank" rel="noopener">GitHub ↗</a>
+    <a id="repo-link" href="https://github.com/DanielSwift1992/typed-playground" target="_blank" rel="noopener">GitHub ↗</a>
     <span class="badge" id="selfcheck">self-check…</span>
   </div>
   <p>You edit Swift types. Nothing of yours runs: a judge proves every claim and the canvas
@@ -231,7 +240,7 @@
     <pre id="highlight"></pre>
     <textarea id="editor" spellcheck="false"></textarea>
     <div id="gutter"><div id="gutter-inner"></div></div>
-    <div id="inspector"><span class="tag">inspect</span>place the caret on a name — its meaning shows here · ⌥-click jumps to the declaration</div>
+    <div id="inspector"><span class="tag">inspect</span>place the caret on a name: its meaning shows here · ⌥-click jumps to the declaration</div>
   </div>
   <aside>
     <div id="actions"></div>
@@ -255,7 +264,8 @@
 <footer>
   Every tab is a real Swift file. The company reads back through
   <code>swift run Tools judge Company.swift</code>, the drawings through <code>swift build</code>
-  against DocumentKit: the arbiter you already trust.
+  against DocumentKit: the arbiter you already trust. ·
+  <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -303,7 +313,7 @@ const storage = (() => {
 if (typeof judge === "undefined" || typeof renderAll === "undefined") {
     const banner = document.getElementById("crash");
     banner.style.display = "block";
-    banner.textContent = "judge.js or renderer.js did not load — open the whole playground folder, the three files travel together";
+    banner.textContent = "judge.js or renderer.js did not load: open the whole playground folder, the three files travel together";
 }
 
 // ── the kit vocabulary the judge tolerates on drawing tabs ──
@@ -1881,7 +1891,7 @@ function replaceEditorText(next) {
 function plantLie(name) {
     const [anchor, planted] = lies[name];
     if (!editor.value.includes(anchor)) {
-        status.innerHTML = "the anchor is edited away — reset first";
+        status.innerHTML = "the anchor is edited away: reset first";
         return;
     }
     replaceEditorText(editor.value.replace(anchor, planted));
