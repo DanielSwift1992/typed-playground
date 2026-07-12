@@ -1,0 +1,2601 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The playground — types in, verdicts and drawings out</title>
+<style>
+  /* the palette mirrors Design.swift's walks: paper, mist, ink at two covers, accent, action, line */
+  :root {
+    --paper: #FFFFFF; --mist: #F6F7F8; --ink: #1C1C1E;
+    --text: rgba(0,0,0,0.80); --muted: rgba(0,0,0,0.54);
+    --accent: #FFDD2D; --action: #336FEE; --line: #EAECEE;
+    --refusal: #C4453B;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--mist); color: var(--text);
+    font: 15px/1.5 system-ui, sans-serif;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  header { padding: 10px 20px 8px; border-bottom: 1px solid var(--line); background: var(--paper); }
+  #head-row { display: flex; align-items: center; gap: 10px; }
+  .grow { flex: 1; }
+  header h1 { font-size: 17px; color: var(--ink); }
+  #head-row button, #head-row a {
+    font: 12px system-ui, sans-serif; padding: 4px 10px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--mist); color: var(--ink);
+    cursor: pointer; text-decoration: none;
+  }
+  #head-row button:hover, #head-row a:hover { border-color: var(--action); color: var(--action); }
+  header .badge {
+    font-size: 12px; padding: 3px 10px; border-radius: 10px;
+    background: var(--mist); border: 1px solid var(--line); color: var(--muted);
+  }
+  header .badge.ok { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+  header .badge.bad { background: var(--refusal); color: var(--paper); border-color: var(--refusal); }
+  header p { font-size: 13px; color: var(--muted); margin-top: 2px; max-width: 76em; }
+  nav { padding: 8px 20px; background: var(--paper); border-bottom: 1px solid var(--line); }
+  nav button {
+    font: 13px system-ui, sans-serif; padding: 5px 12px; margin-right: 6px;
+    border-radius: 9px; border: 1px solid var(--line); background: var(--mist);
+    color: var(--ink); cursor: pointer;
+  }
+  nav button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  main { flex: 1; display: flex; min-height: 0; }
+  #editor-wrap {
+    flex: 1.1; position: relative; background: var(--paper);
+    border-right: 1px solid var(--line);
+  }
+  #editor, #highlight {
+    position: absolute; inset: 0; margin: 0; padding: 14px 18px 14px 60px;
+    font: 12.5px/1.5 ui-monospace, Menlo, monospace; white-space: pre;
+  }
+  #gutter {
+    position: absolute; left: 0; top: 0; bottom: 0; width: 46px;
+    overflow: hidden; background: var(--paper); border-right: 1px solid var(--line);
+    font: 11px/1.7045 ui-monospace, Menlo, monospace; color: rgba(0,0,0,0.30);
+    text-align: right; z-index: 1; pointer-events: none;
+  }
+  #gutter-inner { position: absolute; right: 8px; left: 0; }
+  #gutter-inner div { height: 18.75px; }
+  #gutter-inner .has-error { color: var(--refusal); font-weight: 700; }
+  .line-note {
+    margin-left: 28px; padding: 1px 8px; border-radius: 6px;
+    background: rgba(196,69,59,0.10); color: var(--refusal);
+    font-size: 11px; font-style: italic;
+  }
+  #highlight { overflow: hidden; pointer-events: none; color: var(--text); }
+  #editor {
+    border: 0; outline: none; resize: none; overflow: auto;
+    background: transparent; color: transparent; caret-color: var(--ink);
+  }
+  .tok-k { color: var(--action); }
+  .tok-s { color: #B25000; }
+  .tok-c { color: var(--muted); font-style: italic; }
+  .tok-t { color: var(--ink); font-weight: 600; }
+  .tok-a { color: var(--muted); }
+  .tok-d { color: #6B4FBB; }
+  .tok-g { color: rgba(0,0,0,0.34); }
+  .tok-bad {
+    color: var(--refusal); font-weight: 600;
+    text-decoration: underline wavy var(--refusal) 1px; text-underline-offset: 3px;
+  }
+  #inspector {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 5px 18px 5px 60px; font-size: 11.5px; color: var(--muted);
+    background: var(--paper); border-top: 1px solid var(--line);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #completion {
+    display: none; position: absolute; z-index: 5; min-width: 15em;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10); overflow: hidden;
+    font: 12px ui-monospace, Menlo, monospace;
+  }
+  .completion-row {
+    display: flex; gap: 14px; justify-content: space-between;
+    padding: 4px 10px; cursor: pointer;
+  }
+  .completion-row.chosen, .completion-row:hover { background: var(--mist); }
+  .completion-row .kind {
+    font: 10px system-ui, sans-serif; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .completion-row .swatch {
+    width: 10px; height: 10px; border-radius: 3px; display: inline-block;
+    border: 1px solid var(--line);
+  }
+  #inspector .tag {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin-right: 8px;
+  }
+  #inspector b { color: var(--ink); font-weight: 600; }
+  #editor { padding-bottom: 40px; }
+  #highlight { padding-bottom: 40px; }
+  #actions {
+    padding: 8px 16px; background: var(--paper); border-bottom: 1px solid var(--line);
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  #actions .caption {
+    font-size: 11px; color: var(--muted); margin-right: 8px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  #actions button {
+    font: 12.5px system-ui, sans-serif; padding: 4px 11px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer;
+  }
+  #actions button:hover { border-color: var(--action); color: var(--action); }
+  #actions button.loud { background: var(--accent); border-color: var(--accent); }
+  #canvases.dark {
+    background: #101012;
+    --vi-surface-card: #1C1C1E; --vi-surface-track: rgba(255,255,255,0.15);
+    --vi-text-primary: rgba(255,255,255,0.90); --vi-text-secondary: rgba(255,255,255,0.70);
+    --vi-accent: #FFDD2D; --vi-action: #4972CF; --vi-line: rgba(255,255,255,0.15);
+    --vi-on-accent: #1C1C1E; --vi-on-action: #FFFFFF;
+  }
+  aside { flex: 1; display: flex; flex-direction: column; min-width: 26em; }
+  #canvases { padding: 16px; overflow: auto; background: var(--mist); }
+  #canvases.stale svg { opacity: 0.4; filter: saturate(0.4); }
+  #canvases svg { width: 100%; height: auto; display: block; margin-bottom: 12px; }
+  #verdict-panel { border-top: 1px solid var(--line); background: var(--paper); }
+  #verdict-head { display: flex; align-items: center; gap: 10px; padding: 9px 16px 7px; }
+  .chip { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 9px; }
+  .chip.ok { background: var(--accent); color: var(--ink); }
+  .chip.bad { background: var(--refusal); color: #FFFFFF; }
+  #status { font-size: 12px; color: var(--muted); }
+  #status b { color: var(--ink); font-weight: 600; }
+  #verdicts { max-height: 30vh; overflow: auto; padding: 0 12px 4px; }
+  .refusal {
+    padding: 7px 12px; border-radius: 10px; background: var(--paper);
+    border: 1px solid var(--line); border-left: 3px solid var(--refusal);
+    margin-bottom: 6px; font-size: 12.5px; cursor: pointer;
+  }
+  .refusal:hover { border-color: var(--action); }
+  .refusal .where { color: var(--muted); font-size: 11.5px; }
+  .refusal .what { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
+  #controls { padding: 8px 12px; border-top: 1px solid var(--line); background: var(--paper); }
+  #controls .label { display: inline; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-right: 6px; }
+  #controls button {
+    font: 12.5px system-ui, sans-serif; padding: 4px 10px; margin: 2px 4px 2px 0;
+    border-radius: 8px; border: 1px solid var(--line); background: var(--mist);
+    color: var(--ink); cursor: pointer;
+  }
+  #controls button:hover { border-color: var(--action); color: var(--action); }
+  #controls button.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+  footer { padding: 7px 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); background: var(--paper); }
+  footer code { font-family: ui-monospace, Menlo, monospace; }
+  #fragment-panel {
+    position: fixed; top: 0; right: -30em; width: 27em; height: 100%;
+    background: var(--paper); border-left: 1px solid var(--line);
+    transition: right 200ms ease; z-index: 10; display: flex; flex-direction: column;
+  }
+  #fragment-panel.open { right: 0; box-shadow: -12px 0 30px rgba(0,0,0,0.08); }
+  #fragment-head {
+    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
+    border-bottom: 1px solid var(--line); color: var(--ink);
+  }
+  #fragment-head button {
+    font: 12px system-ui, sans-serif; padding: 3px 10px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--mist); cursor: pointer;
+  }
+  #fragment-body { overflow: auto; padding: 6px 16px 20px; font-size: 12.5px; }
+  #fragment-body h4 {
+    margin: 14px 0 6px; font-size: 11px; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  #fragment-body code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
+  #fragment-body .row { padding: 3px 0; border-bottom: 1px solid var(--line); }
+  #fragment-body .row b { color: var(--ink); font-weight: 600; }
+  #fragment-body .muted { color: var(--muted); }
+  .panel-intro { font-size: 12px; color: var(--muted); margin: 10px 0 2px; }
+  #fragment-body .sub {
+    margin: 10px 0 4px; font-size: 11.5px; color: var(--muted); font-style: italic;
+  }
+  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
+  .chip-name {
+    font: 11px ui-monospace, Menlo, monospace; padding: 2px 8px;
+    border: 1px solid var(--line); border-radius: 7px; background: var(--mist);
+    color: var(--ink);
+  }
+  .chip-name.people { background: var(--paper); }
+  .refusal .why { float: right; color: var(--action); font-size: 11px; }
+  @media (max-width: 900px) {
+    main { flex-direction: column-reverse; }
+    #editor-wrap { flex: none; height: 42vh; border-right: 0; border-top: 1px solid var(--line); }
+    aside { min-width: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div id="head-row">
+    <h1>The playground</h1>
+    <span class="grow"></span>
+    <button id="fragment-button">Rules</button>
+    <button id="theme">Dark</button>
+    <a id="repo-link" href="https://github.com/DanielSwift1992/verification-is-identification" target="_blank" rel="noopener">GitHub ↗</a>
+    <span class="badge" id="selfcheck">self-check…</span>
+  </div>
+  <p>You edit Swift types. Nothing of yours runs: a judge proves every claim and the canvas
+  draws the page from the same types, on each keystroke, at any size. The language is a small
+  subset of Swift, and Rules shows all of it.</p>
+</header>
+
+<nav id="tabs"></nav>
+
+<main>
+  <div id="editor-wrap">
+    <pre id="highlight"></pre>
+    <textarea id="editor" spellcheck="false"></textarea>
+    <div id="gutter"><div id="gutter-inner"></div></div>
+    <div id="inspector"><span class="tag">inspect</span>place the caret on a name — its meaning shows here · ⌥-click jumps to the declaration</div>
+  </div>
+  <aside>
+    <div id="actions"></div>
+    <div id="canvases"></div>
+    <div id="verdict-panel">
+      <div id="verdict-head">
+        <span id="verdict-chip" class="chip">…</span>
+        <span class="grow"></span>
+        <span id="status"></span>
+      </div>
+      <div id="verdicts"></div>
+    </div>
+    <div id="controls">
+      <span class="label">The file</span>
+      <button id="reset">Reset</button>
+      <button id="download" class="primary">Download</button>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  Every tab is a real Swift file. The company reads back through
+  <code>swift run Tools judge Company.swift</code>, the drawings through <code>swift build</code>
+  against DocumentKit: the arbiter you already trust.
+</footer>
+
+<div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
+
+<div id="fragment-panel">
+  <div id="fragment-head">
+    <b>The rules of this small language</b>
+    <span class="grow"></span>
+    <button id="fragment-close">close</button>
+  </div>
+  <div id="fragment-body"></div>
+</div>
+
+<script>
+window.addEventListener("error", (event) => {
+    const banner = document.getElementById("crash");
+    banner.style.display = "block";
+    banner.textContent = "the page hit an error: " + event.message
+        + " (" + (event.filename || "").split("/").pop() + ":" + event.lineno + ")";
+});
+</script>
+<script src="judge.js?v=5"></script>
+<script src="renderer.js?v=5"></script>
+<script>
+"use strict";
+
+// storage that never kills the page: some file:// modes refuse localStorage entirely
+const storage = (() => {
+    let backing;
+    try {
+        localStorage.setItem("playground-probe", "1");
+        localStorage.removeItem("playground-probe");
+        backing = localStorage;
+    } catch (refused) {
+        const held = new Map();
+        backing = { getItem: (k) => held.get(k) ?? null,
+                    setItem: (k, v) => held.set(k, v),
+                    removeItem: (k) => held.delete(k) };
+    }
+    return { getItem: (k) => backing.getItem(k),
+             setItem: (k, v) => { try { backing.setItem(k, v); } catch (full) {} },
+             removeItem: (k) => backing.removeItem(k) };
+})();
+
+if (typeof judge === "undefined" || typeof renderAll === "undefined") {
+    const banner = document.getElementById("crash");
+    banner.style.display = "block";
+    banner.textContent = "judge.js or renderer.js did not load — open the whole playground folder, the three files travel together";
+}
+
+// ── the kit vocabulary the judge tolerates on drawing tabs ──
+const kitVocabulary = {
+    seeds: new Set(["SpanNothing", "SurfaceCard", "SurfaceTrack", "TextPrimary",
+        "TextSecondary", "AccentRole", "ActionRole", "LineRole", "OnAccent", "OnActionRole",
+        "Paper", "Mist", "Ink", "Accent", "Action", "Muted",
+        "TextXXS", "TextXS", "TextS", "TextM", "TextL", "TitleT", "DisplayS", "Display",
+        "WeightRegular", "WeightBold", "R12", "R20", "HairlineWidth", "FontStack",
+        "U1", "U2", "U4", "U8", "U16", "U32", "U64", "U128", "U256", "U512",
+        "EdgeMargin", "Breath", "HairBreath", "WideSurface", "FilmStripTall", "RestAir"]),
+    generics: new Set(["Air", "Flexible", "Layered", "TimedReveal", "FrozenReveal",
+        "Tally", "CanvasSize", "Plus", "Times", "Twice", "Half",
+        "Fixed", "SpanHosted", "SpanLink", "Halfway", "Under", "Paired"]),
+    bareSeeds: new Set(["RestAir"]),
+};
+
+const plateFile = `import DocumentKit
+
+// One plate. The vertical axis divides the page, the horizontal divides the row,
+// and no one states the frame: the canvas grows to what its members take.
+
+public enum Greeting: Close {}
+extension Greeting {
+    public static var typeName: String { "Hello, layout" }
+}
+public enum PlateAlt: Close {}
+extension PlateAlt {
+    public static var typeName: String { "A greeting centered on one outlined plate." }
+}
+// the plate's height, stated once as a count: the slot takes it, the face reads it
+public typealias PlateTall = Plus<U64, U8>
+
+public enum PlateFace: SpanTrackOutlined {
+    public typealias H = Tally<PlateTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum PlateWord: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TextL>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextL
+    public typealias Weight = WeightBold
+    public typealias Content = Greeting
+}
+public enum PlateRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<PlateFace, PlateWord>>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum PlateArt: GrownDiagram {
+    public typealias Across = WideSurface
+    public typealias AriaLabel = PlateAlt
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<PlateTall, SpanHosted<PlateRow>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
+
+const cardsFile = `import DocumentKit
+
+// Three cards share one row by flexible shares, and a breathing footer sits in its
+// own slot beneath: both axes divide, the frame derives, the dots run on SVG's clock.
+
+public enum CardsAlt: Close {}
+extension CardsAlt {
+    public static var typeName: String { "Three cards and a breathing dotted footer." }
+}
+
+// the two heights, stated once each: slots take them, faces read them
+public typealias CardTall = Plus<U64, U8>
+public typealias DotsTall = Plus<U8, U4>
+public enum PlansWord: Close {}
+extension PlansWord {
+    public static var typeName: String { "Plans" }
+}
+public enum BuildsWord: Close {}
+extension BuildsWord {
+    public static var typeName: String { "Builds" }
+}
+public enum ProofsWord: Close {}
+extension ProofsWord {
+    public static var typeName: String { "Proofs" }
+}
+
+public enum QuietFace: SpanTrack {
+    public typealias H = Tally<CardTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceTrack
+}
+public enum HeroFace: SpanTrack {
+    public typealias H = Tally<CardTall>
+    public typealias Radius = R12
+    public typealias Fill = AccentRole
+}
+public enum PlansLabel: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TextM>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = PlansWord
+}
+public enum BuildsLabel: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TextM>
+    public typealias FillColor = OnAccent
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = BuildsWord
+}
+public enum ProofsLabel: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TextM>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = ProofsWord
+}
+public enum FooterDot: SpanBreathingDot {
+    public typealias CY = Halfway<DotsTall, Never>
+    public typealias R = Tally<U4>
+    public typealias Fill = ActionRole
+}
+
+public enum CardsRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<QuietFace, PlansLabel>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<HeroFace, BuildsLabel>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<QuietFace, ProofsLabel>>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum DotsRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<Times<U64, U4>>.self
+        Flexible<FooterDot>.self
+        Flexible<FooterDot>.self
+        Flexible<FooterDot>.self
+        Air<Times<U64, U4>>.self
+    }
+}
+public enum CardsArt: GrownDiagram {
+    public typealias Across = WideSurface
+    public typealias AriaLabel = CardsAlt
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<CardTall, SpanHosted<CardsRow>>.self
+        Air<U16>.self
+        Fixed<DotsTall, SpanHosted<DotsRow>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
+
+const filmFile = `import DocumentKit
+
+// A film of pure statics: frames reveal on SVG's own clock, and the last one stays.
+// Edit a cue or a word and the film replays — the schedule is data, not code.
+
+public enum FilmAlt: Close {}
+extension FilmAlt {
+    public static var typeName: String { "Three words take the stage in turn, and the last one stays." }
+}
+public enum WroteWord: Close {}
+extension WroteWord {
+    public static var typeName: String { "Wrote." }
+}
+public enum CheckedWord: Close {}
+extension CheckedWord {
+    public static var typeName: String { "Checked." }
+}
+public enum ProvedWord: Close {}
+extension ProvedWord {
+    public static var typeName: String { "Proved." }
+}
+
+// the stage's height, stated once: the slot takes it, the face reads it
+public typealias StageTall = Plus<U64, Plus<U16, U8>>
+
+public enum StageFace: SpanTrackOutlined {
+    public typealias H = Tally<StageTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum WroteLabel: SpanLabelMid {
+    public typealias Y = Under<U32, TitleT>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TitleT
+    public typealias Weight = WeightRegular
+    public typealias Content = WroteWord
+}
+public enum CheckedLabel: SpanLabelMid {
+    public typealias Y = Under<U32, TitleT>
+    public typealias FillColor = ActionRole
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = CheckedWord
+}
+public enum ProvedLabel: SpanLabelMid {
+    public typealias Y = Under<U32, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = ProvedWord
+}
+
+public enum StageRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<StageFace>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum WroteRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<WroteLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum CheckedRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<CheckedLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum ProvedRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ProvedLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+public enum FilmContent: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        StageRow.self
+        TimedReveal<Tally<Never>, Tally<U2>, WroteRow>.self
+        TimedReveal<Tally<U2>, Tally<U2>, CheckedRow>.self
+        FrozenReveal<Tally<U4>, ProvedRow>.self
+    }
+}
+public enum FilmArt: GrownDiagram {
+    public typealias Across = WideSurface
+    public typealias AriaLabel = FilmAlt
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<StageTall, SpanHosted<FilmContent>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
+
+const companyFile = `import VerificationIsIdentification
+
+// A small company, stated as types. Edit anything: the judge reads every claim live.
+
+/// This is Ada.
+public enum Ada: GivenNameCycle {
+    public typealias Next = Grace
+    public typealias Sex = Female
+}
+/// This is Grace.
+public enum Grace: GivenNameCycle {
+    public typealias Next = Alan
+    public typealias Sex = Female
+}
+/// This is Alan.
+public enum Alan: GivenNameCycle {
+    public typealias Next = Ada
+    public typealias Sex = Male
+}
+public enum Lovelace: FamilyNameCycle {
+    public typealias Next = Hopper
+}
+public enum Hopper: FamilyNameCycle {
+    public typealias Next = Turing
+}
+public enum Turing: FamilyNameCycle {
+    public typealias Next = Lovelace
+}
+public enum Y1815: BirthYearCycle {
+    public typealias Next = Y1906
+}
+public enum Y1906: BirthYearCycle {
+    public typealias Next = Y1815
+}
+
+public enum Emp01: Employee, Person {
+    public typealias Rank = Manager
+    public typealias Home = Finance
+    public typealias Given = Ada
+    public typealias Family = Lovelace
+    public typealias Born = Y1815
+    public typealias Site = OnSite
+    public typealias Sex = Given.Sex
+}
+public enum Emp02: Employee, Person {
+    public typealias Rank = Lead
+    public typealias Home = Finance
+    public typealias Given = Grace
+    public typealias Family = Hopper
+    public typealias Born = Y1906
+    public typealias Site = Hybrid
+    public typealias Sex = Given.Sex
+}
+public enum Emp03: Employee, Person {
+    public typealias Rank = IndividualContributor
+    public typealias Home = Engineering
+    public typealias Given = Alan
+    public typealias Family = Turing
+    public typealias Born = Y1906
+    public typealias Site = Remote
+    public typealias Sex = Given.Sex
+}
+public enum Emp04: Employee, Person {
+    public typealias Rank = Lead
+    public typealias Home = Engineering
+    public typealias Given = Ada
+    public typealias Family = Turing
+    public typealias Born = Y1815
+    public typealias Site = OnSite
+    public typealias Sex = Given.Sex
+}
+
+public enum Company: Roster {
+    @StructureBuilder
+    public static var body: some Structure {
+        Emp01.self; Emp02.self; Emp03.self; Emp04.self;
+    }
+}
+
+public enum FinanceTeam: Team {
+    @StructureBuilder
+    public static var body: some Structure {
+        VerifiedInDepartment<
+            Emp01,
+            Finance
+        >.self;
+        VerifiedInDepartment<
+            Emp02,
+            Finance
+        >.self;
+    }
+}
+
+public enum AllAccesses: AccessLedger {
+    @StructureBuilder
+    public static var body: some Structure {
+        VerifiedView<
+            Emp01,
+            FinanceShare
+        >.self;
+        VerifiedView<
+            Emp02,
+            FinanceShare
+        >.self;
+        VerifiedView<
+            Emp03,
+            EngineeringShare
+        >.self;
+        VerifiedView<
+            Emp04,
+            EngineeringShare
+        >.self;
+    }
+}
+`;
+
+const organizationFile = `import VerificationIsIdentification
+import DocumentKit
+
+// The organization, as one page: the roster below is the data, the bands above are the
+// view, and every number on a card is a Tally read off the roster itself. Add a person
+// to Company and the People card follows. The bands reveal on the SVG clock, the status
+// dot breathes, and the last chip is a live link into the real company's site.
+
+// ── the words this page wears ──
+
+public enum OrganizationTitle: Close {}
+extension OrganizationTitle {
+    public static var typeName: String { "The Organization" }
+}
+public enum OrganizationClaim: Close {}
+extension OrganizationClaim {
+    public static var typeName: String { "every access proved at build" }
+}
+public enum PeopleWord: Close {}
+extension PeopleWord {
+    public static var typeName: String { "people" }
+}
+public enum AccessWord: Close {}
+extension AccessWord {
+    public static var typeName: String { "accesses proved" }
+}
+public enum FinanceWord: Close {}
+extension FinanceWord {
+    public static var typeName: String { "in finance" }
+}
+public enum EngineeringWord: Close {}
+extension EngineeringWord {
+    public static var typeName: String { "in engineering" }
+}
+public enum WalkWord: Close {}
+extension WalkWord {
+    public static var typeName: String { "walk the real company →" }
+}
+public enum FootWord: Close {}
+extension FootWord {
+    public static var typeName: String { "drawn from the roster below: add a person to Company and the numbers follow" }
+}
+public enum OrganizationAlt: Close {}
+extension OrganizationAlt {
+    public static var typeName: String { "The organization's page: counted cards, department chips, a live link." }
+}
+public enum SitePage: Close {}
+extension SitePage {
+    public static var typeName: String { "https://danielswift1992.github.io/verification-is-identification/documentation/organization" }
+}
+
+// ── the heights, each stated once: the slot takes it, the face reads it.
+// Every baseline below derives from these rungs and a text size (Under), every
+// midpoint from the counts themselves (Halfway): no placement digit is stated.
+// The page's rhythm is also stated once: a band is its breath and its slot, one member. ──
+
+public typealias Banded<Tall: Structure, Content: Spanning> =
+    Paired<Air<Breath>, Fixed<Tall, Content>>
+
+public typealias HeaderTall = Plus<U32, U8>
+public typealias KpiTall = Plus<U64, U32>
+public typealias ChipTall = Plus<U32, Plus<U16, U8>>
+public typealias FootTall = Plus<U16, U8>
+
+// ── the header: a breathing status, the name, the claim ──
+
+public enum StatusDot: SpanBreathingDot {
+    public typealias CY = Halfway<HeaderTall, Never>
+    public typealias R = Tally<Plus<U4, U1>>
+    public typealias Fill = AccentRole
+}
+public enum TitleFace: SpanLabel {
+    public typealias Y = Under<U8, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = OrganizationTitle
+}
+public enum ClaimFace: SpanLabelEnd {
+    public typealias Y = Under<Plus<U8, U4>, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = OrganizationClaim
+}
+public enum HeaderRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<U16, StatusDot>.self
+        Air<U8>.self
+        Flexible<Layered<TitleFace, ClaimFace>>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the cards: every number is a Tally over the roster ──
+
+public enum HeroFace: SpanHeroFace {
+    public typealias H = Tally<KpiTall>
+    public typealias Radius = R12
+    public typealias Fill = AccentRole
+}
+public enum QuietFace: SpanTrackOutlined {
+    public typealias H = Tally<KpiTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum PeopleNumber: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, DisplayS>
+    public typealias FillColor = OnAccent
+    public typealias Size = DisplayS
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<Company>
+}
+public enum PeopleCaption: SpanLabelMid {
+    public typealias Y = Under<U64, TextXS>
+    public typealias FillColor = OnAccent
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = PeopleWord
+}
+public enum AccessNumber: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, DisplayS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = DisplayS
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<AllAccesses>
+}
+public enum AccessCaption: SpanLabelMid {
+    public typealias Y = Under<U64, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AccessWord
+}
+public enum FinanceNumber: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, DisplayS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = DisplayS
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<FinanceTeam>
+}
+public enum FinanceCaption: SpanLabelMid {
+    public typealias Y = Under<U64, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FinanceWord
+}
+public enum KpiRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<HeroFace, Layered<PeopleNumber, PeopleCaption>>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<QuietFace, Layered<AccessNumber, AccessCaption>>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<QuietFace, Layered<FinanceNumber, FinanceCaption>>>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the chips: two counted departments, one live door ──
+
+public enum ChipFace: SpanTrack {
+    public typealias H = Tally<ChipTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceTrack
+}
+public enum DoorFace: SpanTrack {
+    public typealias H = Tally<ChipTall>
+    public typealias Radius = R12
+    public typealias Fill = ActionRole
+}
+public enum FinanceChipWord: SpanLabelMid {
+    public typealias Y = Under<U8, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FinanceWord
+}
+public enum FinanceChipCount: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TextL>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextL
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<FinanceTeam>
+}
+public enum EngineeringChipWord: SpanLabelMid {
+    public typealias Y = Under<U8, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = EngineeringWord
+}
+public enum EngineeringChipCount: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TextL>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextL
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<EngineeringTeam>
+}
+public enum DoorWord: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TextL>
+    public typealias FillColor = OnActionRole
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = WalkWord
+}
+public enum ChipsRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<ChipFace, Layered<FinanceChipWord, FinanceChipCount>>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<ChipFace, Layered<EngineeringChipWord, EngineeringChipCount>>>.self
+        Air<EdgeMargin>.self
+        Flexible<SpanLink<SitePage, Layered<DoorFace, DoorWord>>>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the footer ──
+
+public enum FootFace: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FootWord
+}
+public enum FootRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<FootFace>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the page: the vertical axis takes the bands, the frame derives itself ──
+
+public enum OrganizationArt: GrownDiagram {
+    public typealias Across = WideSurface
+    public typealias AriaLabel = OrganizationAlt
+    public typealias Defs = SoftShadow
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<HeaderTall, SpanHosted<HeaderRow>>.self
+        Banded<KpiTall, SpanHosted<FrozenReveal<Tally<Never>, KpiRow>>>.self
+        Banded<ChipTall, SpanHosted<FrozenReveal<Tally<U1>, ChipsRow>>>.self
+        Banded<FootTall, SpanHosted<FrozenReveal<Tally<U2>, FootRow>>>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the data the page reads: the company itself ──
+
+/// This is Ada.
+public enum Ada: GivenNameCycle {
+    public typealias Next = Grace
+    public typealias Sex = Female
+}
+/// This is Grace.
+public enum Grace: GivenNameCycle {
+    public typealias Next = Alan
+    public typealias Sex = Female
+}
+/// This is Alan.
+public enum Alan: GivenNameCycle {
+    public typealias Next = Ada
+    public typealias Sex = Male
+}
+public enum Lovelace: FamilyNameCycle {
+    public typealias Next = Hopper
+}
+public enum Hopper: FamilyNameCycle {
+    public typealias Next = Turing
+}
+public enum Turing: FamilyNameCycle {
+    public typealias Next = Lovelace
+}
+public enum Y1815: BirthYearCycle {
+    public typealias Next = Y1906
+}
+public enum Y1906: BirthYearCycle {
+    public typealias Next = Y1815
+}
+
+public enum Emp01: Employee, Person {
+    public typealias Rank = Manager
+    public typealias Home = Finance
+    public typealias Given = Ada
+    public typealias Family = Lovelace
+    public typealias Born = Y1815
+    public typealias Site = OnSite
+    public typealias Sex = Given.Sex
+}
+public enum Emp02: Employee, Person {
+    public typealias Rank = Lead
+    public typealias Home = Finance
+    public typealias Given = Grace
+    public typealias Family = Hopper
+    public typealias Born = Y1906
+    public typealias Site = Hybrid
+    public typealias Sex = Given.Sex
+}
+public enum Emp03: Employee, Person {
+    public typealias Rank = IndividualContributor
+    public typealias Home = Engineering
+    public typealias Given = Alan
+    public typealias Family = Turing
+    public typealias Born = Y1906
+    public typealias Site = Remote
+    public typealias Sex = Given.Sex
+}
+public enum Emp04: Employee, Person {
+    public typealias Rank = Lead
+    public typealias Home = Engineering
+    public typealias Given = Ada
+    public typealias Family = Turing
+    public typealias Born = Y1815
+    public typealias Site = OnSite
+    public typealias Sex = Given.Sex
+}
+
+public enum Company: Roster {
+    @StructureBuilder
+    public static var body: some Structure {
+        Emp01.self; Emp02.self; Emp03.self; Emp04.self;
+    }
+}
+public enum FinanceTeam: Team {
+    @StructureBuilder
+    public static var body: some Structure {
+        VerifiedInDepartment<
+            Emp01,
+            Finance
+        >.self;
+        VerifiedInDepartment<
+            Emp02,
+            Finance
+        >.self;
+    }
+}
+public enum EngineeringTeam: Team {
+    @StructureBuilder
+    public static var body: some Structure {
+        VerifiedInDepartment<
+            Emp03,
+            Engineering
+        >.self;
+        VerifiedInDepartment<
+            Emp04,
+            Engineering
+        >.self;
+    }
+}
+public enum AllAccesses: AccessLedger {
+    @StructureBuilder
+    public static var body: some Structure {
+        VerifiedView<
+            Emp01,
+            FinanceShare
+        >.self;
+        VerifiedView<
+            Emp02,
+            FinanceShare
+        >.self;
+        VerifiedView<
+            Emp03,
+            EngineeringShare
+        >.self;
+        VerifiedView<
+            Emp04,
+            EngineeringShare
+        >.self;
+    }
+}
+`;
+
+// ── the big company, generated the way the repository generates its own: every
+// coordinate stated directly by the rotation's index, no person derived from another ──
+
+const givenPool = [
+    ["Ada", "Female"], ["Grace", "Female"], ["Alan", "Male"], ["Edsger", "Male"],
+    ["Barbara", "Female"], ["John", "Male"], ["Margaret", "Female"], ["Donald", "Male"],
+    ["Radia", "Female"], ["Ken", "Male"], ["Frances", "Female"], ["Niklaus", "Male"],
+];
+const familyPool = ["Lovelace", "Hopper", "Turing", "Dijkstra", "Liskov", "Backus",
+    "Hamilton", "Knuth", "Perlman", "Thompson", "Allen", "Wirth"];
+const bornPool = ["Y1815", "Y1906", "Y1912", "Y1930", "Y1936", "Y1938", "Y1939", "Y1943"];
+const rankPool = ["IndividualContributor", "Lead", "Manager"];
+const departmentPool = ["Finance", "Engineering", "Sales", "People"];
+const sitePool = ["OnSite", "Hybrid", "Remote"];
+
+function makeBigCompany(count) {
+    const lines = [];
+    lines.push("import VerificationIsIdentification", "import DocumentKit", "");
+    lines.push("// A company of " + count + ", generated by the same rotations the repository");
+    lines.push("// uses: every coordinate stated directly by its index. The page above reads");
+    lines.push("// its numbers off this roster, and the judge re-proves every premise as you type.", "");
+    lines.push(organizationView.slice(organizationView.indexOf("// ── the words")));
+    for (let i = 0; i < givenPool.length; i += 1) {
+        lines.push("public enum " + givenPool[i][0] + ": GivenNameCycle {");
+        lines.push("    public typealias Next = " + givenPool[(i + 1) % givenPool.length][0]);
+        lines.push("    public typealias Sex = " + givenPool[i][1], "}");
+    }
+    for (let i = 0; i < familyPool.length; i += 1) {
+        lines.push("public enum " + familyPool[i] + ": FamilyNameCycle {");
+        lines.push("    public typealias Next = " + familyPool[(i + 1) % familyPool.length], "}");
+    }
+    for (let i = 0; i < bornPool.length; i += 1) {
+        lines.push("public enum " + bornPool[i] + ": BirthYearCycle {");
+        lines.push("    public typealias Next = " + bornPool[(i + 1) % bornPool.length], "}");
+    }
+    lines.push("");
+    const width = String(count - 1).length;
+    const handle = (i) => "Emp" + String(i).padStart(width, "0");
+    for (let i = 0; i < count; i += 1) {
+        lines.push("public enum " + handle(i) + ": Employee, Person {");
+        lines.push("    public typealias Rank = " + rankPool[i % 3]);
+        lines.push("    public typealias Home = " + departmentPool[i % 4]);
+        lines.push("    public typealias Given = " + givenPool[i % 12][0]);
+        lines.push("    public typealias Family = " + familyPool[Math.floor(i / 12) % 12]);
+        lines.push("    public typealias Born = " + bornPool[Math.floor(i / 144) % 8]);
+        lines.push("    public typealias Site = " + sitePool[i % 3]);
+        lines.push("    public typealias Sex = Given.Sex", "}");
+    }
+    lines.push("", "public enum Company: Roster {", "    @StructureBuilder",
+        "    public static var body: some Structure {");
+    for (let i = 0; i < count; i += 8) {
+        const row = [];
+        for (let j = i; j < Math.min(i + 8, count); j += 1) row.push(handle(j) + ".self;");
+        lines.push("        " + row.join(" "));
+    }
+    lines.push("    }", "}");
+    for (const [team, department, offset] of
+        [["FinanceTeam", "Finance", 0], ["EngineeringTeam", "Engineering", 1]]) {
+        lines.push("", "public enum " + team + ": Team {", "    @StructureBuilder",
+            "    public static var body: some Structure {");
+        for (let i = offset; i < count; i += 4) {
+            lines.push("        VerifiedInDepartment<" + handle(i) + ", " + department + ">.self;");
+        }
+        lines.push("    }", "}");
+    }
+    lines.push("", "public enum AllAccesses: AccessLedger {", "    @StructureBuilder",
+        "    public static var body: some Structure {");
+    for (let i = 0; i < count; i += 1) {
+        lines.push("        VerifiedView<" + handle(i) + ", "
+            + departmentPool[i % 4] + "Share>.self;");
+    }
+    lines.push("    }", "}", "");
+    return lines.join("\n");
+}
+
+const organizationView = organizationFile.slice(0,
+    organizationFile.indexOf("// ── the data the page reads"));
+
+const landingFile = `import DocumentKit
+
+// A landing page, stated as types: six bands down a grown axis, a cascade of frozen
+// reveals, breathing accents. No number below belongs to the page: every height is a
+// rung, every baseline hangs a text size under one, and nothing points anywhere else.
+
+// ── the words ──
+
+public enum Wordmark: Close {}
+extension Wordmark {
+    public static var typeName: String { "Verification Is Identification" }
+}
+public enum NavClaim: Close {}
+extension NavClaim {
+    public static var typeName: String { "written as types" }
+}
+public enum HeroTitle: Close {}
+extension HeroTitle {
+    public static var typeName: String { "The build is the run." }
+}
+public enum HeroSub: Close {}
+extension HeroSub {
+    public static var typeName: String { "A page stated as Swift types: proved and rendered with no runtime at all." }
+}
+public enum CtaWord: Close {}
+extension CtaWord {
+    public static var typeName: String { "edit anything on the left: this page follows" }
+}
+public enum ClaimOne: Close {}
+extension ClaimOne {
+    public static var typeName: String { "pure types" }
+}
+public enum ClaimTwo: Close {}
+extension ClaimTwo {
+    public static var typeName: String { "zero runtime" }
+}
+public enum ClaimThree: Close {}
+extension ClaimThree {
+    public static var typeName: String { "proved at build" }
+}
+public enum FeatureOneName: Close {}
+extension FeatureOneName {
+    public static var typeName: String { "Layout" }
+}
+public enum FeatureOneCopy: Close {}
+extension FeatureOneCopy {
+    public static var typeName: String { "divides space, states no number" }
+}
+public enum FeatureTwoName: Close {}
+extension FeatureTwoName {
+    public static var typeName: String { "Verdicts" }
+}
+public enum FeatureTwoCopy: Close {}
+extension FeatureTwoCopy {
+    public static var typeName: String { "every broken claim named as typed" }
+}
+public enum FeatureThreeName: Close {}
+extension FeatureThreeName {
+    public static var typeName: String { "Films" }
+}
+public enum FeatureThreeCopy: Close {}
+extension FeatureThreeCopy {
+    public static var typeName: String { "time as data on the SVG clock" }
+}
+public enum StatOneFigure: Close {}
+extension StatOneFigure {
+    public static var typeName: String { "199 s → 0.18 s" }
+}
+public enum StatOneCopy: Close {}
+extension StatOneCopy {
+    public static var typeName: String { "the compiler's corpus, in the browser" }
+}
+public enum StatTwoFigure: Close {}
+extension StatTwoFigure {
+    public static var typeName: String { "×1100" }
+}
+public enum StatTwoCopy: Close {}
+extension StatTwoCopy {
+    public static var typeName: String { "the linear judge against the arbiter" }
+}
+public enum StatThreeFigure: Close {}
+extension StatThreeFigure {
+    public static var typeName: String { "108 844" }
+}
+public enum StatThreeCopy: Close {}
+extension StatThreeCopy {
+    public static var typeName: String { "premises re-proved per keystroke" }
+}
+public enum FootWord: Close {}
+extension FootWord {
+    public static var typeName: String { "two readers of one dictionary: the judge checks, the renderer draws" }
+}
+public enum LandingAlt: Close {}
+extension LandingAlt {
+    public static var typeName: String { "A landing page: hero, claims, features, figures, all stated as types." }
+}
+
+// ── the rungs: every band's height, stated once ──
+
+public typealias NavTall = Plus<U32, U8>
+public typealias HeroTall = Plus<U64, U32>
+public typealias CtaTall = Plus<U32, U16>
+public typealias ClaimsTall = Plus<U16, U8>
+public typealias FeatureTall = Plus<U64, Plus<U32, Plus<U16, U8>>>
+public typealias StatsTall = Plus<U64, U16>
+public typealias FootTall = Plus<U16, U8>
+
+// ── the nav ──
+
+public enum NavDot: SpanBreathingDot {
+    public typealias CY = Halfway<NavTall, Never>
+    public typealias R = Tally<Plus<U4, U1>>
+    public typealias Fill = AccentRole
+}
+public enum NavName: SpanLabel {
+    public typealias Y = Under<U8, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = Wordmark
+}
+public enum NavSide: SpanLabelEnd {
+    public typealias Y = Under<U8, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = NavClaim
+}
+public enum NavRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<U16, NavDot>.self
+        Air<U8>.self
+        Flexible<Layered<NavName, NavSide>>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the hero ──
+
+public enum HeroTitleFace: SpanLabelMid {
+    public typealias Y = Under<U16, Display>
+    public typealias FillColor = TextPrimary
+    public typealias Size = Display
+    public typealias Weight = WeightBold
+    public typealias Content = HeroTitle
+}
+public enum HeroSubFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U64, U8>, TextM>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = HeroSub
+}
+public enum HeroRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<HeroTitleFace, HeroSubFace>>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the call: one accent chip, pointing back into the editor ──
+
+public enum CtaFace: SpanHeroFace {
+    public typealias H = Tally<CtaTall>
+    public typealias Radius = R12
+    public typealias Fill = AccentRole
+}
+public enum CtaLabel: SpanLabelMid {
+    public typealias Y = Under<U16, TextM>
+    public typealias FillColor = OnAccent
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = CtaWord
+}
+public enum CtaRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<Times<U64, U4>>.self
+        Flexible<Layered<CtaFace, CtaLabel>>.self
+        Air<Times<U64, U4>>.self
+    }
+}
+
+// ── the claims strip ──
+
+public enum ClaimDot: SpanBreathingDot {
+    public typealias CY = Halfway<ClaimsTall, Never>
+    public typealias R = Tally<U2>
+    public typealias Fill = ActionRole
+}
+public enum ClaimOneFace: SpanLabelMid {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ClaimOne
+}
+public enum ClaimTwoFace: SpanLabelMid {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ClaimTwo
+}
+public enum ClaimThreeFace: SpanLabelMid {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ClaimThree
+}
+public enum ClaimsRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<Times<U64, U2>>.self
+        Flexible<ClaimOneFace>.self
+        Fixed<U16, ClaimDot>.self
+        Flexible<ClaimTwoFace>.self
+        Fixed<U16, ClaimDot>.self
+        Flexible<ClaimThreeFace>.self
+        Air<Times<U64, U2>>.self
+    }
+}
+
+// ── the features ──
+
+public enum FeatureHero: SpanHeroFace {
+    public typealias H = Tally<FeatureTall>
+    public typealias Radius = R20
+    public typealias Fill = AccentRole
+}
+public enum FeatureQuiet: SpanTrackOutlined {
+    public typealias H = Tally<FeatureTall>
+    public typealias Radius = R20
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum FeatureOneNameFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U32, U8>, TextL>
+    public typealias FillColor = OnAccent
+    public typealias Size = TextL
+    public typealias Weight = WeightBold
+    public typealias Content = FeatureOneName
+}
+public enum FeatureOneCopyFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U64, U8>, TextXS>
+    public typealias FillColor = OnAccent
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FeatureOneCopy
+}
+public enum FeatureTwoNameFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U32, U8>, TextL>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextL
+    public typealias Weight = WeightBold
+    public typealias Content = FeatureTwoName
+}
+public enum FeatureTwoCopyFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U64, U8>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FeatureTwoCopy
+}
+public enum FeatureThreeNameFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U32, U8>, TextL>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextL
+    public typealias Weight = WeightBold
+    public typealias Content = FeatureThreeName
+}
+public enum FeatureThreeCopyFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U64, U8>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FeatureThreeCopy
+}
+public enum FeaturesRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<FeatureHero, Layered<FeatureOneNameFace, FeatureOneCopyFace>>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<FeatureQuiet, Layered<FeatureTwoNameFace, FeatureTwoCopyFace>>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<FeatureQuiet, Layered<FeatureThreeNameFace, FeatureThreeCopyFace>>>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the figures ──
+
+public enum StatFace: SpanTrack {
+    public typealias H = Tally<StatsTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceTrack
+}
+public enum StatOneFigureFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = StatOneFigure
+}
+public enum StatOneCopyFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U64, U2>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = StatOneCopy
+}
+public enum StatTwoFigureFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = StatTwoFigure
+}
+public enum StatTwoCopyFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U64, U2>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = StatTwoCopy
+}
+public enum StatThreeFigureFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U8>, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = StatThreeFigure
+}
+public enum StatThreeCopyFace: SpanLabelMid {
+    public typealias Y = Under<Plus<U64, U2>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = StatThreeCopy
+}
+public enum StatsRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<StatFace, Layered<StatOneFigureFace, StatOneCopyFace>>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<StatFace, Layered<StatTwoFigureFace, StatTwoCopyFace>>>.self
+        Air<EdgeMargin>.self
+        Flexible<Layered<StatFace, Layered<StatThreeFigureFace, StatThreeCopyFace>>>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the footer ──
+
+public enum FootFace: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FootWord
+}
+public enum FootRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<FootFace>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+// ── the page: bands cascade in and stay ──
+
+public enum LandingArt: GrownDiagram {
+    public typealias Across = WideSurface
+    public typealias AriaLabel = LandingAlt
+    public typealias Defs = SoftShadow
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<NavTall, SpanHosted<NavRow>>.self
+        Air<U16>.self
+        Fixed<HeroTall, SpanHosted<FrozenReveal<Tally<Never>, HeroRow>>>.self
+        Air<U8>.self
+        Fixed<CtaTall, SpanHosted<FrozenReveal<Tally<U1>, CtaRow>>>.self
+        Air<U16>.self
+        Fixed<ClaimsTall, SpanHosted<FrozenReveal<Tally<U1>, ClaimsRow>>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<FeatureTall, SpanHosted<FrozenReveal<Tally<U2>, FeaturesRow>>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<StatsTall, SpanHosted<FrozenReveal<Tally<Plus<U2, U1>>, StatsRow>>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<FootTall, SpanHosted<FrozenReveal<Tally<U4>, FootRow>>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
+
+const basicsFile = plateFile + "\n" + cardsFile;
+
+const tabs = [
+    { id: "organization", title: "The organization", file: "Organization.swift",
+      text: organizationFile,
+      caption: "a company as types: the cards derive from the roster below" },
+    { id: "scale", title: "At scale", file: "BigCompany.swift", text: null,
+      caption: "a generated roster: 12 800 people judge in about 0.2 s" },
+    { id: "film", title: "A film", file: "Film.swift", text: filmFile,
+      caption: "frames on the SVG clock: a cue edit replays the film" },
+    { id: "landing", title: "A landing", file: "Landing.swift", text: landingFile,
+      caption: "six bands on one grown axis: the order is the page" },
+    { id: "basics", title: "Basics", file: "Basics.swift", text: basicsFile,
+      caption: "a plate and a card row: widths divide, the frame derives" },
+];
+
+// the lies the buttons plant on the company tab, anchored on the pristine snippets
+const otherShare = {
+    FinanceShare: "SalesShare", EngineeringShare: "FinanceShare",
+    SalesShare: "EngineeringShare", PeopleShare: "FinanceShare",
+};
+
+const lies = {
+    cross: [
+        "        VerifiedView<\n            Emp03,\n            EngineeringShare\n        >.self;",
+        "        VerifiedView<\n            Emp03,\n            FinanceShare\n        >.self;",
+    ],
+    rank: [
+        "public enum Emp02: Employee, Person {\n    public typealias Rank = Lead",
+        "public enum Emp02: Employee, Person {\n    public typealias Rank = Leed",
+    ],
+    site: [
+        "    public typealias Born = Y1815\n    public typealias Site = OnSite\n    public typealias Sex = Given.Sex\n}\n\npublic enum Company",
+        "    public typealias Born = Y1815\n    public typealias Site = Sales\n    public typealias Sex = Given.Sex\n}\n\npublic enum Company",
+    ],
+};
+
+// verdicts captured from the Swift judge (Sources/Tools/Judge.swift) on the company
+// corpus — the port must reproduce them, character for character, on every load
+const golden = {
+    clean: { declarations: 15, lookups: 47, premises: 45, refusals: [] },
+    cross: [{ line: 104, premise: "VerifiedView requires Emp03.Home == FinanceShare.Home: Engineering against Finance" }],
+    rank:  [{ line: 46,  premise: "Emp02.Rank: the name Leed resolves to nothing" }],
+    site:  [{ line: 69,  premise: "Person requires Site in workplace: Emp04.Site = Sales lands in department" }],
+};
+
+const editor = document.getElementById("editor");
+const highlight = document.getElementById("highlight");
+
+function escapeMarkup(text) {
+    return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+const tokenPattern = new RegExp(
+    '(&quot;.*?&quot;)|(//.*$)|(@[A-Za-z]+)'
+    + '|\\b(public|enum|extension|static|var|typealias|import|some|protocol|String)\\b'
+    + '|(\\.self\\b)|(&lt;|&gt;|,)'
+    + '|\\b([A-Z][A-Za-z0-9]*)\\b', "gm");
+
+// names that read as structure, painted plain: the coordinate keys and the modules
+const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "Size",
+    "Weight", "Content", "Given", "Across", "AriaLabel", "Defs", "CY", "R",
+    "Begin", "Dwell", "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
+    "DocumentKit", "VerificationIsIdentification", "Organization"]);
+let localNames = new Set();
+
+// every name the dictionaries answer for; rebuilt after each judgment
+const fixedNames = new Set([
+    "HFlow", "VFlow", "GrownDiagram", "Diagram", "Group", "Close", "Open",
+    "Structure", "Divides", "DividesY", "Roster", "Team", "AccessLedger",
+    "Employee", "Person", "GivenNameCycle", "FamilyNameCycle", "BirthYearCycle",
+    // the coordinate keys the kit and the policy read (typealias left-hand sides)
+    "H", "Radius", "Fill", "Stroke", "Y", "FillColor", "Size", "Weight", "Content",
+    "Given", "Across", "AriaLabel", "Defs", "CY", "R", "Begin", "Dwell",
+    "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
+    "SpanLabel", "SpanLink", "SoftShadow", "DisplayS", "Never", "Spanning",
+    // the modules an import names
+    "DocumentKit", "VerificationIsIdentification", "Organization",
+    ...spanShapes, ...kitVocabulary.seeds, ...kitVocabulary.generics,
+    ...ranks, ...departments, ...workplaces, ...genders,
+    ...shareHomes.keys(), ...gatePremises.keys(),
+]);
+let knownNames = fixedNames;
+
+function paint(text) {
+    return escapeMarkup(text).replace(tokenPattern,
+        (match, str, comment, attribute, keyword, ritual, bracket) => {
+        if (str) return '<span class="tok-s">' + str + "</span>";
+        if (comment) return '<span class="tok-c">' + comment + "</span>";
+        if (attribute) return '<span class="tok-a">' + attribute + "</span>";
+        if (keyword) return '<span class="tok-k">' + keyword + "</span>";
+        if (ritual) return '<span class="tok-g">.</span><span class="tok-k">self</span>';
+        if (bracket) return '<span class="tok-g">' + bracket + "</span>";
+        if (quietNames.has(match)) return match;
+        if (localNames.has(match)) return '<span class="tok-t">' + match + "</span>";
+        if (knownNames.has(match)) return '<span class="tok-d">' + match + "</span>";
+        return '<span class="tok-bad">' + match + "</span>";
+    });
+}
+let lineNotes = new Map();
+let notesFresh = false;
+
+function syncPaint() {
+    if (editor.value.length > 300000) {
+        highlight.textContent = editor.value + "\n";
+        syncGutter();
+        return;
+    }
+    const lines = paint(editor.value).split("\n");
+    for (const [line, note] of notesFresh ? lineNotes : new Map()) {
+        if (line - 1 < lines.length) {
+            lines[line - 1] += '<span class="line-note">' + escapeMarkup(note) + "</span>";
+        }
+    }
+    highlight.innerHTML = lines.join("\n") + "\n";
+    syncGutter();
+}
+
+const gutterInner = document.getElementById("gutter-inner");
+const editorLineHeight = 12.5 * 1.5;
+
+function syncGutter() {
+    const total = editor.value.split("\n").length;
+    const first = Math.max(0, Math.floor(editor.scrollTop / editorLineHeight) - 5);
+    const visible = Math.ceil(editor.clientHeight / editorLineHeight) + 10;
+    const rows = [];
+    for (let line = first + 1; line <= Math.min(total, first + visible); line += 1) {
+        rows.push('<div class="' + (notesFresh && lineNotes.has(line) ? "has-error" : "")
+            + '">' + line + "</div>");
+    }
+    gutterInner.style.top = (14 + first * editorLineHeight - editor.scrollTop) + "px";
+    gutterInner.innerHTML = rows.join("");
+}
+editor.addEventListener("scroll", () => {
+    highlight.scrollTop = editor.scrollTop;
+    highlight.scrollLeft = editor.scrollLeft;
+    syncGutter();
+});
+const status = document.getElementById("status");
+const verdicts = document.getElementById("verdicts");
+const canvases = document.getElementById("canvases");
+const tabBar = document.getElementById("tabs");
+let activeTab = tabs[0];
+
+function storageKey(tab) { return "playground-" + tab.id; }
+
+let lastParsed = null;
+let lastReads = null;
+const lastGood = new Map();
+let standingMarkup = "";
+
+// the engine tripping is a state like any other: named in the chip, never a frozen page
+function renderFailed(failure) {
+    const chip = document.getElementById("verdict-chip");
+    chip.className = "chip bad";
+    chip.textContent = "✗ the engine tripped · the canvas keeps the last state that held";
+    status.textContent = "";
+    verdicts.innerHTML = "";
+    const card = document.createElement("div");
+    card.className = "refusal";
+    const where = document.createElement("div");
+    where.className = "where";
+    where.textContent = "the engine";
+    const what = document.createElement("div");
+    what.className = "what";
+    what.textContent = String(failure && failure.message ? failure.message : failure);
+    card.append(where, what);
+    verdicts.append(card);
+    canvases.classList.add("stale");
+}
+
+function render() {
+    let verdict;
+    let drawn;
+    try {
+        verdict = judge(activeTab.file, editor.value, kitVocabulary);
+        lastParsed = verdict.parsed;
+        localNames = new Set([...verdict.parsed.declarations.keys(),
+            ...verdict.parsed.topAliases.keys(), ...verdict.parsed.literals.keys()]);
+        for (const alias of verdict.parsed.topAliases.values()) {
+            for (const parameter of alias.params ?? []) localNames.add(parameter);
+        }
+        knownNames = new Set([...fixedNames, ...localNames]);
+        drawn = renderAll(verdict.parsed.declarations, verdict.parsed.order,
+            verdict.parsed.literals, verdict.parsed.topAliases);
+    } catch (failure) {
+        renderFailed(failure);
+        return;
+    }
+    document.getElementById("crash").style.display = "none";
+    lastReads = drawn.reads;
+    lineNotes = new Map();
+    for (const refusal of verdict.refusals) {
+        if (!lineNotes.has(refusal.line)) lineNotes.set(refusal.line, refusal.premise);
+    }
+    notesFresh = true;
+    syncPaint();
+    const broke = verdict.refusals.length > 0 || drawn.errors.length > 0;
+    const markup = drawn.canvases.map((canvas) => canvas.svg).join("");
+    if (broke && lastGood.has(activeTab.id)) {
+        canvases.classList.add("stale");
+        if (standingMarkup !== lastGood.get(activeTab.id)) {
+            standingMarkup = lastGood.get(activeTab.id);
+            canvases.innerHTML = standingMarkup;
+        }
+    } else {
+        canvases.classList.remove("stale");
+        if (standingMarkup !== markup) {
+            standingMarkup = markup;
+            canvases.innerHTML = markup;
+        }
+        if (!broke) lastGood.set(activeTab.id, markup);
+    }
+    status.innerHTML = "<b>" + verdict.declarations + "</b> declarations · <b>"
+        + verdict.lookups + "</b> lookups · <b>" + verdict.premises
+        + "</b> premises · <b>" + verdict.milliseconds.toFixed(1) + "</b> ms";
+    const chip = document.getElementById("verdict-chip");
+    const broken = verdict.refusals.length + drawn.errors.length;
+    if (broken === 0) {
+        chip.className = "chip ok";
+        chip.textContent = "✓ the judge holds";
+    } else {
+        chip.className = "chip bad";
+        chip.textContent = "✗ refuses " + broken + " claim" + (broken > 1 ? "s" : "")
+            + (lastGood.has(activeTab.id) ? " · the canvas keeps the last state that held" : "");
+    }
+    verdicts.innerHTML = "";
+    if (broken === 0) return;
+    for (const refusal of verdict.refusals) {
+        const card = document.createElement("div");
+        card.className = "refusal";
+        const where = document.createElement("div");
+        where.className = "where";
+        where.textContent = activeTab.file + " : " + refusal.line;
+        const why = document.createElement("span");
+        why.className = "why";
+        why.textContent = "why?";
+        why.addEventListener("click", (event) => {
+            event.stopPropagation();
+            fragmentPanel.classList.add("open");
+        });
+        where.append(why);
+        const what = document.createElement("div");
+        what.className = "what";
+        what.textContent = refusal.premise;
+        card.append(where, what);
+        card.addEventListener("click", () => reveal(refusal.line));
+        verdicts.append(card);
+    }
+    for (const error of drawn.errors) {
+        const card = document.createElement("div");
+        card.className = "refusal";
+        const where = document.createElement("div");
+        where.className = "where";
+        where.textContent = "the renderer";
+        const what = document.createElement("div");
+        what.className = "what";
+        what.textContent = error;
+        card.append(where, what);
+        verdicts.append(card);
+    }
+}
+
+function reveal(line) {
+    const lines = editor.value.split("\n");
+    let position = 0;
+    for (let index = 0; index < line - 1 && index < lines.length; index += 1) {
+        position += lines[index].length + 1;
+    }
+    editor.focus();
+    editor.setSelectionRange(position, position + (lines[line - 1] ?? "").length);
+    editor.scrollTop = Math.max(0, (line - 6) * 12.5 * 1.5);
+}
+
+function insertText(text) {
+    editor.focus();
+    if (!document.execCommand("insertText", false, text)) {
+        editor.setRangeText(text, editor.selectionStart, editor.selectionEnd, "end");
+        editor.dispatchEvent(new Event("input"));
+    }
+}
+
+// replaces the whole text by touching only the span that differs, through the undo stack
+function replaceEditorText(next) {
+    const current = editor.value;
+    if (next === current) return;
+    let head = 0;
+    const shortest = Math.min(current.length, next.length);
+    while (head < shortest && current[head] === next[head]) head += 1;
+    let tail = 0;
+    while (tail < shortest - head
+        && current[current.length - 1 - tail] === next[next.length - 1 - tail]) tail += 1;
+    const middle = next.slice(head, next.length - tail);
+    if (middle.length > 500000) {
+        editor.value = next;
+        editor.dispatchEvent(new Event("input"));
+        return;
+    }
+    editor.focus();
+    editor.setSelectionRange(head, current.length - tail);
+    insertText(middle);
+}
+
+function plantLie(name) {
+    const [anchor, planted] = lies[name];
+    if (!editor.value.includes(anchor)) {
+        status.innerHTML = "the anchor is edited away — reset first";
+        return;
+    }
+    replaceEditorText(editor.value.replace(anchor, planted));
+}
+
+function hireOne() {
+    const text = editor.value;
+    const indices = [...text.matchAll(/public enum Emp(\d+): Employee/g)]
+        .map((match) => Number(match[1]));
+    if (indices.length === 0) return;
+    const next = Math.max(...indices) + 1;
+    const handle = "Emp" + String(next).padStart(2, "0");
+    const givens = ["Ada", "Grace", "Alan"];
+    const families = ["Lovelace", "Hopper", "Turing"];
+    const bornYears = ["Y1815", "Y1906"];
+    const hireRanks = ["IndividualContributor", "Lead", "Manager"];
+    const hireHomes = ["Finance", "Engineering", "Sales", "People"];
+    const hireSites = ["OnSite", "Hybrid", "Remote"];
+    const person = "public enum " + handle + ": Employee, Person {\n"
+        + "    public typealias Rank = " + hireRanks[next % 3] + "\n"
+        + "    public typealias Home = " + hireHomes[next % 4] + "\n"
+        + "    public typealias Given = " + givens[next % 3] + "\n"
+        + "    public typealias Family = " + families[Math.floor(next / 3) % 3] + "\n"
+        + "    public typealias Born = " + bornYears[next % 2] + "\n"
+        + "    public typealias Site = " + hireSites[next % 3] + "\n"
+        + "    public typealias Sex = Given.Sex\n}\n\n";
+    let updated = text.replace("public enum Company: Roster {",
+        person + "public enum Company: Roster {");
+    updated = updated.replace(/;\n(    \}\n\}\s*public enum FinanceTeam)/,
+        "; " + handle + ".self;\n$1");
+    const lastEntry = updated.lastIndexOf(">.self;");
+    updated = updated.slice(0, lastEntry + 7)
+        + "\n        VerifiedView<\n            " + handle + ",\n            "
+        + hireHomes[next % 4] + "Share\n        >.self;"
+        + updated.slice(lastEntry + 7);
+    replaceEditorText(updated);
+}
+
+function plantDeepLie() {
+    const text = editor.value;
+    const head = text.lastIndexOf("VerifiedView<");
+    if (head < 0) return;
+    const tail = text.indexOf(">.self", head);
+    const segment = text.slice(head, tail);
+    const share = segment.split(",")[1].trim();
+    const planted = otherShare[share];
+    if (!planted) return;
+    replaceEditorText(text.slice(0, head)
+        + segment.replace(share, planted) + text.slice(tail));
+}
+
+function generateCompany(count) {
+    storage.removeItem(storageKey(activeTab));
+    replaceEditorText(makeBigCompany(count));
+}
+
+function actionButton(label, handler, loud) {
+    const button = document.createElement("button");
+    button.textContent = label;
+    if (loud) button.className = "loud";
+    button.addEventListener("click", handler);
+    return button;
+}
+
+function renderActions(tab) {
+    const bar = document.getElementById("actions");
+    bar.innerHTML = "";
+    const caption = document.createElement("span");
+    caption.className = "caption";
+    caption.textContent = tab.caption;
+    bar.append(caption);
+    if (tab.id === "organization") {
+        bar.append(actionButton("Hire one more", hireOne, true),
+            actionButton("Plant a lie", () => plantLie("cross")),
+            actionButton("Break a name", () => plantLie("rank")));
+    }
+    if (tab.id === "scale") {
+        bar.append(actionButton("200", () => generateCompany(200)),
+            actionButton("1 000", () => generateCompany(1000)),
+            actionButton("5 000", () => generateCompany(5000)),
+            actionButton("12 800", () => generateCompany(12800), true),
+            actionButton("Plant a lie deep", plantDeepLie));
+    }
+}
+
+function selectTab(tab) {
+    activeTab = tab;
+    for (const button of tabBar.children) {
+        button.className = button.dataset.id === tab.id ? "active" : "";
+    }
+    editor.value = storage.getItem(storageKey(tab))
+        ?? tab.text ?? (tab.text = makeBigCompany(200));
+    renderActions(tab);
+    syncPaint();
+    render();
+}
+
+for (const tab of tabs) {
+    const button = document.createElement("button");
+    button.textContent = tab.title;
+    button.dataset.id = tab.id;
+    button.addEventListener("click", () => selectTab(tab));
+    tabBar.append(button);
+}
+
+// one clause per kit form: what the name does, for the caret inspector
+const kitReadings = new Map([
+    ["HFlow", "divides a given width across its members"],
+    ["VFlow", "divides a given height down its members"],
+    ["GrownDiagram", "a canvas that derives its frame from what its members take"],
+    ["Diagram", "a canvas with a stated size"],
+    ["Group", "concatenates its members in order"],
+    ["Fixed", "a slot that takes a stated count"],
+    ["Paired", "two members carried as one: the left, then the right"],
+    ["Air", "space: takes its count, draws nothing"],
+    ["RestAir", "owns the remainder, draws nothing"],
+    ["Flexible", "shares the remainder equally"],
+    ["Layered", "two layers, one slice"],
+    ["SpanHosted", "hosts a row or group inside a slice"],
+    ["TimedReveal", "reveals on a cue, hides after a dwell (SVG clock)"],
+    ["FrozenReveal", "reveals on a cue and stays"],
+    ["Tally", "reads a count as digits"],
+    ["SpanLink", "a live link around its content"],
+    ["Halfway", "the midpoint of two counts"],
+    ["Under", "a baseline hung a text-size under a rung"],
+    ["SoftShadow", "the one card shadow, a filter def"],
+    ["CanvasSize", "a stated viewBox from two counts"],
+    ["Close", "a leaf atom"],
+    ["Roster", "a body of people"], ["Team", "a body of verified members"],
+    ["AccessLedger", "a body of proved accesses"],
+]);
+
+function wordAt(position) {
+    const text = editor.value;
+    let start = position;
+    let end = position;
+    const wordly = /[A-Za-z0-9_]/;
+    while (start > 0 && wordly.test(text[start - 1])) start -= 1;
+    while (end < text.length && wordly.test(text[end])) end += 1;
+    return text.slice(start, end);
+}
+
+function pathAt(position) {
+    const text = editor.value;
+    let start = position;
+    let end = position;
+    const pathly = /[A-Za-z0-9_.]/;
+    while (start > 0 && pathly.test(text[start - 1])) start -= 1;
+    while (end < text.length && pathly.test(text[end])) end += 1;
+    return text.slice(start, end).replace(/^\.+|\.+$/g, "").replace(/\.self$/, "");
+}
+
+function enclosingDeclaration(position) {
+    const before = editor.value.slice(0, position);
+    const opens = [...before.matchAll(/(?:public )?enum (\w+)[^\n]*\{\s*$/gm)];
+    if (opens.length === 0) return null;
+    const last = opens[opens.length - 1];
+    const closed = editor.value.indexOf("\n}", last.index);
+    if (closed >= 0 && closed < position) return null;
+    return last[1];
+}
+
+// the caret's dotted path, settled by the same walker the judge uses
+function describePath(path, position) {
+    if (!lastParsed || !path.includes(".")) return null;
+    const segments = path.split(".");
+    const walkerState = { settled: new Map(), refused: new Map(), lookups: 0,
+        readers: new Map(), gateTouches: new Map() };
+    let cursor;
+    let line = null;
+    if (lastParsed.declarations.has(segments[0])) {
+        cursor = segments[0];
+    } else {
+        const owner = enclosingDeclaration(position);
+        if (!owner) return null;
+        cursor = value(owner, segments[0], lastParsed.declarations, walkerState);
+        if (cursor === null) {
+            const reason = walkerState.refused.get(owner + " " + segments[0]);
+            return { text: "<b>" + path + "</b> : " + (reason ?? "resolves to nothing"),
+                bad: true };
+        }
+    }
+    for (let index = 1; index < segments.length; index += 1) {
+        const member = segments[index];
+        const carrier = lastParsed.declarations.get(cursor);
+        if (carrier && carrier.aliases.has(member)) {
+            line = carrier.aliases.get(member).line;
+            const settled = value(cursor, member, lastParsed.declarations, walkerState);
+            if (settled === null) {
+                const reason = walkerState.refused.get(cursor + " " + member);
+                return { text: "<b>" + path + "</b> : " + (reason ?? "resolves to nothing"),
+                    bad: true };
+            }
+            cursor = settled;
+            continue;
+        }
+        if (member === "Next" && nextInCycle.has(cursor)) {
+            cursor = nextInCycle.get(cursor);
+            continue;
+        }
+        return { text: "<b>" + path + "</b> : " + cursor + " carries no " + member,
+            bad: true };
+    }
+    const landed = category(cursor, lastParsed.declarations);
+    return { text: "<b>" + path + "</b> settles to <b>" + cursor + "</b>"
+        + (landed ? " (" + landed + ")" : ""), line };
+}
+
+function describe(word) {
+    if (word === "" || !lastParsed) return null;
+    const declaration = lastParsed.declarations.get(word);
+    if (declaration) {
+        const roles = declaration.conformances.length > 0
+            ? declaration.conformances.join(", ") : "a declaration";
+        return { text: "<b>" + word + "</b> : " + roles + " · line "
+            + declaration.line, line: declaration.line };
+    }
+    const alias = lastParsed.topAliases.get(word);
+    if (alias) {
+        if (alias.params && alias.params.length > 0) {
+            return { text: "<b>" + word + "</b>&lt;" + alias.params.join(", ") + "&gt; = "
+                + escapeMarkup(alias.target) + " · line " + alias.line, line: alias.line };
+        }
+        const env = { declarations: lastParsed.declarations,
+            literals: lastParsed.literals, topAliases: lastParsed.topAliases, errors: [] };
+        const count = countOf(env, parseType(alias.target));
+        const counted = env.errors.length === 0 ? " · a count of " + count : "";
+        return { text: "<b>" + word + "</b> = " + escapeMarkup(alias.target) + counted
+            + " · line " + alias.line, line: alias.line };
+    }
+    const literal = lastParsed.literals.get(word);
+    if (literal) {
+        return { text: "<b>" + word + "</b> : an atom, &quot;"
+            + escapeMarkup(literal.value) + "&quot; · line " + literal.line,
+            line: literal.line };
+    }
+    if (seedCount.has(word)) {
+        return { text: "<b>" + word + "</b> : a count of " + seedCount.get(word)
+            + ", from the dictionary" };
+    }
+    if (seedText.has(word)) {
+        return { text: "<b>" + word + "</b> : " + escapeMarkup(seedText.get(word))
+            + ", from the dictionary" };
+    }
+    if (gatePremises.has(word)) {
+        const premise = gatePremises.get(word);
+        const right = premise[1] ? "B." + premise[1] : "B";
+        return { text: "<b>" + word + "</b> : a gate, requires A." + premise[0]
+            + " == " + right };
+    }
+    if (conformanceRequirements.has(word)) {
+        const wants = conformanceRequirements.get(word)
+            .map((requirement) => requirement[0] + " in " + requirement[1]).join(", ");
+        return { text: "<b>" + word + "</b> : a conformance, wants " + wants };
+    }
+    if (kitReadings.has(word)) {
+        return { text: "<b>" + word + "</b> : " + kitReadings.get(word) };
+    }
+    if (knownNames.has(word)) return { text: "<b>" + word + "</b> : a dictionary name" };
+    return { text: "<b>" + word + "</b> resolves to nothing", bad: true };
+}
+
+function fanIn(word) {
+    if (!lastParsed) return "";
+    const chains = lastParsed.readers.get(word)?.size ?? 0;
+    const gates = lastParsed.gateTouches.get(word) ?? 0;
+    const drawnBy = lastReads?.get(word)?.size ?? 0;
+    const parts = [];
+    if (chains > 0) parts.push(chains + " value chain" + (chains > 1 ? "s" : ""));
+    if (gates > 0) parts.push(gates + " premise" + (gates > 1 ? "s" : ""));
+    if (drawnBy > 0) parts.push(drawnBy + " canvas" + (drawnBy > 1 ? "es" : ""));
+    if (parts.length === 0) return "";
+    return " · read by " + parts.join(" · ");
+}
+
+const inspector = document.getElementById("inspector");
+const inspectorIdle = '<span class="tag">inspect</span>'
+    + "place the caret on a name and its meaning shows here · ⌥-click jumps to its declaration";
+function inspect() {
+    try {
+        inspectUnsafe();
+    } catch (failure) {
+        inspector.innerHTML = inspectorIdle;
+    }
+}
+
+function inspectUnsafe() {
+    const path = pathAt(editor.selectionStart);
+    const word = wordAt(editor.selectionStart);
+    let described = describePath(path, editor.selectionStart);
+    let subject = path;
+    if (!described && word === "self" && (path === "" || path === "self")) {
+        described = { text: "<b>.self</b> : the type handed as a value, the one verb a body speaks" };
+        subject = "";
+    }
+    if (!described) {
+        subject = path !== "" && !path.includes(".") ? path : word;
+        described = describe(subject);
+    }
+    if (!described) {
+        inspector.innerHTML = inspectorIdle;
+        return;
+    }
+    inspector.innerHTML = '<span class="tag">inspect</span>' + described.text
+        + (subject ? fanIn(subject) : "")
+        + (described.line ? " · ⌥-click jumps" : "");
+}
+editor.addEventListener("keyup", inspect);
+editor.addEventListener("click", (event) => {
+    hideCompletion();
+    if (event.altKey) {
+        const described = describePath(pathAt(editor.selectionStart), editor.selectionStart)
+            ?? describe(wordAt(editor.selectionStart));
+        if (described && described.line) reveal(described.line);
+        return;
+    }
+    inspect();
+});
+
+// ── completion: names the dictionaries answer for, offered as you type ──
+const completion = document.createElement("div");
+completion.id = "completion";
+document.getElementById("editor-wrap").append(completion);
+let completionItems = [];
+let completionChosen = 0;
+let completionPrefixLength = 0;
+
+const measure = document.createElement("canvas").getContext("2d");
+measure.font = "12.5px ui-monospace, Menlo, monospace";
+const charWidth = measure.measureText("M").width;
+const lineHeight = 12.5 * 1.5;
+
+const keywordPool = ["public", "enum", "extension", "static", "var", "typealias",
+    "import", "some", "protocol", "String"];
+
+function completionKind(name) {
+    if (name === "self" || keywordPool.includes(name)) return "keyword";
+    if (name === "StructureBuilder") return "attribute";
+    if (name === "Next") return "cycle";
+    if (localNames.has(name)) return "here";
+    if (seedCount.has(name)) return "count";
+    if (seedText.has(name)) return "style";
+    if (gatePremises.has(name)) return "gate";
+    if (kitReadings.has(name) || spanShapes.has(name)) return "kit";
+    return "name";
+}
+
+function hideCompletion() {
+    completion.style.display = "none";
+    completionItems = [];
+}
+
+function acceptCompletion(name) {
+    const at = editor.selectionStart;
+    editor.setSelectionRange(at - completionPrefixLength, at);
+    hideCompletion();
+    insertText(name);
+}
+
+function drawCompletion() {
+    completion.innerHTML = "";
+    completionItems.forEach((name, index) => {
+        const row = document.createElement("div");
+        row.className = "completion-row" + (index === completionChosen ? " chosen" : "");
+        const label = document.createElement("span");
+        label.textContent = name;
+        const kind = document.createElement("span");
+        kind.className = "kind";
+        if (seedText.has(name) && seedText.get(name).length < 40) {
+            const swatch = document.createElement("span");
+            swatch.className = "swatch";
+            swatch.style.background = seedText.get(name);
+            kind.append(swatch);
+        }
+        kind.append(seedCount.has(name)
+            ? seedCount.get(name) + " · count" : completionKind(name));
+        row.append(label, kind);
+        row.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            acceptCompletion(name);
+        });
+        completion.append(row);
+    });
+}
+
+function presentCompletion(start, items, prefixLength) {
+    if (items.length === 0) {
+        hideCompletion();
+        return;
+    }
+    completionItems = items.slice(0, 8);
+    completionPrefixLength = prefixLength;
+    completionChosen = 0;
+    const lines = editor.value.slice(0, start).split("\n");
+    completion.style.left = Math.min(lines[lines.length - 1].length * charWidth + 60
+        - editor.scrollLeft, 560) + "px";
+    completion.style.top = (lines.length * lineHeight + 12 - editor.scrollTop) + "px";
+    completion.style.display = "block";
+    drawCompletion();
+}
+
+function settleOwner(path, position) {
+    if (!lastParsed) return null;
+    const segments = path.split(".");
+    const walkerState = { settled: new Map(), refused: new Map(), lookups: 0,
+        readers: new Map(), gateTouches: new Map() };
+    let cursor;
+    if (lastParsed.declarations.has(segments[0])) {
+        cursor = segments[0];
+    } else {
+        const owner = enclosingDeclaration(position);
+        if (!owner) return null;
+        cursor = value(owner, segments[0], lastParsed.declarations, walkerState);
+        if (cursor === null) return null;
+    }
+    for (let index = 1; index < segments.length; index += 1) {
+        const member = segments[index];
+        const carrier = lastParsed.declarations.get(cursor);
+        if (carrier && carrier.aliases.has(member)) {
+            cursor = value(cursor, member, lastParsed.declarations, walkerState);
+            if (cursor === null) return null;
+            continue;
+        }
+        if (member === "Next" && nextInCycle.has(cursor)) {
+            cursor = nextInCycle.get(cursor);
+            continue;
+        }
+        return null;
+    }
+    return cursor;
+}
+
+function offerCompletion() {
+    const at = editor.selectionStart;
+    const text = editor.value;
+    let start = at;
+    while (start > 0 && /[A-Za-z0-9_]/.test(text[start - 1])) start -= 1;
+    const prefix = text.slice(start, at);
+    if (text[start - 1] === "." && start > 1) {
+        let ownerEnd = start - 1;
+        let ownerStart = ownerEnd;
+        while (ownerStart > 0 && /[A-Za-z0-9_.]/.test(text[ownerStart - 1])) ownerStart -= 1;
+        const ownerPath = text.slice(ownerStart, ownerEnd).replace(/^\.+/, "");
+        const owner = ownerPath === "" ? null : settleOwner(ownerPath, at);
+        const offers = [];
+        if (owner) {
+            const carrier = lastParsed.declarations.get(owner);
+            if (carrier) offers.push(...carrier.aliases.keys());
+            if (nextInCycle.has(owner)) offers.push("Next");
+        }
+        offers.push("self");
+        presentCompletion(start, offers.filter((name) =>
+            name.toLowerCase().startsWith(prefix.toLowerCase()) && name !== prefix),
+            prefix.length);
+        return;
+    }
+    if (text[start - 1] === "@") {
+        presentCompletion(start, ["StructureBuilder"].filter((name) =>
+            name.toLowerCase().startsWith(prefix.toLowerCase()) && name !== prefix),
+            prefix.length);
+        return;
+    }
+    if (prefix.length < 2 || !/[A-Za-z]/.test(prefix[0])) {
+        hideCompletion();
+        return;
+    }
+    const pool = [...localNames, ...keywordPool, ...fixedNames];
+    const seen = new Set();
+    const lowered = prefix.toLowerCase();
+    completionItems = [];
+    for (const name of pool) {
+        if (name.toLowerCase().startsWith(lowered) && name !== prefix && !seen.has(name)
+            && !quietNames.has(name)) {
+            seen.add(name);
+            completionItems.push(name);
+        }
+    }
+    completionItems.sort((a, b) => a.length - b.length);
+    presentCompletion(start, completionItems, prefix.length);
+}
+
+editor.addEventListener("keydown", (event) => {
+    if (completionItems.length === 0) {
+        if (event.key === "Enter") {
+            const at = editor.selectionStart;
+            const lineStart = editor.value.lastIndexOf("\n", at - 1) + 1;
+            const head = editor.value.slice(lineStart, at);
+            const indent = head.match(/^[ ]*/)[0] + (/\{\s*$/.test(head) ? "    " : "");
+            event.preventDefault();
+            insertText("\n" + indent);
+            return;
+        }
+        if (event.key === "Tab") {
+            event.preventDefault();
+            insertText("    ");
+            return;
+        }
+        if (event.key === "{" || event.key === '"') {
+            const at = editor.selectionStart;
+            if (at === editor.selectionEnd) {
+                event.preventDefault();
+                insertText(event.key === "{" ? "{}" : '""');
+                editor.setSelectionRange(at + 1, at + 1);
+                return;
+            }
+        }
+        if (event.key === "}" || event.key === '"') {
+            const at = editor.selectionStart;
+            if (editor.value[at] === event.key && at === editor.selectionEnd) {
+                event.preventDefault();
+                editor.setSelectionRange(at + 1, at + 1);
+                return;
+            }
+        }
+        if (event.key === "/" && (event.metaKey || event.ctrlKey)) {
+            event.preventDefault();
+            const text = editor.value;
+            const from = text.lastIndexOf("\n", editor.selectionStart - 1) + 1;
+            let to = text.indexOf("\n", editor.selectionEnd);
+            if (to < 0) to = text.length;
+            const block = text.slice(from, to);
+            const lines = block.split("\n");
+            const allCommented = lines.every((line) =>
+                line.trim() === "" || line.trimStart().startsWith("//"));
+            const toggled = lines.map((line) => {
+                if (line.trim() === "") return line;
+                if (allCommented) return line.replace(/^([ ]*)\/\/[ ]?/, "$1");
+                return line.replace(/^([ ]*)/, "$1// ");
+            }).join("\n");
+            editor.setSelectionRange(from, to);
+            insertText(toggled);
+            return;
+        }
+        return;
+    }
+    if (event.key === "ArrowLeft" || event.key === "ArrowRight"
+        || event.key === "Home" || event.key === "End") {
+        hideCompletion();
+        return;
+    }
+    if (event.key === "ArrowDown") {
+        completionChosen = (completionChosen + 1) % completionItems.length;
+        drawCompletion();
+        event.preventDefault();
+        return;
+    }
+    if (event.key === "ArrowUp") {
+        completionChosen = (completionChosen + completionItems.length - 1) % completionItems.length;
+        drawCompletion();
+        event.preventDefault();
+        return;
+    }
+    if (event.key === "Tab" || event.key === "Enter") {
+        acceptCompletion(completionItems[completionChosen]);
+        event.preventDefault();
+        return;
+    }
+    if (event.key === "Escape") hideCompletion();
+});
+editor.addEventListener("blur", () => setTimeout(hideCompletion, 150));
+
+let pending = null;
+editor.addEventListener("input", () => {
+    notesFresh = false;
+    if (editor.value.length < 1000000) storage.setItem(storageKey(activeTab), editor.value);
+    syncPaint();
+    offerCompletion();
+    requestAnimationFrame(() => {
+        highlight.scrollTop = editor.scrollTop;
+        highlight.scrollLeft = editor.scrollLeft;
+        syncGutter();
+    });
+    clearTimeout(pending);
+    pending = setTimeout(render, editor.value.length > 1000000 ? 350 : 120);
+});
+window.addEventListener("resize", syncGutter);
+
+document.getElementById("theme").addEventListener("click", () => {
+    const dark = canvases.classList.toggle("dark");
+    document.getElementById("theme").textContent = dark ? "Light" : "Dark";
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+    storage.removeItem(storageKey(activeTab));
+    replaceEditorText(activeTab.text);
+});
+
+document.getElementById("download").addEventListener("click", () => {
+    const blob = new Blob([editor.value], { type: "text/plain" });
+    const anchor = document.createElement("a");
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = activeTab.file;
+    anchor.click();
+    URL.revokeObjectURL(anchor.href);
+});
+
+// ── the differential seat, in-page: the port against the Swift judge's record ──
+function selfCheck() {
+    const badge = document.getElementById("selfcheck");
+    let passed = 0;
+    let total = 0;
+    const clean = judge("Company.swift", companyFile);
+    total += 1;
+    if (clean.refusals.length === 0
+        && clean.declarations === golden.clean.declarations
+        && clean.lookups === golden.clean.lookups
+        && clean.premises === golden.clean.premises) passed += 1;
+    for (const name of ["cross", "rank", "site"]) {
+        total += 1;
+        const [anchor, planted] = lies[name];
+        const verdict = judge("Company.swift", companyFile.replace(anchor, planted));
+        const expected = golden[name];
+        const matches = verdict.refusals.length === expected.length
+            && expected.every((want, index) =>
+                verdict.refusals[index].line === want.line
+                && verdict.refusals[index].premise === want.premise);
+        if (matches) passed += 1;
+    }
+    badge.textContent = "against the Swift judge: " + passed + "/" + total;
+    badge.className = "badge " + (passed === total ? "ok" : "bad");
+}
+
+// ── the fragment panel: every rule read off the tables the judge actually consults ──
+function chips(names, kind) {
+    return '<div class="chips">' + names.map((name) =>
+        '<span class="chip-name ' + (kind ?? "") + '">' + name + "</span>").join("") + "</div>";
+}
+
+function usedInFile() {
+    const used = { gates: new Set(), conformances: new Set(), kit: new Set() };
+    if (!lastParsed) return used;
+    for (const declaration of lastParsed.declarations.values()) {
+        for (const conformance of declaration.conformances) {
+            if (conformanceRequirements.has(conformance)) used.conformances.add(conformance);
+            if (kitReadings.has(conformance) || spanShapes.has(conformance)) {
+                used.kit.add(conformance);
+            }
+        }
+        for (const entry of declaration.entries) {
+            if (gatePremises.has(entry.head)) used.gates.add(entry.head);
+            if (kitReadings.has(entry.head)) used.kit.add(entry.head);
+        }
+    }
+    return used;
+}
+
+function buildFragmentPanel() {
+    const parts = [];
+    parts.push('<p class="panel-intro">This page speaks a small stated subset of Swift. '
+        + "Everything below is read from the judge's own tables, so it cannot drift.</p>");
+
+    parts.push("<h4>The grammar, whole</h4>");
+    for (const form of [
+        "<code>public enum Name: Conf {</code> declares a thing, nested slices legal",
+        "<code>public typealias Key = Target</code> states a coordinate: a name, a dotted path, a reader",
+        "<code>extension Name { … typeName … }</code> gives an atom its literal reading",
+        "<code>@StructureBuilder … body</code> lists members: <code>Name.self</code> or <code>Gate&lt;A, B&gt;.self</code>",
+        "anything else is refused with its line, since the language is stated, never guessed",
+    ]) parts.push('<div class="row">' + form + "</div>");
+
+    const used = usedInFile();
+    parts.push("<h4>In this file</h4>");
+    if (lastParsed) {
+        parts.push('<div class="row muted">' + lastParsed.declarations.size
+            + " declarations of yours, checked against the rows below</div>");
+    }
+    for (const gate of used.gates) {
+        const premise = gatePremises.get(gate);
+        const right = premise[1] ? "B." + premise[1] : "B";
+        parts.push('<div class="row"><b>' + gate + "</b>&lt;A, B&gt; <span class=\"muted\">requires</span> A."
+            + premise[0] + " == " + right + "</div>");
+    }
+    for (const name of used.conformances) {
+        parts.push('<div class="row"><b>' + name + "</b> <span class=\"muted\">wants</span> "
+            + conformanceRequirements.get(name)
+                .map((requirement) => requirement[0] + " in " + requirement[1]).join(", ")
+            + "</div>");
+    }
+    for (const name of used.kit) {
+        if (kitReadings.has(name)) {
+            parts.push('<div class="row"><b>' + name + "</b> <span class=\"muted\">"
+                + kitReadings.get(name) + "</span></div>");
+        }
+    }
+    if (used.gates.size + used.conformances.size + used.kit.size === 0) {
+        parts.push('<div class="row muted">this file only declares atoms so far</div>');
+    }
+
+    parts.push("<h4>Every name you may use</h4>");
+    parts.push('<div class="sub">the kit\'s combinators</div>');
+    parts.push(chips([...kitReadings.keys()]));
+    parts.push('<div class="sub">counts the axes measure by</div>');
+    parts.push(chips([...seedCount.keys()].filter((name) => name !== "Never")));
+    parts.push('<div class="sub">colours, sizes, weights</div>');
+    parts.push(chips([...seedText.keys()]
+        .filter((name) => name !== "SoftShadow" && name !== "FontStack")));
+    parts.push('<div class="sub">the people vocabulary</div>');
+    parts.push(chips([...ranks, ...departments, ...workplaces, ...shareHomes.keys()], "people"));
+    parts.push('<div class="row muted">a name none of these tables answer for waves red in the editor</div>');
+    document.getElementById("fragment-body").innerHTML = parts.join("");
+}
+
+const fragmentPanel = document.getElementById("fragment-panel");
+document.getElementById("fragment-button").addEventListener("click", () => {
+    buildFragmentPanel();
+    fragmentPanel.classList.toggle("open");
+});
+document.getElementById("fragment-close").addEventListener("click", () => {
+    fragmentPanel.classList.remove("open");
+});
+
+buildFragmentPanel();
+selfCheck();
+selectTab(tabs[0]);
+</script>
+</body>
+</html>
