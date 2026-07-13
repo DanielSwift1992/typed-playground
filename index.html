@@ -3497,24 +3497,12 @@ function insertText(text) {
 }
 
 // replaces the whole text by touching only the span that differs, through the undo stack
-function replaceEditorText(next) {
-    const current = editor.value;
-    if (next === current) return;
-    let head = 0;
-    const shortest = Math.min(current.length, next.length);
-    while (head < shortest && current[head] === next[head]) head += 1;
-    let tail = 0;
-    while (tail < shortest - head
-        && current[current.length - 1 - tail] === next[next.length - 1 - tail]) tail += 1;
-    const middle = next.slice(head, next.length - tail);
-    if (middle.length > 500000) {
-        editor.value = next;
-        editor.dispatchEvent(new Event("input"));
-        return;
-    }
-    editor.focus();
-    editor.setSelectionRange(head, current.length - tail);
-    insertText(middle);
+// a button does not edit: it refreshes the state to a known file, whole and at once
+function setEditorFile(next) {
+    editor.value = next;
+    editor.scrollTop = 0;
+    editor.scrollLeft = 0;
+    editor.dispatchEvent(new Event("input"));
 }
 
 function plantLie(name) {
@@ -3523,7 +3511,7 @@ function plantLie(name) {
         status.innerHTML = "the anchor is edited away: reset first";
         return;
     }
-    replaceEditorText(editor.value.replace(anchor, planted));
+    setEditorFile(editor.value.replace(anchor, planted));
 }
 
 function hireOne() {
@@ -3556,7 +3544,7 @@ function hireOne() {
         + "\n        VerifiedView<\n            " + handle + ",\n            "
         + hireHomes[next % 4] + "Share\n        >.self;"
         + updated.slice(lastEntry + 7);
-    replaceEditorText(updated);
+    setEditorFile(updated);
 }
 
 function plantDeepLie() {
@@ -3568,13 +3556,15 @@ function plantDeepLie() {
     const share = segment.split(",")[1].trim();
     const planted = otherShare[share];
     if (!planted) return;
-    replaceEditorText(text.slice(0, head)
+    setEditorFile(text.slice(0, head)
         + segment.replace(share, planted) + text.slice(tail));
 }
 
+const companyBySize = new Map();
 function generateCompany(count) {
     storage.removeItem(storageKey(activeTab));
-    replaceEditorText(makeBigCompany(count));
+    if (!companyBySize.has(count)) companyBySize.set(count, makeBigCompany(count));
+    setEditorFile(companyBySize.get(count));
     renderActions(activeTab);
 }
 
@@ -4155,7 +4145,7 @@ document.getElementById("theme").addEventListener("click", () => {
 
 document.getElementById("reset").addEventListener("click", () => {
     storage.removeItem(storageKey(activeTab));
-    replaceEditorText(activeTab.text);
+    setEditorFile(activeTab.text);
 });
 
 document.getElementById("download").addEventListener("click", () => {
