@@ -3357,50 +3357,56 @@ function render() {
     if (drawn.errors.length > 1) {
         drawn.errors = drawn.errors.filter((error) => error !== "no reading for `?`");
     }
-    lineNotes = new Map();
+    // ── one shape for every objection: source, color, and one shown line that
+    // the note, the gutter, and the card all read together ──
+    const findings = [];
     for (const refusal of verdict.refusals) {
-        refusal.shownLine = refineRefusalLine(refusal.premise, refusal.line);
-        if (!lineNotes.has(refusal.shownLine)) {
-            lineNotes.set(refusal.shownLine, { note: refusal.premise, kind: "judge" });
-        }
+        findings.push({ source: "the judge", kind: "judge", counts: true,
+            shownLine: refineRefusalLine(refusal.premise, refusal.line),
+            premise: refusal.premise });
     }
-    const importRefusals = [];
     const allLines = fullText().split("\n");
     allLines.forEach((line, index) => {
         const trimmed = line.trim();
         if (trimmed.startsWith("import ")
             && trimmed !== "import VerificationIsIdentification"
             && trimmed !== "import DocumentKit") {
-            importRefusals.push({ line: index + 1,
+            findings.push({ source: "the page", kind: "judge", counts: true,
+                shownLine: index + 1,
                 premise: "the imports are fixed: only VerificationIsIdentification and DocumentKit stand here" });
         }
         if (/^(public\s+)?static var body: some Structure/.test(trimmed)) {
             const above = index > 0 ? allLines[index - 1].trim() : "";
             if (above !== "@StructureBuilder") {
-                importRefusals.push({ line: index + 1,
+                findings.push({ source: "the page", kind: "judge", counts: true,
+                    shownLine: index + 1,
                     premise: "a body states no @StructureBuilder on the line above: the builder attribute is required" });
             }
         }
     });
-    for (const refusal of importRefusals) {
-        if (!lineNotes.has(refusal.line)) {
-            lineNotes.set(refusal.line, { note: refusal.premise, kind: "judge" });
-        }
-    }
-    const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, fullText());
-    for (const objection of objections) {
-        if (!lineNotes.has(objection.line)) {
-            lineNotes.set(objection.line, { note: objection.premise, kind: "law" });
-        }
-    }
     for (const error of drawn.errors) {
-        const line = errorLine(error);
-        if (line && !lineNotes.has(line)) lineNotes.set(line, { note: error, kind: "judge" });
+        findings.push({ source: "the renderer", kind: "judge", counts: true,
+            shownLine: errorLine(error), premise: error });
+    }
+    const spoken = new Set(findings.map((finding) => finding.shownLine).filter(Boolean));
+    const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, fullText());
+    for (const objection of objections.filter((o) => !spoken.has(o.line))) {
+        findings.push({ source: "the law", kind: "law", counts: false,
+            shownLine: objection.line, premise: objection.premise, rule: objection.rule });
+    }
+    findings.sort((a, b) => (a.shownLine ?? Infinity) - (b.shownLine ?? Infinity));
+
+    lineNotes = new Map();
+    for (const finding of findings) {
+        if (finding.shownLine && !lineNotes.has(finding.shownLine)) {
+            lineNotes.set(finding.shownLine, { note: finding.premise, kind: finding.kind });
+        }
     }
     notesFresh = true;
     syncPaint();
-    const broke = verdict.refusals.length > 0 || drawn.errors.length > 0
-        || importRefusals.length > 0;
+    const brokenCount = findings.filter((finding) => finding.counts).length;
+    const lawCount = findings.length - brokenCount;
+    const broke = brokenCount > 0;
     const markup = drawn.canvases.map((canvas) => canvas.svg).join("");
     if (broke && lastGood.has(activeTab.id)) {
         canvases.classList.add("stale");
@@ -3422,61 +3428,34 @@ function render() {
             : counted(verdict.lookups, "lookup") + " · " + counted(verdict.premises, "premise"))
         + " · <b>" + verdict.milliseconds.toFixed(1) + "</b>&nbsp;ms";
     const chip = document.getElementById("verdict-chip");
-    const broken = verdict.refusals.length + drawn.errors.length + importRefusals.length;
-    if (broken === 0 && objections.length > 0) {
+    if (brokenCount === 0 && lawCount > 0) {
         chip.className = "chip law";
-        chip.textContent = "✓ the judge holds · the law objects to " + objections.length
-            + " line" + (objections.length > 1 ? "s" : "");
-    } else if (broken === 0) {
+        chip.textContent = "✓ the judge holds · the law objects to " + lawCount
+            + " line" + (lawCount > 1 ? "s" : "");
+    } else if (brokenCount === 0) {
         chip.className = "chip ok";
         chip.textContent = "✓ the judge holds";
     } else {
         chip.className = "chip bad";
-        chip.textContent = "✗ refuses " + broken + " claim" + (broken > 1 ? "s" : "")
+        chip.textContent = "✗ refuses " + brokenCount + " claim" + (brokenCount > 1 ? "s" : "")
             + (lastGood.has(activeTab.id) ? " · the canvas shows the last good state" : "");
     }
     verdicts.innerHTML = "";
-    if (broken === 0 && objections.length === 0) return;
-    for (const refusal of [...verdict.refusals, ...importRefusals]) {
-        const shown = refusal.shownLine ?? refusal.line;
+    for (const finding of findings) {
         const card = document.createElement("div");
-        card.className = "refusal";
+        card.className = "refusal" + (finding.kind === "law" ? " law" : "");
         const where = document.createElement("div");
         where.className = "where";
-        where.textContent = activeTab.file + " : " + shown;
+        where.textContent = finding.source
+            + (finding.rule ? " · " + finding.rule : "")
+            + (finding.shownLine ? " · " + activeTab.file + " : " + finding.shownLine : "");
         const what = document.createElement("div");
         what.className = "what";
-        what.textContent = refusal.premise;
+        what.textContent = finding.premise;
         card.append(where, what);
-        card.addEventListener("click", () => reveal(shown));
-        verdicts.append(card);
-    }
-    const spokenLines = new Set([...verdict.refusals, ...importRefusals].map((r) => r.line));
-    for (const objection of objections.filter((o) => !spokenLines.has(o.line))) {
-        const card = document.createElement("div");
-        card.className = "refusal law";
-        const where = document.createElement("div");
-        where.className = "where";
-        where.textContent = activeTab.file + " : " + objection.line + " · " + objection.rule;
-        const what = document.createElement("div");
-        what.className = "what";
-        what.textContent = objection.premise;
-        card.append(where, what);
-        card.addEventListener("click", () => reveal(objection.line));
-        verdicts.append(card);
-    }
-    for (const error of drawn.errors) {
-        const card = document.createElement("div");
-        card.className = "refusal";
-        const where = document.createElement("div");
-        where.className = "where";
-        const line = errorLine(error);
-        where.textContent = "the renderer" + (line ? " · " + activeTab.file + " : " + line : "");
-        const what = document.createElement("div");
-        what.className = "what";
-        what.textContent = error;
-        card.append(where, what);
-        if (line) card.addEventListener("click", () => reveal(line));
+        if (finding.shownLine) {
+            card.addEventListener("click", () => reveal(finding.shownLine));
+        }
         verdicts.append(card);
     }
 }
@@ -3486,7 +3465,9 @@ function render() {
 // refines the shown line by the names the premise itself carries
 function refineRefusalLine(premise, fallback) {
     const lines = fullText().split("\n");
-    const gate = premise.match(/requires (\w+)\.(\w+) == (\w+)/);
+    const halfGate = premise.match(/^(\w+) requires (\w+)\./);
+    const gate = premise.match(/requires (\w+)\.(\w+) == (\w+)/)
+        ?? (halfGate ? [null, halfGate[2], null, halfGate[1]] : null);
     if (gate) {
         const [, left, , right] = gate;
         const leftWord = new RegExp("\\b" + left + "\\b");
