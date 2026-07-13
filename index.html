@@ -3424,6 +3424,16 @@ function render() {
                     premise: "a body states no @StructureBuilder on the line above: the builder attribute is required" });
             }
         }
+        // an extension stands on a declared name: the judge port reads the extension
+        // either way, but Swift would refuse the orphan, so the page says it first
+        const extended = trimmed.match(/^(?:public\s+)?extension\s+([A-Za-z_]\w*)/);
+        if (extended && !verdict.parsed.declarations.has(extended[1])
+            && !verdict.parsed.topAliases.has(extended[1])) {
+            findings.push({ source: "the page", kind: "judge", counts: true,
+                shownLine: index + 1,
+                premise: "an extension names `" + extended[1]
+                    + "`, and this file declares no `" + extended[1] + "`" });
+        }
     });
     for (const error of drawn.errors) {
         findings.push({ source: "the renderer", kind: "judge", counts: true,
