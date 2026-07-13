@@ -100,7 +100,10 @@
     position: absolute; bottom: 0; left: 0; right: 0;
     padding: 5px 18px 5px 60px; font-size: 11.5px; color: var(--muted);
     background: var(--paper); border-top: 1px solid var(--line);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  #inspector-text {
+    display: block; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; padding-right: 130px;
   }
   #completion {
     display: none; position: absolute; z-index: 5; min-width: 15em;
@@ -235,7 +238,7 @@
     <pre id="highlight"></pre>
     <textarea id="editor" spellcheck="false"></textarea>
     <div id="gutter"><div id="gutter-inner"></div></div>
-    <div id="inspector"><span class="tag">inspect</span>caret on a name shows its meaning here · ⌥-click jumps to its declaration<span id="pager"><button id="page-prev">‹</button><span id="page-label"></span><button id="page-next">›</button></span></div>
+    <div id="inspector"><span id="inspector-text"><span class="tag">inspect</span>caret on a name shows its meaning here · ⌥-click jumps to its declaration</span><span id="pager"><button id="page-prev">‹</button><span id="page-label"></span><button id="page-next">›</button></span></div>
   </div>
   <div id="splitter" title="drag to resize the preview · double-click to reset"></div>
   <aside>
@@ -3899,13 +3902,14 @@ function fanIn(word) {
 }
 
 const inspector = document.getElementById("inspector");
+const inspectorText = document.getElementById("inspector-text");
 const inspectorIdle = '<span class="tag">inspect</span>'
     + "place the caret on a name and its meaning shows here · ⌥-click jumps to its declaration";
 function inspect() {
     try {
         inspectUnsafe();
     } catch (failure) {
-        inspector.innerHTML = inspectorIdle;
+        inspectorText.innerHTML = inspectorIdle;
     }
 }
 
@@ -3923,10 +3927,10 @@ function inspectUnsafe() {
         described = describe(subject);
     }
     if (!described) {
-        inspector.innerHTML = inspectorIdle;
+        inspectorText.innerHTML = inspectorIdle;
         return;
     }
-    inspector.innerHTML = '<span class="tag">inspect</span>' + described.text
+    inspectorText.innerHTML = '<span class="tag">inspect</span>' + described.text
         + (subject ? fanIn(subject) : "")
         + (described.line ? " · ⌥-click jumps" : "");
 }
