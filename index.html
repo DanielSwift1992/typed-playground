@@ -61,16 +61,16 @@
   #splitter:hover, #splitter.dragging { background: var(--action); opacity: 0.5; }
   #editor, #highlight {
     position: absolute; inset: 0; margin: 0; padding: 14px 18px 14px 60px;
-    font: 12.5px/1.5 ui-monospace, Menlo, monospace; white-space: pre;
+    font: 12.5px/19px ui-monospace, Menlo, monospace; white-space: pre;
   }
   #gutter {
     position: absolute; left: 0; top: 0; bottom: 0; width: 46px;
     overflow: hidden; background: var(--paper); border-right: 1px solid var(--line);
-    font: 11px/1.7045 ui-monospace, Menlo, monospace; color: rgba(0,0,0,0.30);
+    font: 11px/19px ui-monospace, Menlo, monospace; color: rgba(0,0,0,0.30);
     text-align: right; z-index: 1; pointer-events: none;
   }
   #gutter-inner { position: absolute; right: 8px; left: 0; }
-  #gutter-inner div { height: 18.75px; }
+  #gutter-inner div { height: 19px; }
   #gutter-inner .has-error { color: var(--refusal); font-weight: 700; }
   #gutter-inner .has-law { color: var(--law); font-weight: 700; }
   .line-note {
@@ -3257,7 +3257,7 @@ function syncPaint() {
 }
 
 const gutterInner = document.getElementById("gutter-inner");
-const editorLineHeight = 12.5 * 1.5;
+const editorLineHeight = 19;
 
 function syncGutter() {
     const total = editor.value.split("\n").length;
@@ -3534,7 +3534,7 @@ function reveal(line) {
     }
     editor.focus();
     editor.setSelectionRange(position, position + (lines[line - 1] ?? "").length);
-    editor.scrollTop = Math.max(0, (line - 6) * 12.5 * 1.5);
+    editor.scrollTop = Math.max(0, (line - 6) * editorLineHeight);
 }
 
 function insertText(text) {
@@ -3968,7 +3968,7 @@ let completionPrefixLength = 0;
 const measure = document.createElement("canvas").getContext("2d");
 measure.font = "12.5px ui-monospace, Menlo, monospace";
 const charWidth = measure.measureText("M").width;
-const lineHeight = 12.5 * 1.5;
+const lineHeight = 19;
 
 const keywordPool = ["public", "enum", "extension", "static", "var", "typealias",
     "import", "some", "protocol", "String"];
