@@ -84,7 +84,6 @@
     border: 0; outline: none; resize: none; overflow: auto;
     background: transparent; color: transparent; caret-color: var(--ink);
   }
-  #editor.plain { color: var(--text); }
   /* the token walk mirrors Xcode's Default (Light) preset: the file should read native */
   .tok-k { color: #9B2393; font-weight: 600; }
   .tok-s { color: #C41A16; }
@@ -3226,17 +3225,44 @@ function paint(text) {
 let lineNotes = new Map();
 let notesFresh = false;
 
+// a giant file keeps its highlight, but only the visible window of it: the
+// mirror holds ~60 painted lines between two spacers, rebuilt next frame
+let giantLines = null;
+let giantFrame = 0;
+function scheduleGiantPaint(dirty) {
+    if (dirty) giantLines = null;
+    if (giantFrame) return;
+    giantFrame = requestAnimationFrame(() => {
+        giantFrame = 0;
+        if (editor.value.length <= 300000) return;
+        if (!giantLines) giantLines = editor.value.split("\n");
+        const total = giantLines.length;
+        const first = Math.max(0, Math.floor(editor.scrollTop / editorLineHeight) - 5);
+        const visible = Math.ceil(editor.clientHeight / editorLineHeight) + 10;
+        const last = Math.min(total, first + visible);
+        const lines = paint(giantLines.slice(first, last).join("\n")).split("\n");
+        for (let i = 0; i < lines.length; i += 1) {
+            const entry = notesFresh ? lineNotes.get(first + i + 1) : undefined;
+            if (entry) {
+                lines[i] += '<span class="line-note' + (entry.kind === "law" ? " law" : "")
+                    + '">' + escapeMarkup(entry.note) + "</span>";
+            }
+        }
+        highlight.innerHTML = '<div style="height:' + (first * editorLineHeight) + 'px"></div>'
+            + lines.join("\n")
+            + '<div style="height:' + ((total - last) * editorLineHeight) + 'px"></div>';
+        highlight.scrollTop = editor.scrollTop;
+        highlight.scrollLeft = editor.scrollLeft;
+        syncGutter();
+    });
+}
+
 function syncPaint() {
     if (editor.value.length > 300000) {
-        // a five-megabyte mirror costs a full reflow per keystroke: the textarea
-        // paints its own text, plain, the mirror stays empty, and the gutter
-        // reads its scroll box next frame so no layout is forced mid-keystroke
-        editor.classList.add("plain");
-        highlight.textContent = "";
-        requestAnimationFrame(syncGutter);
+        scheduleGiantPaint(true);
         return;
     }
-    editor.classList.remove("plain");
+    giantLines = null;
     const lines = paint(editor.value).split("\n");
     for (const [line, entry] of notesFresh ? lineNotes : new Map()) {
         if (line - 1 < lines.length) {
@@ -3265,6 +3291,10 @@ function syncGutter() {
     gutterInner.innerHTML = rows.join("");
 }
 editor.addEventListener("scroll", () => {
+    if (editor.value.length > 300000) {
+        scheduleGiantPaint(false);
+        return;
+    }
     highlight.scrollTop = editor.scrollTop;
     highlight.scrollLeft = editor.scrollLeft;
     syncGutter();
@@ -3286,7 +3316,7 @@ let standingMarkup = "";
 function setCanvasMarkup(markup) {
     canvases.innerHTML = markup;
     for (const svg of canvases.querySelectorAll("svg")) {
-        svg.style.maxWidth = (svg.viewBox.baseVal.width * 1.5) + "px";
+        svg.style.maxWidth = Math.min(svg.viewBox.baseVal.width * 1.5, 960) + "px";
         // a page nicety, not a declaration: an accent bar inside a reveal grows
         // from half its stated width to the whole of it as it appears
         for (const cue of svg.querySelectorAll('g > set[attributeName="opacity"]')) {
@@ -3359,13 +3389,21 @@ function render() {
         }
     }
     const importRefusals = [];
-    editor.value.split("\n").forEach((line, index) => {
+    const allLines = editor.value.split("\n");
+    allLines.forEach((line, index) => {
         const trimmed = line.trim();
         if (trimmed.startsWith("import ")
             && trimmed !== "import VerificationIsIdentification"
             && trimmed !== "import DocumentKit") {
             importRefusals.push({ line: index + 1,
                 premise: "the imports are fixed: only VerificationIsIdentification and DocumentKit stand here" });
+        }
+        if (/^(public\s+)?static var body: some Structure/.test(trimmed)) {
+            const above = index > 0 ? allLines[index - 1].trim() : "";
+            if (above !== "@StructureBuilder") {
+                importRefusals.push({ line: index + 1,
+                    premise: "a body states no @StructureBuilder on the line above: the builder attribute is required" });
+            }
         }
     });
     for (const refusal of importRefusals) {
