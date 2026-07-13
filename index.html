@@ -26,6 +26,9 @@
     font: 15px/1.5 system-ui, sans-serif;
     display: flex; flex-direction: column; height: 100vh;
   }
+  /* a scroll that hits its edge stops there: no bounce, no spilling into the parent pane */
+  html, body { overscroll-behavior: none; }
+  .CodeMirror-scroll, #canvases, #verdicts, main { overscroll-behavior: none; }
   header { padding: 10px 20px 8px; border-bottom: 1px solid var(--line); background: var(--paper); flex: none; }
   #head-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; row-gap: 4px; }
   .grow { flex: 1; }
