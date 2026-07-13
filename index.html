@@ -10,6 +10,7 @@
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://danielswift1992.github.io/typed-playground/">
 <meta property="og:image" content="https://danielswift1992.github.io/typed-playground/screenshot.png">
+<link rel="stylesheet" href="codemirror.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
 <style>
   /* the palette mirrors Design.swift's walks: paper, mist, ink at two covers, accent, action, line */
@@ -59,43 +60,37 @@
     touch-action: none; background: transparent; z-index: 2;
   }
   #splitter:hover, #splitter.dragging { background: var(--action); opacity: 0.5; }
-  #editor, #highlight {
-    position: absolute; inset: 0; margin: 0; padding: 14px 18px 14px 60px;
-    font: 12.5px/19px ui-monospace, Menlo, monospace; white-space: pre;
+  #editor-host { position: absolute; inset: 0 0 28px 0; }
+  .CodeMirror {
+    height: 100%; background: var(--paper); color: var(--text);
+    font: 12.5px/19px ui-monospace, Menlo, monospace;
   }
-  #gutter {
-    position: absolute; left: 0; top: 0; bottom: 0; width: 46px;
-    overflow: hidden; background: var(--paper); border-right: 1px solid var(--line);
-    font: 11px/19px ui-monospace, Menlo, monospace; color: rgba(0,0,0,0.30);
-    text-align: right; z-index: 1; pointer-events: none;
-  }
-  #gutter-inner { position: absolute; right: 8px; left: 0; }
-  #gutter-inner div { height: 19px; }
-  #gutter-inner .has-error { color: var(--refusal); font-weight: 700; }
-  #gutter-inner .has-law { color: var(--law); font-weight: 700; }
-  .line-note {
-    margin-left: 28px; padding: 1px 8px; border-radius: 6px;
-    background: rgba(196,69,59,0.10); color: var(--refusal);
-    font-size: 11px; font-style: italic;
-  }
-  .line-note.law { background: rgba(178,80,0,0.10); color: var(--law); }
-  #highlight { overflow: hidden; pointer-events: none; color: var(--text); }
-  #editor {
-    border: 0; outline: none; resize: none; overflow: auto;
-    background: transparent; color: transparent; caret-color: var(--ink);
-  }
-  /* the token walk mirrors Xcode's Default (Light) preset: the file should read native */
-  .tok-k { color: #9B2393; font-weight: 600; }
-  .tok-s { color: #C41A16; }
-  .tok-c { color: #5D6C79; }
-  .tok-t { color: #0B4F79; font-weight: 600; }
-  .tok-a { color: #947100; }
-  .tok-d { color: #3900A0; }
-  .tok-g { color: rgba(0,0,0,0.34); }
-  .tok-bad {
+  .CodeMirror-scroll { padding-bottom: 120px; }
+  .CodeMirror-gutters { background: var(--paper); border-right: 1px solid var(--line); }
+  .CodeMirror-linenumber { color: rgba(0,0,0,0.30); font-size: 11px; }
+  .CodeMirror-cursor { border-left: 2px solid var(--ink); }
+  /* the token walk mirrors Xcode's Default (Light) preset */
+  .cm-keyword { color: #9B2393; font-weight: 600; }
+  .cm-string { color: #C41A16; }
+  .cm-comment { color: #5D6C79; }
+  .cm-attribute { color: #947100; }
+  .cm-localtype { color: #0B4F79; font-weight: 600; }
+  .cm-knownname { color: #3900A0; }
+  .cm-ghost { color: rgba(0,0,0,0.34); }
+  .cm-badname {
     color: var(--refusal); font-weight: 600;
     text-decoration: underline wavy var(--refusal) 1px; text-underline-offset: 3px;
   }
+  /* findings: a washed line, a colored number, a note under the line */
+  .line-flag-bad { background: rgba(196,69,59,0.06); }
+  .line-flag-law { background: rgba(178,80,0,0.06); }
+  .gutter-flag-bad .CodeMirror-linenumber { color: var(--refusal); font-weight: 700; }
+  .gutter-flag-law .CodeMirror-linenumber { color: var(--law); font-weight: 700; }
+  .flag-note {
+    padding: 2px 8px 3px 34px; font-size: 11px; font-style: italic;
+    color: var(--refusal); background: rgba(196,69,59,0.08);
+  }
+  .flag-note.law { color: var(--law); background: rgba(178,80,0,0.08); }
   #inspector {
     position: absolute; bottom: 0; left: 0; right: 0;
     padding: 5px 18px 5px 60px; font-size: 11.5px; color: var(--muted);
@@ -141,7 +136,6 @@
   }
   #inspector b { color: var(--ink); font-weight: 600; }
   #editor { padding-bottom: 120px; }
-  #highlight { padding-bottom: 120px; }
   #actions-row {
     display: flex; align-items: center; background: var(--paper);
     border-bottom: 1px solid var(--line); padding-right: 16px;
@@ -235,9 +229,7 @@
 
 <main>
   <div id="editor-wrap">
-    <pre id="highlight"></pre>
-    <textarea id="editor" spellcheck="false"></textarea>
-    <div id="gutter"><div id="gutter-inner"></div></div>
+    <div id="editor-host"></div>
     <div id="inspector"><span id="inspector-text"><span class="tag">inspect</span>caret on a name shows its meaning here · ⌥-click jumps to its declaration</span><span id="pager"><button id="page-prev">‹</button><span id="page-label"></span><button id="page-next">›</button></span></div>
   </div>
   <div id="splitter" title="drag to resize the preview · double-click to reset"></div>
@@ -282,6 +274,7 @@ window.addEventListener("error", (event) => {
         + " (" + (event.filename || "").split("/").pop() + ":" + event.lineno + ")";
 });
 </script>
+<script src="codemirror.js"></script>
 <script src="judge.js?v=7"></script>
 <script src="lint.js?v=3"></script>
 <script src="renderer.js?v=5"></script>
@@ -306,10 +299,13 @@ const storage = (() => {
              removeItem: (k) => backing.removeItem(k) };
 })();
 
-if (typeof judge === "undefined" || typeof renderAll === "undefined" || typeof lint === "undefined") {
+if (typeof judge === "undefined" || typeof renderAll === "undefined"
+    || typeof lint === "undefined" || typeof CodeMirror === "undefined") {
     const banner = document.getElementById("crash");
     banner.style.display = "block";
-    banner.textContent = "judge.js, lint.js, or renderer.js did not load: the page needs all four files in one folder";
+    banner.textContent = "a script did not load: the page needs its six files"
+        + " (index.html, judge.js, lint.js, renderer.js, codemirror.js, codemirror.css)"
+        + " in one folder";
 }
 
 // ── the kit vocabulary the judge tolerates on drawing tabs ──
@@ -3187,18 +3183,10 @@ const golden = {
     site:  [{ line: 69,  premise: "Person requires Site in workplace: Emp04.Site = Sales lands in department" }],
 };
 
-const editor = document.getElementById("editor");
-const highlight = document.getElementById("highlight");
-
 function escapeMarkup(text) {
     return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
         .replaceAll(">", "&gt;").replaceAll('"', "&quot;");
 }
-const tokenPattern = new RegExp(
-    '(&quot;.*?&quot;)|(//.*$)|(@[A-Za-z]+)'
-    + '|\\b(public|enum|extension|static|var|typealias|import|some|protocol|String)\\b'
-    + '|(\\.self\\b)|(&lt;|&gt;|,)'
-    + '|\\b([A-Z][A-Za-z0-9]*)\\b', "gm");
 
 // names that read as structure, painted plain: the coordinate keys and the modules
 const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "Size",
@@ -3224,66 +3212,85 @@ const fixedNames = new Set([
     ...shareHomes.keys(), ...gatePremises.keys(),
 ]);
 let knownNames = fixedNames;
-
-function paint(text) {
-    return escapeMarkup(text).replace(tokenPattern,
-        (match, str, comment, attribute, keyword, ritual, bracket) => {
-        if (str) return '<span class="tok-s">' + str + "</span>";
-        if (comment) return '<span class="tok-c">' + comment + "</span>";
-        if (attribute) return '<span class="tok-a">' + attribute + "</span>";
-        if (keyword) return '<span class="tok-k">' + keyword + "</span>";
-        if (ritual) return '<span class="tok-g">.</span><span class="tok-k">self</span>';
-        if (bracket) return '<span class="tok-g">' + bracket + "</span>";
-        if (quietNames.has(match)) return match;
-        if (localNames.has(match)) return '<span class="tok-t">' + match + "</span>";
-        if (knownNames.has(match)) return '<span class="tok-d">' + match + "</span>";
-        return '<span class="tok-bad">' + match + "</span>";
-    });
-}
 let lineNotes = new Map();
-let notesFresh = false;
+let paintedNameKey = "";
 
-function syncPaint() {
-    const lines = paint(editor.value).split("\n");
-    for (const [line, entry] of notesFresh ? lineNotes : new Map()) {
-        const local = line - pageStart();
-        if (local >= 1 && local - 1 < lines.length) {
-            lines[local - 1] += '<span class="line-note' + (entry.kind === "law" ? " law" : "")
-                + '">' + escapeMarkup(entry.note) + "</span>";
+// ── the editor: one CodeMirror instance, one DOM, no mirrors to drift ──
+
+CodeMirror.defineMode("playground-swift", () => ({
+    token: (stream) => {
+        if (stream.match("//")) { stream.skipToEnd(); return "comment"; }
+        if (stream.match('"')) {
+            while (!stream.eol()) { if (stream.next() === '"') break; }
+            return "string";
         }
-    }
-    highlight.innerHTML = lines.join("\n") + "\n";
-    syncGutter();
-}
+        if (stream.match(/^@[A-Za-z]+/)) return "attribute";
+        if (stream.match(/^[A-Za-z_][A-Za-z0-9_]*/)) {
+            const word = stream.current();
+            if (word === "self" || keywordSet.has(word)) return "keyword";
+            if (/^[A-Z]/.test(word)) {
+                if (quietNames.has(word)) return null;
+                if (localNames.has(word)) return "localtype";
+                if (knownNames.has(word)) return "knownname";
+                return "badname";
+            }
+            return null;
+        }
+        if (stream.match(/^[<>,.]/)) return "ghost";
+        stream.next();
+        return null;
+    },
+}));
 
-const gutterInner = document.getElementById("gutter-inner");
-const editorLineHeight = 19;
+const cm = CodeMirror(document.getElementById("editor-host"), {
+    value: "",
+    mode: "playground-swift",
+    lineNumbers: true,
+    indentUnit: 4,
+    viewportMargin: Infinity,
+    dragDrop: false,
+});
 
-function syncGutter() {
-    const total = editor.value.split("\n").length;
-    const first = Math.max(0, Math.floor(editor.scrollTop / editorLineHeight) - 5);
-    const visible = Math.ceil(editor.clientHeight / editorLineHeight) + 10;
-    const rows = [];
-    for (let line = first + 1; line <= Math.min(total, first + visible); line += 1) {
-        const globalLine = line + pageStart();
-        const entry = notesFresh ? lineNotes.get(globalLine) : undefined;
-        rows.push('<div class="' + (entry ? (entry.kind === "law" ? "has-law" : "has-error") : "")
-            + '">' + globalLine + "</div>");
+// the old three-layer editor spoke DOM: this shim keeps every reader honest
+const editor = {
+    get value() { return cm.getValue(); },
+    set value(next) { cm.setValue(next); },
+    get selectionStart() { return cm.indexFromPos(cm.getCursor("from")); },
+    get selectionEnd() { return cm.indexFromPos(cm.getCursor("to")); },
+    setSelectionRange(from, to) {
+        cm.setSelection(cm.posFromIndex(from), cm.posFromIndex(to));
+    },
+    focus() { cm.focus(); },
+    get scrollTop() { return cm.getScrollInfo().top; },
+    set scrollTop(top) { cm.scrollTo(null, top); },
+};
+
+// findings are physical marks: cleared on any edit, applied after a verdict
+let flagged = [];
+function clearFlags() {
+    for (const flag of flagged) {
+        cm.removeLineClass(flag.handle, "background", flag.back);
+        cm.removeLineClass(flag.handle, "gutter", flag.gutter);
+        flag.widget.clear();
     }
-    gutterInner.style.top = (14 + first * editorLineHeight - editor.scrollTop) + "px";
-    gutterInner.innerHTML = rows.join("");
+    flagged = [];
 }
-editor.addEventListener("scroll", () => {
-    highlight.scrollTop = editor.scrollTop;
-    highlight.scrollLeft = editor.scrollLeft;
-    syncGutter();
-});
-// cmd-F finds text in the mirror and scrolls it: the editor follows the mirror
-// the same way the mirror follows the editor, so the two can never drift apart
-highlight.addEventListener("scroll", () => {
-    if (editor.scrollTop !== highlight.scrollTop) editor.scrollTop = highlight.scrollTop;
-    if (editor.scrollLeft !== highlight.scrollLeft) editor.scrollLeft = highlight.scrollLeft;
-});
+function applyFlags() {
+    clearFlags();
+    for (const [globalLine, entry] of lineNotes) {
+        const local = globalLine - pageStart() - 1;
+        if (local < 0 || local >= cm.lineCount()) continue;
+        const back = entry.kind === "law" ? "line-flag-law" : "line-flag-bad";
+        const gutter = entry.kind === "law" ? "gutter-flag-law" : "gutter-flag-bad";
+        const handle = cm.addLineClass(local, "background", back);
+        cm.addLineClass(local, "gutter", gutter);
+        const note = document.createElement("div");
+        note.className = "flag-note" + (entry.kind === "law" ? " law" : "");
+        note.textContent = entry.note;
+        const widget = cm.addLineWidget(local, note);
+        flagged.push({ handle, back, gutter, widget });
+    }
+}
 const status = document.getElementById("status");
 const verdicts = document.getElementById("verdicts");
 const canvases = document.getElementById("canvases");
@@ -3368,6 +3375,13 @@ function render() {
         }
         knownNames = new Set([...fixedNames, ...localNames]);
         completionPool = [...localNames, ...keywordPool, ...fixedNames];
+        // the mode reads these sets lazily, but CodeMirror caches painted tokens:
+        // when the file's names change, ask for one fresh tokenization pass
+        const nameKey = [...localNames].sort().join(" ");
+        if (nameKey !== paintedNameKey) {
+            paintedNameKey = nameKey;
+            cm.setOption("mode", "playground-swift");
+        }
         drawn = renderAll(verdict.parsed.declarations, verdict.parsed.order,
             verdict.parsed.literals, verdict.parsed.topAliases);
     } catch (failure) {
@@ -3424,8 +3438,7 @@ function render() {
             lineNotes.set(finding.shownLine, { note: finding.premise, kind: finding.kind });
         }
     }
-    notesFresh = true;
-    syncPaint();
+    applyFlags();
     const brokenCount = findings.filter((finding) => finding.counts).length;
     const lawCount = findings.length - brokenCount;
     const broke = brokenCount > 0;
@@ -3543,22 +3556,15 @@ function reveal(line) {
         gotoPage(Math.floor((line - 1) / pageLines));
         line -= pageStart();
     }
-    const lines = editor.value.split("\n");
-    let position = 0;
-    for (let index = 0; index < line - 1 && index < lines.length; index += 1) {
-        position += lines[index].length + 1;
-    }
-    editor.focus();
-    editor.setSelectionRange(position, position + (lines[line - 1] ?? "").length);
-    editor.scrollTop = Math.max(0, (line - 6) * editorLineHeight);
+    const local = Math.max(0, Math.min(line - 1, cm.lineCount() - 1));
+    cm.focus();
+    cm.setSelection({ line: local, ch: 0 }, { line: local, ch: cm.getLine(local).length });
+    cm.scrollIntoView({ line: local, ch: 0 }, 120);
 }
 
 function insertText(text) {
-    editor.focus();
-    if (!document.execCommand("insertText", false, text)) {
-        editor.setRangeText(text, editor.selectionStart, editor.selectionEnd, "end");
-        editor.dispatchEvent(new Event("input"));
-    }
+    cm.focus();
+    cm.replaceSelection(text);
 }
 
 // replaces the whole text by touching only the span that differs, through the undo stack
@@ -3594,15 +3600,15 @@ function loadFile(next, page) {
         bigDoc = null;
         editor.value = next;
     }
-    editor.scrollTop = 0;
-    editor.scrollLeft = 0;
+    cm.clearHistory();
+    cm.scrollTo(0, 0);
     syncPager();
 }
 
 function gotoPage(page) {
     if (!bigDoc || page === bigDoc.page) return;
     loadFile(fullText(), page);
-    syncPaint();
+    applyFlags();
 }
 
 function syncPager() {
@@ -3619,7 +3625,8 @@ function syncPager() {
 // a button does not edit: it refreshes the state to a known file, whole and at once
 function setEditorFile(next) {
     loadFile(next, 0);
-    editor.dispatchEvent(new Event("input"));
+    hideCompletion();
+    render();
 }
 
 function plantLie(name) {
@@ -3735,7 +3742,6 @@ function selectTab(tab) {
     loadFile(storage.getItem(storageKey(tab))
         ?? tab.text ?? (tab.text = makeBigCompany(12800)), 0);
     renderActions(tab);
-    syncPaint();
     render();
 }
 
@@ -3901,6 +3907,7 @@ function describe(word) {
         return { text: "<b>" + word + "</b> : " + kitReadings.get(word) };
     }
     if (knownNames.has(word)) return { text: "<b>" + word + "</b> : a dictionary name" };
+    if (keywordSet.has(word)) return { text: "<b>" + word + "</b> : a Swift keyword" };
     return { text: "<b>" + word + "</b> resolves to nothing", bad: true };
 }
 
@@ -3961,16 +3968,15 @@ function scheduleInspect() {
         inspect();
     });
 }
-editor.addEventListener("keyup", scheduleInspect);
-editor.addEventListener("click", (event) => {
-    hideCompletion();
-    if (event.altKey) {
-        const described = describePath(pathAt(editor.selectionStart), editor.selectionStart)
-            ?? describe(wordAt(editor.selectionStart));
-        if (described && described.line) reveal(described.line);
-        return;
+cm.on("cursorActivity", scheduleInspect);
+cm.on("mousedown", (instance, event) => {
+    if (!event.altKey) return;
+    const at = cm.indexFromPos(cm.coordsChar({ left: event.clientX, top: event.clientY }, "window"));
+    const described = describePath(pathAt(at), at) ?? describe(wordAt(at));
+    if (described && described.line) {
+        event.preventDefault();
+        reveal(described.line);
     }
-    inspect();
 });
 
 // ── completion: names the dictionaries answer for, offered as you type ──
@@ -3981,13 +3987,10 @@ let completionItems = [];
 let completionChosen = 0;
 let completionPrefixLength = 0;
 
-const measure = document.createElement("canvas").getContext("2d");
-measure.font = "12.5px ui-monospace, Menlo, monospace";
-const charWidth = measure.measureText("M").width;
-const lineHeight = 19;
 
 const keywordPool = ["public", "enum", "extension", "static", "var", "typealias",
     "import", "some", "protocol", "String"];
+const keywordSet = new Set(keywordPool);
 
 function completionKind(name) {
     if (name === "self" || keywordPool.includes(name)) return "keyword";
@@ -4002,7 +4005,6 @@ function completionKind(name) {
 }
 
 // a popup that lost its editor is stale: the row's own mousedown prevents this blur
-editor.addEventListener("blur", () => hideCompletion());
 
 function hideCompletion() {
     completion.style.display = "none";
@@ -4050,10 +4052,10 @@ function presentCompletion(start, items, prefixLength) {
     completionItems = items.slice(0, 8);
     completionPrefixLength = prefixLength;
     completionChosen = 0;
-    const lines = editor.value.slice(0, start).split("\n");
-    completion.style.left = Math.min(lines[lines.length - 1].length * charWidth + 60
-        - editor.scrollLeft, 560) + "px";
-    completion.style.top = (lines.length * lineHeight + 12 - editor.scrollTop) + "px";
+    const caret = cm.cursorCoords(true, "page");
+    const wrapRect = document.getElementById("editor-wrap").getBoundingClientRect();
+    completion.style.left = Math.min(Math.max(caret.left - wrapRect.left, 8), 560) + "px";
+    completion.style.top = (caret.bottom - wrapRect.top + 4) + "px";
     completion.style.display = "block";
     drawCompletion();
 }
@@ -4138,106 +4140,97 @@ function offerCompletion() {
     presentCompletion(start, completionItems, prefix.length);
 }
 
-editor.addEventListener("keydown", (event) => {
-    if (completionItems.length === 0) {
-        if (event.key === "Enter") {
-            const at = editor.selectionStart;
-            const lineStart = editor.value.lastIndexOf("\n", at - 1) + 1;
-            const head = editor.value.slice(lineStart, at);
-            const indent = head.match(/^[ ]*/)[0] + (/\{\s*$/.test(head) ? "    " : "");
-            event.preventDefault();
-            insertText("\n" + indent);
-            return;
-        }
-        if (event.key === "Tab") {
-            event.preventDefault();
-            insertText("    ");
-            return;
-        }
-        if (event.key === "{" || event.key === '"') {
-            const at = editor.selectionStart;
-            if (at === editor.selectionEnd) {
-                event.preventDefault();
-                insertText(event.key === "{" ? "{}" : '""');
-                editor.setSelectionRange(at + 1, at + 1);
-                return;
-            }
-        }
-        if (event.key === "}" || event.key === '"') {
-            const at = editor.selectionStart;
-            if (editor.value[at] === event.key && at === editor.selectionEnd) {
-                event.preventDefault();
-                editor.setSelectionRange(at + 1, at + 1);
-                return;
-            }
-        }
-        if (event.key === "/" && (event.metaKey || event.ctrlKey)) {
-            event.preventDefault();
-            const text = editor.value;
-            const from = text.lastIndexOf("\n", editor.selectionStart - 1) + 1;
-            let to = text.indexOf("\n", editor.selectionEnd);
-            if (to < 0) to = text.length;
-            const block = text.slice(from, to);
-            const lines = block.split("\n");
-            const allCommented = lines.every((line) =>
-                line.trim() === "" || line.trimStart().startsWith("//"));
-            const toggled = lines.map((line) => {
-                if (line.trim() === "") return line;
-                if (allCommented) return line.replace(/^([ ]*)\/\/[ ]?/, "$1");
-                return line.replace(/^([ ]*)/, "$1// ");
-            }).join("\n");
-            editor.setSelectionRange(from, to);
-            insertText(toggled);
-            return;
-        }
+cm.on("blur", () => setTimeout(hideCompletion, 150));
+
+function stepOverOr(character) {
+    const at = editor.selectionStart;
+    if (editor.value[at] === character && at === editor.selectionEnd) {
+        editor.setSelectionRange(at + 1, at + 1);
         return;
     }
-    if (event.key === "ArrowLeft" || event.key === "ArrowRight"
-        || event.key === "Home" || event.key === "End") {
-        hideCompletion();
-        return;
-    }
-    if (event.key === "ArrowDown") {
-        completionChosen = (completionChosen + 1) % completionItems.length;
-        drawCompletion();
-        event.preventDefault();
-        return;
-    }
-    if (event.key === "ArrowUp") {
+    if (character === "}") return CodeMirror.Pass;
+    const start = at;
+    insertText(character + character);
+    editor.setSelectionRange(start + 1, start + 1);
+}
+
+cm.setOption("extraKeys", {
+    Tab: () => {
+        if (completionItems.length > 0) {
+            acceptCompletion(completionItems[completionChosen]);
+            return;
+        }
+        insertText("    ");
+    },
+    Enter: () => {
+        if (completionItems.length > 0) {
+            acceptCompletion(completionItems[completionChosen]);
+            return;
+        }
+        const at = editor.selectionStart;
+        const lineStart = editor.value.lastIndexOf("\n", at - 1) + 1;
+        const head = editor.value.slice(lineStart, at);
+        const indent = head.match(/^[ ]*/)[0] + (/\{\s*$/.test(head) ? "    " : "");
+        insertText("\n" + indent);
+    },
+    Up: () => {
+        if (completionItems.length === 0) return CodeMirror.Pass;
         completionChosen = (completionChosen + completionItems.length - 1) % completionItems.length;
         drawCompletion();
-        event.preventDefault();
-        return;
-    }
-    if (event.key === "Tab" || event.key === "Enter") {
-        acceptCompletion(completionItems[completionChosen]);
-        event.preventDefault();
-        return;
-    }
-    if (event.key === "Escape") hideCompletion();
+    },
+    Down: () => {
+        if (completionItems.length === 0) return CodeMirror.Pass;
+        completionChosen = (completionChosen + 1) % completionItems.length;
+        drawCompletion();
+    },
+    Esc: () => {
+        if (completionItems.length === 0) return CodeMirror.Pass;
+        hideCompletion();
+    },
+    Left: () => { hideCompletion(); return CodeMirror.Pass; },
+    Right: () => { hideCompletion(); return CodeMirror.Pass; },
+    "'{'": () => {
+        const at = editor.selectionStart;
+        if (at !== editor.selectionEnd) return CodeMirror.Pass;
+        insertText("{}");
+        editor.setSelectionRange(at + 1, at + 1);
+    },
+    "'}'": () => stepOverOr("}"),
+    "'\"'": () => stepOverOr('"'),
+    "Cmd-/": () => toggleComment(),
+    "Ctrl-/": () => toggleComment(),
 });
-editor.addEventListener("blur", () => setTimeout(hideCompletion, 150));
+
+function toggleComment() {
+    const text = editor.value;
+    const from = text.lastIndexOf("\n", editor.selectionStart - 1) + 1;
+    let to = text.indexOf("\n", editor.selectionEnd);
+    if (to < 0) to = text.length;
+    const block = text.slice(from, to);
+    const lines = block.split("\n");
+    const allCommented = lines.every((line) =>
+        line.trim() === "" || line.trimStart().startsWith("//"));
+    const toggled = lines.map((line) => {
+        if (line.trim() === "") return line;
+        if (allCommented) return line.replace(/^([ ]*)\/\/[ ]?/, "$1");
+        return line.replace(/^([ ]*)/, "$1// ");
+    }).join("\n");
+    editor.setSelectionRange(from, to);
+    insertText(toggled);
+}
 
 let pending = null;
-editor.addEventListener("input", (event) => {
-    notesFresh = false;
-    syncPaint();
-    const typing = (event.inputType || "").startsWith("insertText")
-        || event.inputType === "insertCompositionText";
-    if (typing) offerCompletion();
+cm.on("change", (instance, change) => {
+    if (change.origin === "setValue") return;
+    clearFlags();
+    if (change.origin === "+input") offerCompletion();
     else hideCompletion();
-    requestAnimationFrame(() => {
-        highlight.scrollTop = editor.scrollTop;
-        highlight.scrollLeft = editor.scrollLeft;
-        syncGutter();
-    });
     clearTimeout(pending);
     pending = setTimeout(() => {
         if (fullText().length < 1000000) storage.setItem(storageKey(activeTab), fullText());
         render();
     }, bigDoc ? 350 : 120);
 });
-window.addEventListener("resize", syncGutter);
 
 // ── the splitter: the preview width is an input you hold in your hand ──
 const splitter = document.getElementById("splitter");

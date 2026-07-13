@@ -2,14 +2,16 @@
 
 Swift types on the left, the page they draw on the right. A checker built on one
 dictionary pass, the judge, names every broken claim as you type, and every declared
-canvas draws itself: one static page, no build, no server, no dependencies. `judge.js`
+canvas draws itself: one static page, no build, no server. The one vendored library is
+CodeMirror 5 (`codemirror.js`, MIT), the editor pane; everything else is hand-written.
+`judge.js`
 is a line-for-line port of the Swift judge in the theory's repository, and the badge in
 the corner re-runs four recorded verdicts against the port on every load
 (`node check.js` runs the same four in CI).
 
 Live: <https://danielswift1992.github.io/typed-playground/>, or open `index.html` from a
-checkout: the page needs all four files (`index.html`, `judge.js`, `lint.js`,
-`renderer.js`) in one folder.
+checkout: the page needs its six files (`index.html`, `judge.js`, `lint.js`,
+`renderer.js`, `codemirror.js`, `codemirror.css`) in one folder.
 
 ![The playground: the organization world, judged and drawn](screenshot.png)
 
