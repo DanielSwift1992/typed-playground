@@ -1071,9 +1071,9 @@ public enum OrganizationArt: GrownDiagram {
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
         Fixed<HeaderTall, SpanHosted<HeaderRow>>.self
-        Banded<KpiTall, SpanHosted<FrozenReveal<Tally<Never>, KpiBand>>>.self
-        Banded<ChipTall, SpanHosted<FrozenReveal<Tally<Half<Half<U1>>>, ChipsBand>>>.self
-        Banded<FootTall, SpanHosted<FrozenReveal<Tally<Half<U1>>, FootRow>>>.self
+        Banded<KpiTall, SpanHosted<KpiBand>>.self
+        Banded<ChipTall, SpanHosted<ChipsBand>>.self
+        Banded<FootTall, SpanHosted<FootRow>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -1448,9 +1448,12 @@ extension IntroAlt {
     public static var typeName: String { "The page's own manual: what it is, the measured curve, what to try." }
 }
 
+// ── the cascade: every band enters on a Beat, an eighth of a second ──
+
 // ── the geometry, stated as counts. A bar's width is its seconds: 34, 82, 199.
 // The judge's bars share one width, a hair: the exact seconds stand in the label. ──
 
+public typealias Beat = Half<Half<Half<U1>>>
 public typealias HeadTall = Plus<U32, U8>
 public typealias LineTall = Plus<U16, U4>
 public typealias CompareTall = Plus<U64, Plus<U32, U16>>
@@ -2069,46 +2072,46 @@ public enum IntroArt: GrownDiagram {
         Air<EdgeMargin>.self
         Fixed<HeadTall, SpanHosted<TitleRow>>.self
         Fixed<LineTall, SpanHosted<LineOneRow>>.self
-        Fixed<LineTall, SpanHosted<LineTwoRow>>.self
-        Fixed<LineTall, SpanHosted<LineThreeRow>>.self
-        Fixed<LineTall, SpanHosted<LineFourRow>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Beat>, LineTwoRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Twice<Beat>>, LineThreeRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Times<Plus<U2, U1>, Beat>>, LineFourRow>>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<RowTall, SpanHosted<CurveHeadRow>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<U4, Beat>>, CurveHeadRow>>>.self
         Air<U8>.self
-        Fixed<LegendTall, SpanHosted<LegendRow>>.self
+        Fixed<LegendTall, SpanHosted<FrozenReveal<Tally<Times<U4, Beat>>, LegendRow>>>.self
         Air<U16>.self
-        Fixed<RowTall, SpanHosted<Build3200Row>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<Plus<U4, U1>, Beat>>, Build3200Row>>>.self
         Air<U4>.self
-        Fixed<RowTall, SpanHosted<Judge3200Row>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<Plus<U4, U1>, Beat>>, Judge3200Row>>>.self
         Air<U8>.self
-        Fixed<RowTall, SpanHosted<Build6400Row>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<Plus<U4, U2>, Beat>>, Build6400Row>>>.self
         Air<U4>.self
-        Fixed<RowTall, SpanHosted<Judge6400Row>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<Plus<U4, U2>, Beat>>, Judge6400Row>>>.self
         Air<U8>.self
-        Fixed<RowTall, SpanHosted<Build12800Row>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<Plus<U4, Plus<U2, U1>>, Beat>>, Build12800Row>>>.self
         Air<U4>.self
-        Fixed<RowTall, SpanHosted<Judge12800Row>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<Plus<U4, Plus<U2, U1>>, Beat>>, Judge12800Row>>>.self
         Air<U8>.self
-        Fixed<LegendTall, SpanHosted<MoralRow>>.self
+        Fixed<LegendTall, SpanHosted<FrozenReveal<Tally<U1>, MoralRow>>>.self
         Air<U4>.self
-        Fixed<LineTall, SpanHosted<CurveNoteOneRow>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<U1>, CurveNoteOneRow>>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<RowTall, SpanHosted<ExplainHeadRow>>.self
-        Fixed<LineTall, SpanHosted<ExplainOneRow>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Beat>>, ExplainHeadRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Beat>>, ExplainOneRow>>>.self
         Air<U8>.self
-        Fixed<CompareTall, SpanHosted<CompareBand>>.self
+        Fixed<CompareTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Beat>>, CompareBand>>>.self
         Air<Plus<U8, U4>>.self
-        Fixed<LineTall, SpanHosted<ExplainThreeRow>>.self
-        Fixed<LineTall, SpanHosted<ExplainFourRow>>.self
-        Fixed<LineTall, SpanHosted<ExplainFiveRow>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Twice<Beat>>>, ExplainThreeRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Twice<Beat>>>, ExplainFourRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Twice<Beat>>>, ExplainFiveRow>>>.self
         Air<U8>.self
-        Fixed<LineTall, SpanHosted<ExplainSixRow>>.self
-        Fixed<LineTall, SpanHosted<ExplainSevenRow>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Twice<Beat>>>, ExplainSixRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Twice<Beat>>>, ExplainSevenRow>>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<LineTall, SpanHosted<TryOneRow>>.self
-        Fixed<LineTall, SpanHosted<TryOneTailRow>>.self
-        Fixed<LineTall, SpanHosted<TryTwoRow>>.self
-        Fixed<LineTall, SpanHosted<TryThreeRow>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, TryOneRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, TryOneTailRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, TryTwoRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, TryThreeRow>>>.self
         Air<EdgeMargin>.self
     }
 }
