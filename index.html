@@ -3294,6 +3294,7 @@ for (let index = localStorage.length - 1; index >= 0; index -= 1) {
 
 let lastParsed = null;
 let lastReads = null;
+let completionPool = [];
 const lastGood = new Map();
 let standingMarkup = "";
 
@@ -3346,8 +3347,10 @@ function renderFailed(failure) {
 function render() {
     let verdict;
     let drawn;
+    const full = fullText();
+    const allLines = full.split("\n");
     try {
-        verdict = judge(activeTab.file, fullText(), kitVocabulary);
+        verdict = judge(activeTab.file, full, kitVocabulary);
         lastParsed = verdict.parsed;
         localNames = new Set([...verdict.parsed.declarations.keys(),
             ...verdict.parsed.topAliases.keys(), ...verdict.parsed.literals.keys()]);
@@ -3355,6 +3358,7 @@ function render() {
             for (const parameter of alias.params ?? []) localNames.add(parameter);
         }
         knownNames = new Set([...fixedNames, ...localNames]);
+        completionPool = [...localNames, ...keywordPool, ...fixedNames];
         drawn = renderAll(verdict.parsed.declarations, verdict.parsed.order,
             verdict.parsed.literals, verdict.parsed.topAliases);
     } catch (failure) {
@@ -3372,10 +3376,9 @@ function render() {
     const findings = [];
     for (const refusal of verdict.refusals) {
         findings.push({ source: "the judge", kind: "judge", counts: true,
-            shownLine: refineRefusalLine(refusal.premise, refusal.line),
+            shownLine: refineRefusalLine(refusal.premise, refusal.line, allLines),
             premise: refusal.premise });
     }
-    const allLines = fullText().split("\n");
     allLines.forEach((line, index) => {
         const trimmed = line.trim();
         if (trimmed.startsWith("import ")
@@ -3399,7 +3402,7 @@ function render() {
             shownLine: errorLine(error), premise: error });
     }
     const spoken = new Set(findings.map((finding) => finding.shownLine).filter(Boolean));
-    const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, fullText());
+    const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, full);
     for (const objection of objections.filter((o) => !spoken.has(o.line))) {
         findings.push({ source: "the law", kind: "law", counts: false,
             shownLine: objection.line, premise: objection.premise, rule: objection.rule });
@@ -3473,8 +3476,8 @@ function render() {
 // the judge pins a gate refusal to the line its buffer drained on, one entry
 // late (the Swift judge does the same, and the golden vectors seal it): the page
 // refines the shown line by the names the premise itself carries
-function refineRefusalLine(premise, fallback) {
-    const lines = fullText().split("\n");
+function refineRefusalLine(premise, fallback, lines) {
+    lines = lines ?? fullText().split("\n");
     const halfGate = premise.match(/^(\w+) requires (\w+)\./);
     const gate = premise.match(/requires (\w+)\.(\w+) == (\w+)/)
         ?? (halfGate ? [null, halfGate[2], null, halfGate[1]] : null);
@@ -3927,7 +3930,18 @@ function inspectUnsafe() {
         + (subject ? fanIn(subject) : "")
         + (described.line ? " · ⌥-click jumps" : "");
 }
-editor.addEventListener("keyup", inspect);
+let inspectFrame = 0;
+let inspectedAt = -1;
+function scheduleInspect() {
+    if (inspectFrame) return;
+    inspectFrame = requestAnimationFrame(() => {
+        inspectFrame = 0;
+        if (editor.selectionStart === inspectedAt) return;
+        inspectedAt = editor.selectionStart;
+        inspect();
+    });
+}
+editor.addEventListener("keyup", scheduleInspect);
 editor.addEventListener("click", (event) => {
     hideCompletion();
     if (event.altKey) {
@@ -4089,7 +4103,7 @@ function offerCompletion() {
         hideCompletion();
         return;
     }
-    const pool = [...localNames, ...keywordPool, ...fixedNames];
+    const pool = completionPool;
     const seen = new Set();
     const lowered = prefix.toLowerCase();
     completionItems = [];
