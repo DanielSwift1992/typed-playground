@@ -3281,6 +3281,25 @@ function setCanvasMarkup(markup) {
     canvases.innerHTML = markup;
     for (const svg of canvases.querySelectorAll("svg")) {
         svg.style.maxWidth = (svg.viewBox.baseVal.width * 1.5) + "px";
+        // a page nicety, not a declaration: an accent bar inside a reveal grows
+        // from half its stated width to the whole of it as it appears
+        for (const cue of svg.querySelectorAll('g > set[attributeName="opacity"]')) {
+            const begin = cue.getAttribute("begin");
+            for (const bar of cue.parentElement.querySelectorAll("rect")) {
+                const accent = (bar.getAttribute("fill") || "").includes("--vi-accent");
+                const width = Number(bar.getAttribute("width"));
+                const height = Number(bar.getAttribute("height"));
+                if (!accent || !width || height > 32) continue;
+                const grow = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+                grow.setAttribute("attributeName", "width");
+                grow.setAttribute("from", String(width / 2));
+                grow.setAttribute("to", String(width));
+                grow.setAttribute("begin", begin);
+                grow.setAttribute("dur", "0.35s");
+                grow.setAttribute("fill", "freeze");
+                bar.append(grow);
+            }
+        }
     }
 }
 
