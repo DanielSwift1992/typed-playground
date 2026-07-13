@@ -3278,6 +3278,12 @@ editor.addEventListener("scroll", () => {
     highlight.scrollLeft = editor.scrollLeft;
     syncGutter();
 });
+// cmd-F finds text in the mirror and scrolls it: the editor follows the mirror
+// the same way the mirror follows the editor, so the two can never drift apart
+highlight.addEventListener("scroll", () => {
+    if (editor.scrollTop !== highlight.scrollTop) editor.scrollTop = highlight.scrollTop;
+    if (editor.scrollLeft !== highlight.scrollLeft) editor.scrollLeft = highlight.scrollLeft;
+});
 const status = document.getElementById("status");
 const verdicts = document.getElementById("verdicts");
 const canvases = document.getElementById("canvases");
@@ -3402,7 +3408,7 @@ function render() {
     });
     for (const error of drawn.errors) {
         findings.push({ source: "the renderer", kind: "judge", counts: true,
-            shownLine: errorLine(error), premise: error });
+            shownLine: errorLine(error, allLines), premise: error });
     }
     const spoken = new Set(findings.map((finding) => finding.shownLine).filter(Boolean));
     const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, full);
@@ -3512,14 +3518,24 @@ function refineRefusalLine(premise, fallback, lines) {
 }
 
 // a renderer message names the declaration it stumbled on: that name has a line
-function errorLine(message) {
+function errorLine(message, lines) {
     if (!lastParsed) return null;
     const quoted = message.match(/`([A-Za-z_][A-Za-z0-9_.]*)`/);
     const leading = message.match(/^([A-Z][A-Za-z0-9]*)\b/);
     const name = (quoted && quoted[1]) || (leading && leading[1]);
     if (!name) return null;
-    const declaration = lastParsed.declarations.get(name);
-    return declaration ? declaration.line : null;
+    const carrier = lastParsed.declarations.get(name)
+        ?? lastParsed.topAliases.get(name)
+        ?? lastParsed.literals.get(name);
+    if (carrier && carrier.line) return carrier.line;
+    // the name is missing from the dictionary (that is the complaint): point at
+    // its first appearance in the text, usually the line that broke it
+    const word = new RegExp("\\b" + name + "\\b");
+    const haystack = lines ?? fullText().split("\n");
+    for (let index = 0; index < haystack.length; index += 1) {
+        if (word.test(haystack[index])) return index + 1;
+    }
+    return null;
 }
 
 function reveal(line) {
