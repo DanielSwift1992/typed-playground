@@ -273,10 +273,14 @@
 
 <script>
 window.addEventListener("error", (event) => {
+    if (window.scriptsMissing) return; // the six-files banner already names the cause
     const banner = document.getElementById("crash");
     banner.style.display = "block";
+    // a data: document carries the whole page in its own address: never print that
+    const source = (event.filename || "").startsWith("data:") ? "inline"
+        : (event.filename || "").split("/").pop().slice(0, 80);
     banner.textContent = "the page hit an error: " + event.message
-        + " (" + (event.filename || "").split("/").pop() + ":" + event.lineno + ")";
+        + " (" + source + ":" + event.lineno + ")";
 });
 </script>
 <script src="codemirror.js"></script>
@@ -306,11 +310,15 @@ const storage = (() => {
 
 if (typeof judge === "undefined" || typeof renderAll === "undefined"
     || typeof lint === "undefined" || typeof CodeMirror === "undefined") {
+    window.scriptsMissing = true;
     const banner = document.getElementById("crash");
     banner.style.display = "block";
     banner.textContent = "a script did not load: the page needs its six files"
         + " (index.html, judge.js, lint.js, renderer.js, codemirror.js, codemirror.css)"
         + " in one folder";
+    // nothing below can run without the engines: stop here so no stray error
+    // overwrites the one banner that names the cause
+    throw new Error("the engine files did not load");
 }
 
 // ── the kit vocabulary the judge tolerates on drawing tabs ──
