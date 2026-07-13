@@ -84,6 +84,7 @@
     border: 0; outline: none; resize: none; overflow: auto;
     background: transparent; color: transparent; caret-color: var(--ink);
   }
+  #editor.plain { color: var(--text); }
   /* the token walk mirrors Xcode's Default (Light) preset: the file should read native */
   .tok-k { color: #9B2393; font-weight: 600; }
   .tok-s { color: #C41A16; }
@@ -3227,10 +3228,15 @@ let notesFresh = false;
 
 function syncPaint() {
     if (editor.value.length > 300000) {
-        highlight.textContent = editor.value + "\n";
-        syncGutter();
+        // a five-megabyte mirror costs a full reflow per keystroke: the textarea
+        // paints its own text, plain, the mirror stays empty, and the gutter
+        // reads its scroll box next frame so no layout is forced mid-keystroke
+        editor.classList.add("plain");
+        highlight.textContent = "";
+        requestAnimationFrame(syncGutter);
         return;
     }
+    editor.classList.remove("plain");
     const lines = paint(editor.value).split("\n");
     for (const [line, entry] of notesFresh ? lineNotes : new Map()) {
         if (line - 1 < lines.length) {
@@ -3620,7 +3626,7 @@ function selectTab(tab) {
         button.className = button.dataset.id === tab.id ? "active" : "";
     }
     editor.value = storage.getItem(storageKey(tab))
-        ?? tab.text ?? (tab.text = makeBigCompany(200));
+        ?? tab.text ?? (tab.text = makeBigCompany(12800));
     editor.scrollTop = 0;
     editor.scrollLeft = 0;
     renderActions(tab);
@@ -3969,6 +3975,10 @@ function settleOwner(path, position) {
 function offerCompletion() {
     const at = editor.selectionStart;
     const text = editor.value;
+    if (text.length > 300000) {
+        hideCompletion();
+        return;
+    }
     let start = at;
     while (start > 0 && /[A-Za-z0-9_]/.test(text[start - 1])) start -= 1;
     const prefix = text.slice(start, at);
@@ -4098,7 +4108,6 @@ editor.addEventListener("blur", () => setTimeout(hideCompletion, 150));
 let pending = null;
 editor.addEventListener("input", (event) => {
     notesFresh = false;
-    if (editor.value.length < 1000000) storage.setItem(storageKey(activeTab), editor.value);
     syncPaint();
     const typing = (event.inputType || "").startsWith("insertText")
         || event.inputType === "insertCompositionText";
@@ -4110,7 +4119,10 @@ editor.addEventListener("input", (event) => {
         syncGutter();
     });
     clearTimeout(pending);
-    pending = setTimeout(render, editor.value.length > 1000000 ? 350 : 120);
+    pending = setTimeout(() => {
+        if (editor.value.length < 1000000) storage.setItem(storageKey(activeTab), editor.value);
+        render();
+    }, editor.value.length > 1000000 ? 350 : 120);
 });
 window.addEventListener("resize", syncGutter);
 
