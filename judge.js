@@ -155,7 +155,7 @@ function parse(file, text, declarations, order, refusals, extras) {
             continue;
         }
         if (extras && (line.startsWith("extension ") || line.startsWith("public extension "))
-            && line.endsWith("{}")) {
+            && /\{\s*\}$/.test(line)) {
             continue;
         }
 
@@ -178,8 +178,8 @@ function parse(file, text, declarations, order, refusals, extras) {
 
         if (line.startsWith("public enum ") || line.startsWith("enum ")) {
             const afterKeyword = line.replaceAll("public enum ", "").replaceAll("enum ", "");
-            const selfClosed = afterKeyword.endsWith("{}");
-            const head = afterKeyword.replaceAll(" {}", "").replaceAll(" {", "");
+            const selfClosed = /\{\s*\}$/.test(afterKeyword);
+            const head = afterKeyword.replace(/\s*\{\s*\}$/, "").replace(/\s*\{$/, "");
             const colon = head.indexOf(":");
             const name = (colon >= 0 ? head.slice(0, colon) : head).trim();
             let conformances = [];
@@ -236,6 +236,13 @@ function parse(file, text, declarations, order, refusals, extras) {
                 } else {
                     extras.topAliases.set(bare, { target, line: number, params });
                 }
+            } else if (equals < 0) {
+                const generic = body.indexOf("<");
+                const bare = (generic >= 0 ? body.slice(0, generic) : body).trim();
+                refusals.push({ file, line: number,
+                    premise: bare === ""
+                        ? "a typealias states no target yet: an alias reads `name = target`"
+                        : "`" + bare + "` states no target yet: an alias reads `name = target`" });
             } else {
                 refusals.push({ file, line: number,
                     premise: "a typealias stands outside every declaration" });
@@ -273,7 +280,7 @@ function isSeed(name) {
 }
 
 function slotKey(owner, key) {
-    return owner + " " + key;
+    return owner + "\u0000" + key;
 }
 
 function recordReader(values, name, slot) {

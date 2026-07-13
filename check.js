@@ -70,6 +70,6 @@ for (const name of ["cross", "rank", "site"]) {
     }
 }
 
-console.log("against the Swift judge: " + passed + "/" + total);
+console.log("self-test: " + passed + "/" + total + " vs the reference judge");
 for (const line of failures) console.error("  " + line);
 process.exit(passed === total ? 0 : 1);

@@ -16,8 +16,8 @@
   :root {
     --paper: #FFFFFF; --mist: #F6F7F8; --ink: #1C1C1E;
     --text: rgba(0,0,0,0.80); --muted: rgba(0,0,0,0.54);
-    --accent: #FFDD2D; --action: #336FEE; --line: #EAECEE;
-    --refusal: #C4453B;
+    --accent: #FFDD2D; --action: #007AFF; --line: #EAECEE;
+    --refusal: #C4453B; --law: #B25000; --ok: #248A3D;
   }
   * { box-sizing: border-box; margin: 0; }
   body {
@@ -36,10 +36,10 @@
   }
   #head-row button:hover, #head-row a:hover { border-color: var(--action); color: var(--action); }
   header .badge {
-    font-size: 12px; padding: 3px 10px; border-radius: 10px;
-    background: var(--mist); border: 1px solid var(--line); color: var(--muted);
+    font-size: 11px; padding: 2px 8px; border-radius: 9px;
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
   }
-  header .badge.ok { background: var(--accent); color: var(--ink); border-color: var(--accent); }
+  header .badge.ok { color: var(--ok); }
   header .badge.bad { background: var(--refusal); color: var(--paper); border-color: var(--refusal); }
   header p { font-size: 13px; color: var(--muted); margin-top: 2px; max-width: 76em; }
   nav { padding: 8px 20px; background: var(--paper); border-bottom: 1px solid var(--line); }
@@ -51,9 +51,14 @@
   nav button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
   main { flex: 1; display: flex; min-height: 0; }
   #editor-wrap {
-    flex: 1.1; position: relative; background: var(--paper);
+    flex: 0 0 clamp(360px, 50%, 900px); position: relative; background: var(--paper);
     border-right: 1px solid var(--line);
   }
+  #splitter {
+    flex: none; width: 6px; margin-left: -6px; cursor: col-resize;
+    touch-action: none; background: transparent; z-index: 2;
+  }
+  #splitter:hover, #splitter.dragging { background: var(--action); opacity: 0.5; }
   #editor, #highlight {
     position: absolute; inset: 0; margin: 0; padding: 14px 18px 14px 60px;
     font: 12.5px/1.5 ui-monospace, Menlo, monospace; white-space: pre;
@@ -67,22 +72,25 @@
   #gutter-inner { position: absolute; right: 8px; left: 0; }
   #gutter-inner div { height: 18.75px; }
   #gutter-inner .has-error { color: var(--refusal); font-weight: 700; }
+  #gutter-inner .has-law { color: var(--law); font-weight: 700; }
   .line-note {
     margin-left: 28px; padding: 1px 8px; border-radius: 6px;
     background: rgba(196,69,59,0.10); color: var(--refusal);
     font-size: 11px; font-style: italic;
   }
+  .line-note.law { background: rgba(178,80,0,0.10); color: var(--law); }
   #highlight { overflow: hidden; pointer-events: none; color: var(--text); }
   #editor {
     border: 0; outline: none; resize: none; overflow: auto;
     background: transparent; color: transparent; caret-color: var(--ink);
   }
-  .tok-k { color: var(--action); }
-  .tok-s { color: #B25000; }
-  .tok-c { color: var(--muted); font-style: italic; }
-  .tok-t { color: var(--ink); font-weight: 600; }
-  .tok-a { color: var(--muted); }
-  .tok-d { color: #6B4FBB; }
+  /* the token walk mirrors Xcode's Default (Light) preset: the file should read native */
+  .tok-k { color: #9B2393; font-weight: 600; }
+  .tok-s { color: #C41A16; }
+  .tok-c { color: #5D6C79; }
+  .tok-t { color: #0B4F79; font-weight: 600; }
+  .tok-a { color: #947100; }
+  .tok-d { color: #3900A0; }
   .tok-g { color: rgba(0,0,0,0.34); }
   .tok-bad {
     color: var(--refusal); font-weight: 600;
@@ -121,10 +129,19 @@
   #inspector b { color: var(--ink); font-weight: 600; }
   #editor { padding-bottom: 40px; }
   #highlight { padding-bottom: 40px; }
+  #actions-row {
+    display: flex; align-items: center; background: var(--paper);
+    border-bottom: 1px solid var(--line); padding-right: 16px;
+  }
   #actions {
-    padding: 8px 16px; background: var(--paper); border-bottom: 1px solid var(--line);
+    padding: 8px 16px; flex: 1;
     display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
   }
+  #actions-row > button {
+    font: 12.5px system-ui, sans-serif; padding: 4px 11px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer;
+  }
+  #actions-row > button:hover { border-color: var(--action); color: var(--action); }
   #actions .caption {
     font-size: 11px; color: var(--muted); margin-right: 8px;
     text-transform: uppercase; letter-spacing: 0.05em;
@@ -134,7 +151,8 @@
     border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer;
   }
   #actions button:hover { border-color: var(--action); color: var(--action); }
-  #actions button.loud { background: var(--accent); border-color: var(--accent); }
+  #actions button.loud { background: rgba(0,122,255,0.12); border-color: transparent; color: var(--action); font-weight: 600; }
+  #actions button.loud:hover { background: rgba(0,122,255,0.2); color: var(--action); }
   #canvases.dark {
     background: #101012;
     --vi-surface-card: #1C1C1E; --vi-surface-track: rgba(255,255,255,0.15);
@@ -142,15 +160,19 @@
     --vi-accent: #FFDD2D; --vi-action: #4972CF; --vi-line: rgba(255,255,255,0.15);
     --vi-on-accent: #1C1C1E; --vi-on-action: #FFFFFF;
   }
-  aside { flex: 1; display: flex; flex-direction: column; min-width: 26em; }
-  #canvases { padding: 16px; overflow: auto; background: var(--mist); }
+  aside { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #canvases { padding: 16px; overflow: auto; background: var(--mist); flex: 1; min-height: 0;
+    display: flex; flex-direction: column; justify-content: safe center; }
   #canvases.stale svg { opacity: 0.4; filter: saturate(0.4); }
-  #canvases svg { width: 100%; height: auto; display: block; margin-bottom: 12px; }
+  #canvases svg { width: 100%; height: auto; display: block; margin: 0 auto 12px; flex: none; }
+  #canvases a { cursor: pointer; }
+  #canvases a:hover { opacity: 0.8; }
   #verdict-panel { border-top: 1px solid var(--line); background: var(--paper); }
   #verdict-head { display: flex; align-items: center; gap: 10px; padding: 9px 16px 7px; }
   .chip { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 9px; }
-  .chip.ok { background: var(--accent); color: var(--ink); }
+  .chip.ok { background: rgba(36,138,61,0.12); color: var(--ok); }
   .chip.bad { background: var(--refusal); color: #FFFFFF; }
+  .chip.law { background: rgba(178,80,0,0.12); color: var(--law); }
   #status { font-size: 12px; color: var(--muted); }
   #status b { color: var(--ink); font-weight: 600; }
   #verdicts { max-height: 30vh; overflow: auto; padding: 0 12px 4px; }
@@ -160,6 +182,7 @@
     margin-bottom: 6px; font-size: 12.5px; cursor: pointer;
   }
   .refusal:hover { border-color: var(--action); }
+  .refusal.law { border-left-color: var(--law); }
   .refusal .where { color: var(--muted); font-size: 11.5px; }
   .refusal .what { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
   #controls { padding: 8px 12px; border-top: 1px solid var(--line); background: var(--paper); }
@@ -170,50 +193,17 @@
     color: var(--ink); cursor: pointer;
   }
   #controls button:hover { border-color: var(--action); color: var(--action); }
-  #controls button.primary { background: var(--accent); border-color: var(--accent); color: var(--ink); }
+  #controls button.primary { background: rgba(0,122,255,0.12); border-color: transparent; color: var(--action); font-weight: 600; }
+  #controls button.primary:hover { background: rgba(0,122,255,0.2); color: var(--action); }
   footer { padding: 7px 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); background: var(--paper); flex: none; }
   footer code { font-family: ui-monospace, Menlo, monospace; }
   footer a { color: var(--action); text-decoration: none; }
   footer a:hover { text-decoration: underline; }
-  #fragment-panel {
-    position: fixed; top: 0; right: -30em; width: 27em; height: 100%;
-    background: var(--paper); border-left: 1px solid var(--line);
-    transition: right 200ms ease; z-index: 10; display: flex; flex-direction: column;
-  }
-  #fragment-panel.open { right: 0; box-shadow: -12px 0 30px rgba(0,0,0,0.08); }
-  #fragment-head {
-    display: flex; align-items: center; gap: 8px; padding: 12px 16px;
-    border-bottom: 1px solid var(--line); color: var(--ink);
-  }
-  #fragment-head button {
-    font: 12px system-ui, sans-serif; padding: 3px 10px; border-radius: 8px;
-    border: 1px solid var(--line); background: var(--mist); cursor: pointer;
-  }
-  #fragment-body { overflow: auto; padding: 6px 16px 20px; font-size: 12.5px; }
-  #fragment-body h4 {
-    margin: 14px 0 6px; font-size: 11px; color: var(--muted);
-    text-transform: uppercase; letter-spacing: 0.06em;
-  }
-  #fragment-body code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
-  #fragment-body .row { padding: 3px 0; border-bottom: 1px solid var(--line); }
-  #fragment-body .row b { color: var(--ink); font-weight: 600; }
-  #fragment-body .muted { color: var(--muted); }
-  .panel-intro { font-size: 12px; color: var(--muted); margin: 10px 0 2px; }
-  #fragment-body .sub {
-    margin: 10px 0 4px; font-size: 11.5px; color: var(--muted); font-style: italic;
-  }
-  .chips { display: flex; flex-wrap: wrap; gap: 4px; }
-  .chip-name {
-    font: 11px ui-monospace, Menlo, monospace; padding: 2px 8px;
-    border: 1px solid var(--line); border-radius: 7px; background: var(--mist);
-    color: var(--ink);
-  }
-  .chip-name.people { background: var(--paper); }
-  .refusal .why { float: right; color: var(--action); font-size: 11px; }
   @media (max-width: 900px) {
     main { flex-direction: column; overflow-y: auto; }
-    aside { order: -1; min-width: 0; flex: none; }
-    #editor-wrap { flex: none; height: 42vh; border-right: 0; border-top: 1px solid var(--line); }
+    aside { order: -1; flex: none; }
+    #editor-wrap { flex: none !important; height: 42vh; border-right: 0; border-top: 1px solid var(--line); }
+    #splitter { display: none; }
   }
 </style>
 </head>
@@ -223,14 +213,9 @@
   <div id="head-row">
     <h1>The playground</h1>
     <span class="grow"></span>
-    <button id="fragment-button">Rules</button>
-    <button id="theme">Dark</button>
     <a id="repo-link" href="https://github.com/DanielSwift1992/typed-playground" target="_blank" rel="noopener">GitHub ↗</a>
-    <span class="badge" id="selfcheck">self-check…</span>
+    <span class="badge" id="selfcheck" title="the reference judge is a Swift program in the theory's repository, not the compiler: four of its recorded verdicts re-run here on every load, and 4/4 means this JavaScript port matches it">self-test…</span>
   </div>
-  <p>You edit Swift types. Nothing of yours runs: a judge proves every claim and the canvas
-  draws the page from the same types, on each keystroke, at any size. The language is a small
-  subset of Swift, and Rules shows all of it.</p>
 </header>
 
 <nav id="tabs"></nav>
@@ -240,16 +225,20 @@
     <pre id="highlight"></pre>
     <textarea id="editor" spellcheck="false"></textarea>
     <div id="gutter"><div id="gutter-inner"></div></div>
-    <div id="inspector"><span class="tag">inspect</span>place the caret on a name: its meaning shows here · ⌥-click jumps to the declaration</div>
+    <div id="inspector"><span class="tag">inspect</span>caret on a name shows its meaning here · ⌥-click jumps to its declaration</div>
   </div>
+  <div id="splitter" title="drag to resize the preview · double-click to reset"></div>
   <aside>
-    <div id="actions"></div>
+    <div id="actions-row">
+      <div id="actions"></div>
+      <button id="theme" title="the canvases redraw in the dark palette">Dark canvas</button>
+    </div>
     <div id="canvases"></div>
     <div id="verdict-panel">
       <div id="verdict-head">
         <span id="verdict-chip" class="chip">…</span>
         <span class="grow"></span>
-        <span id="status"></span>
+        <span id="status" title="one pass: declarations read into the dictionary, references answered by lookup, premises checked, wall time"></span>
       </div>
       <div id="verdicts"></div>
     </div>
@@ -262,22 +251,14 @@
 </main>
 
 <footer>
-  Every tab is a real Swift file. The company reads back through
-  <code>swift run Tools judge Company.swift</code>, the drawings through <code>swift build</code>
-  against DocumentKit: the arbiter you already trust. ·
+  Every tab is a real Swift file: Download it, and the theory's repository checks the same
+  file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
+  for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
 
-<div id="fragment-panel">
-  <div id="fragment-head">
-    <b>The rules of this small language</b>
-    <span class="grow"></span>
-    <button id="fragment-close">close</button>
-  </div>
-  <div id="fragment-body"></div>
-</div>
 
 <script>
 window.addEventListener("error", (event) => {
@@ -287,7 +268,8 @@ window.addEventListener("error", (event) => {
         + " (" + (event.filename || "").split("/").pop() + ":" + event.lineno + ")";
 });
 </script>
-<script src="judge.js?v=5"></script>
+<script src="judge.js?v=7"></script>
+<script src="lint.js?v=3"></script>
 <script src="renderer.js?v=5"></script>
 <script>
 "use strict";
@@ -310,10 +292,10 @@ const storage = (() => {
              removeItem: (k) => backing.removeItem(k) };
 })();
 
-if (typeof judge === "undefined" || typeof renderAll === "undefined") {
+if (typeof judge === "undefined" || typeof renderAll === "undefined" || typeof lint === "undefined") {
     const banner = document.getElementById("crash");
     banner.style.display = "block";
-    banner.textContent = "judge.js or renderer.js did not load: open the whole playground folder, the three files travel together";
+    banner.textContent = "judge.js, lint.js, or renderer.js did not load: the page needs all four files in one folder";
 }
 
 // ── the kit vocabulary the judge tolerates on drawing tabs ──
@@ -331,69 +313,30 @@ const kitVocabulary = {
     bareSeeds: new Set(["RestAir"]),
 };
 
-const plateFile = `import DocumentKit
+const basicsFile = `import DocumentKit
 
-// One plate. The vertical axis divides the page, the horizontal divides the row,
-// and no one states the frame: the canvas grows to what its members take.
+// Layout as a story, four steps down one canvas: a row that divides a width,
+// a row of three equal shares, a band with a breathing dot, and a three-frame
+// film. Change any count below: the page redraws it on the keystroke.
 
+// ── the display strings ──
+
+public enum BasicsTitle: Close {}
+extension BasicsTitle {
+    public static var typeName: String { "Layout, in four steps" }
+}
+public enum StepOneWord: Close {}
+extension StepOneWord {
+    public static var typeName: String { "A row divides a stated width: a margin, a middle that stretches, a margin." }
+}
 public enum Greeting: Close {}
 extension Greeting {
     public static var typeName: String { "Hello, layout" }
 }
-public enum PlateAlt: Close {}
-extension PlateAlt {
-    public static var typeName: String { "A greeting centered on one outlined plate." }
+public enum StepTwoWord: Close {}
+extension StepTwoWord {
+    public static var typeName: String { "Three Flexible members split one row: equal shares, one accented." }
 }
-// the plate's height, stated once as a count: the slot takes it, the face reads it
-public typealias PlateTall = Plus<U64, U8>
-
-public enum PlateFace: SpanTrackOutlined {
-    public typealias H = Tally<PlateTall>
-    public typealias Radius = R12
-    public typealias Fill = SurfaceCard
-    public typealias Stroke = LineRole
-}
-public enum PlateWord: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, TextL>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TextL
-    public typealias Weight = WeightBold
-    public typealias Content = Greeting
-}
-public enum PlateRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<EdgeMargin>.self
-        Flexible<Layered<PlateFace, PlateWord>>.self
-        Air<EdgeMargin>.self
-    }
-}
-public enum PlateArt: GrownDiagram {
-    public typealias Across = WideSurface
-    public typealias AriaLabel = PlateAlt
-    @StructureBuilder
-    public static var body: some Structure & DividesY {
-        Air<EdgeMargin>.self
-        Fixed<PlateTall, SpanHosted<PlateRow>>.self
-        Air<EdgeMargin>.self
-    }
-}
-`;
-
-const cardsFile = `import DocumentKit
-
-// Three cards share one row by flexible shares, and a breathing footer sits in its
-// own slot beneath: both axes divide, the frame derives, the dots run on SVG's clock.
-
-public enum CardsAlt: Close {}
-extension CardsAlt {
-    public static var typeName: String { "Three cards and a breathing dotted footer." }
-}
-
-// the two heights, stated once each: slots take them, faces read them
-public typealias CardTall = Plus<U64, U8>
-public typealias DotsTall = Plus<U8, U4>
 public enum PlansWord: Close {}
 extension PlansWord {
     public static var typeName: String { "Plans" }
@@ -406,16 +349,104 @@ public enum ProofsWord: Close {}
 extension ProofsWord {
     public static var typeName: String { "Proofs" }
 }
+public enum StepThreeWord: Close {}
+extension StepThreeWord {
+    public static var typeName: String { "A band below takes its own height, and a dot can breathe on SVG's clock." }
+}
+public enum StepFourWord: Close {}
+extension StepFourWord {
+    public static var typeName: String { "Animation is data too: a reveal states the second its content appears." }
+}
+public enum StepFourNote: Close {}
+extension StepFourNote {
+    public static var typeName: String { "Change Tally U2 to Tally U4 below: the second word waits four seconds." }
+}
+public enum WroteWord: Close {}
+extension WroteWord {
+    public static var typeName: String { "Wrote." }
+}
+public enum CheckedWord: Close {}
+extension CheckedWord {
+    public static var typeName: String { "Checked." }
+}
+public enum ProvedWord: Close {}
+extension ProvedWord {
+    public static var typeName: String { "Proved." }
+}
+public enum FinalWord: Close {}
+extension FinalWord {
+    public static var typeName: String { "No frame is written: the canvas height is the sum of these bands." }
+}
+public enum BasicsAlt: Close {}
+extension BasicsAlt {
+    public static var typeName: String { "Four layout steps: a banner, three cards, breathing dots, a three-frame film." }
+}
 
-public enum QuietFace: SpanTrack {
+// ── the heights, stated once each: the slots take them, the faces read them ──
+
+public typealias TitleTall = Plus<U32, U8>
+public typealias LineTall = Plus<U16, U4>
+public typealias BannerTall = Plus<U32, Plus<U16, U8>>
+public typealias CardTall = U64
+public typealias DotsTall = Plus<U16, U8>
+public typealias StageTall = Plus<U64, U8>
+
+public enum BannerFace: SpanTrackOutlined {
+    public typealias H = Tally<BannerTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum QuietCard: SpanTrackOutlined {
     public typealias H = Tally<CardTall>
     public typealias Radius = R12
-    public typealias Fill = SurfaceTrack
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
 }
-public enum HeroFace: SpanTrack {
+public enum HeroCard: SpanTrack {
     public typealias H = Tally<CardTall>
     public typealias Radius = R12
     public typealias Fill = AccentRole
+}
+public enum StageFace: SpanTrackOutlined {
+    public typealias H = Tally<StageTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum FooterDot: SpanBreathingDot {
+    public typealias CY = Halfway<DotsTall, Never>
+    public typealias R = Tally<U4>
+    public typealias Fill = ActionRole
+}
+
+public enum TitleLabel: SpanLabel {
+    public typealias Y = Under<U8, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = BasicsTitle
+}
+public enum StepOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = StepOneWord
+}
+public enum GreetingLabel: SpanLabelMid {
+    public typealias Y = Under<Plus<U16, U4>, TextL>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextL
+    public typealias Weight = WeightBold
+    public typealias Content = Greeting
+}
+public enum StepTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = StepTwoWord
 }
 public enum PlansLabel: SpanLabelMid {
     public typealias Y = Under<Plus<U16, U8>, TextM>
@@ -438,105 +469,147 @@ public enum ProofsLabel: SpanLabelMid {
     public typealias Weight = WeightRegular
     public typealias Content = ProofsWord
 }
-public enum FooterDot: SpanBreathingDot {
-    public typealias CY = Halfway<DotsTall, Never>
-    public typealias R = Tally<U4>
-    public typealias Fill = ActionRole
+public enum StepThreeLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = StepThreeWord
 }
-
-public enum CardsRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<EdgeMargin>.self
-        Flexible<Layered<QuietFace, PlansLabel>>.self
-        Air<EdgeMargin>.self
-        Flexible<Layered<HeroFace, BuildsLabel>>.self
-        Air<EdgeMargin>.self
-        Flexible<Layered<QuietFace, ProofsLabel>>.self
-        Air<EdgeMargin>.self
-    }
+public enum StepFourLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = StepFourWord
 }
-public enum DotsRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<Times<U64, U4>>.self
-        Flexible<FooterDot>.self
-        Flexible<FooterDot>.self
-        Flexible<FooterDot>.self
-        Air<Times<U64, U4>>.self
-    }
-}
-public enum CardsArt: GrownDiagram {
-    public typealias Across = WideSurface
-    public typealias AriaLabel = CardsAlt
-    @StructureBuilder
-    public static var body: some Structure & DividesY {
-        Air<EdgeMargin>.self
-        Fixed<CardTall, SpanHosted<CardsRow>>.self
-        Air<U16>.self
-        Fixed<DotsTall, SpanHosted<DotsRow>>.self
-        Air<EdgeMargin>.self
-    }
-}
-`;
-
-const filmFile = `import DocumentKit
-
-// A film of pure statics: frames reveal on SVG's own clock, and the last one stays.
-// Edit a cue or a word and the film replays — the schedule is data, not code.
-
-public enum FilmAlt: Close {}
-extension FilmAlt {
-    public static var typeName: String { "Three words take the stage in turn, and the last one stays." }
-}
-public enum WroteWord: Close {}
-extension WroteWord {
-    public static var typeName: String { "Wrote." }
-}
-public enum CheckedWord: Close {}
-extension CheckedWord {
-    public static var typeName: String { "Checked." }
-}
-public enum ProvedWord: Close {}
-extension ProvedWord {
-    public static var typeName: String { "Proved." }
-}
-
-// the stage's height, stated once: the slot takes it, the face reads it
-public typealias StageTall = Plus<U64, Plus<U16, U8>>
-
-public enum StageFace: SpanTrackOutlined {
-    public typealias H = Tally<StageTall>
-    public typealias Radius = R12
-    public typealias Fill = SurfaceCard
-    public typealias Stroke = LineRole
+public enum StepFourNoteLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = StepFourNote
 }
 public enum WroteLabel: SpanLabelMid {
-    public typealias Y = Under<U32, TitleT>
+    public typealias Y = Under<Plus<U16, U8>, TextL>
     public typealias FillColor = TextSecondary
-    public typealias Size = TitleT
+    public typealias Size = TextL
     public typealias Weight = WeightRegular
     public typealias Content = WroteWord
 }
 public enum CheckedLabel: SpanLabelMid {
-    public typealias Y = Under<U32, TitleT>
+    public typealias Y = Under<Plus<U16, U8>, TextL>
     public typealias FillColor = ActionRole
-    public typealias Size = TitleT
+    public typealias Size = TextL
     public typealias Weight = WeightBold
     public typealias Content = CheckedWord
 }
 public enum ProvedLabel: SpanLabelMid {
-    public typealias Y = Under<U32, TitleT>
+    public typealias Y = Under<Plus<U16, U8>, TextL>
     public typealias FillColor = TextPrimary
-    public typealias Size = TitleT
+    public typealias Size = TextL
     public typealias Weight = WeightBold
     public typealias Content = ProvedWord
 }
+public enum FinalLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FinalWord
+}
 
+// ── the rows: a text line, then the example it explains, and so on down ──
+
+public enum TitleRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TitleLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum StepOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<StepOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum BannerRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<BannerFace, GreetingLabel>>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum StepTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<StepTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum CardsRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<QuietCard, PlansLabel>>.self
+        Air<U8>.self
+        Flexible<Layered<HeroCard, BuildsLabel>>.self
+        Air<U8>.self
+        Flexible<Layered<QuietCard, ProofsLabel>>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum StepThreeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<StepThreeLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum DotsRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<Plus<U128, U64>>.self
+        Flexible<FooterDot>.self
+        Flexible<FooterDot>.self
+        Flexible<FooterDot>.self
+        Air<Plus<U128, U64>>.self
+    }
+}
+public enum StepFourRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<StepFourLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum StepFourNoteRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<StepFourNoteLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
 public enum StageRow: HFlow {
-    public typealias Given = WideSurface
+    public typealias Given = U512
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
@@ -545,7 +618,7 @@ public enum StageRow: HFlow {
     }
 }
 public enum WroteRow: HFlow {
-    public typealias Given = WideSurface
+    public typealias Given = U512
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
@@ -554,7 +627,7 @@ public enum WroteRow: HFlow {
     }
 }
 public enum CheckedRow: HFlow {
-    public typealias Given = WideSurface
+    public typealias Given = U512
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
@@ -563,7 +636,7 @@ public enum CheckedRow: HFlow {
     }
 }
 public enum ProvedRow: HFlow {
-    public typealias Given = WideSurface
+    public typealias Given = U512
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
@@ -571,7 +644,7 @@ public enum ProvedRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
-
+// the schedule: the first word at 0 s for 2 s, the second at 2 s, the third stays
 public enum FilmContent: Group {
     @StructureBuilder
     public static var body: some Structure {
@@ -581,13 +654,42 @@ public enum FilmContent: Group {
         FrozenReveal<Tally<U4>, ProvedRow>.self
     }
 }
-public enum FilmArt: GrownDiagram {
-    public typealias Across = WideSurface
-    public typealias AriaLabel = FilmAlt
+public enum FinalRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<FinalLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+public enum BasicsArt: GrownDiagram {
+    public typealias Across = U512
+    public typealias AriaLabel = BasicsAlt
     @StructureBuilder
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
+        Fixed<TitleTall, SpanHosted<TitleRow>>.self
+        Air<U8>.self
+        Fixed<LineTall, SpanHosted<StepOneRow>>.self
+        Air<U8>.self
+        Fixed<BannerTall, SpanHosted<BannerRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<LineTall, SpanHosted<StepTwoRow>>.self
+        Air<U8>.self
+        Fixed<CardTall, SpanHosted<CardsRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<LineTall, SpanHosted<StepThreeRow>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<DotsTall, SpanHosted<DotsRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<LineTall, SpanHosted<StepFourRow>>.self
+        Fixed<LineTall, SpanHosted<StepFourNoteRow>>.self
+        Air<U8>.self
         Fixed<StageTall, SpanHosted<FilmContent>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<LineTall, SpanHosted<FinalRow>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -712,12 +814,12 @@ public enum AllAccesses: AccessLedger {
 const organizationFile = `import VerificationIsIdentification
 import DocumentKit
 
-// The organization, as one page: the roster below is the data, the bands above are the
-// view, and every number on a card is a Tally read off the roster itself. Add a person
-// to Company and the People card follows. The bands reveal on the SVG clock, the status
-// dot breathes, and the last chip is a live link into the real company's site.
+// The organization as one page. The company declared at the bottom is the data, the
+// bands above it are the view, and every number on a card is a Tally: a count read
+// off the company itself. Add a person to Company and the People card follows.
+// The bands appear on a timed schedule, and the last chip links to the real site.
 
-// ── the words this page wears ──
+// ── the display strings: every text on the page is a type carrying typeName ──
 
 public enum OrganizationTitle: Close {}
 extension OrganizationTitle {
@@ -749,28 +851,27 @@ extension WalkWord {
 }
 public enum FootWord: Close {}
 extension FootWord {
-    public static var typeName: String { "drawn from the roster below: add a person to Company and the numbers follow" }
+    public static var typeName: String { "drawn from the company in the editor: add a person, the numbers follow" }
 }
 public enum OrganizationAlt: Close {}
 extension OrganizationAlt {
-    public static var typeName: String { "The organization's page: counted cards, department chips, a live link." }
+    public static var typeName: String { "The organization's page: counted cards and a live link." }
 }
 public enum SitePage: Close {}
 extension SitePage {
     public static var typeName: String { "https://danielswift1992.github.io/verification-is-identification/documentation/organization" }
 }
 
-// ── the heights, each stated once: the slot takes it, the face reads it.
-// Every baseline below derives from these rungs and a text size (Under), every
-// midpoint from the counts themselves (Halfway): no placement digit is stated.
-// The page's rhythm is also stated once: a band is its breath and its slot, one member. ──
+// ── the heights, stated once as counts. Baselines derive from a pad and a text
+// size (Under), midpoints from the counts (Halfway): no pixel coordinate appears
+// in this file. Banded<Tall, Content> is one page band: air above a fixed slot. ──
 
 public typealias Banded<Tall: Structure, Content: Spanning> =
     Paired<Air<Breath>, Fixed<Tall, Content>>
 
 public typealias HeaderTall = Plus<U32, U8>
 public typealias KpiTall = Plus<U64, U32>
-public typealias ChipTall = Plus<U32, Plus<U16, U8>>
+public typealias ChipTall = U64
 public typealias FootTall = Plus<U16, U8>
 
 // ── the header: a breathing status, the name, the claim ──
@@ -806,7 +907,7 @@ public enum HeaderRow: HFlow {
     }
 }
 
-// ── the cards: every number is a Tally over the roster ──
+// ── the cards: every number is a Tally, counted off the company below ──
 
 public enum HeroFace: SpanHeroFace {
     public typealias H = Tally<KpiTall>
@@ -819,120 +920,125 @@ public enum QuietFace: SpanTrackOutlined {
     public typealias Fill = SurfaceCard
     public typealias Stroke = LineRole
 }
-public enum PeopleNumber: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, DisplayS>
+public enum PeopleNumber: SpanLabel {
+    public typealias Y = Under<Plus<U32, U8>, DisplayS>
     public typealias FillColor = OnAccent
     public typealias Size = DisplayS
     public typealias Weight = WeightBold
     public typealias Content = Tally<Company>
 }
-public enum PeopleCaption: SpanLabelMid {
-    public typealias Y = Under<U64, TextXS>
+public enum PeopleCaption: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextXS>
     public typealias FillColor = OnAccent
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
     public typealias Content = PeopleWord
 }
-public enum AccessNumber: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, DisplayS>
+public enum AccessNumber: SpanLabel {
+    public typealias Y = Under<Plus<U32, U8>, DisplayS>
     public typealias FillColor = TextPrimary
     public typealias Size = DisplayS
     public typealias Weight = WeightBold
     public typealias Content = Tally<AllAccesses>
 }
-public enum AccessCaption: SpanLabelMid {
-    public typealias Y = Under<U64, TextXS>
+public enum AccessCaption: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextXS>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
     public typealias Content = AccessWord
 }
-public enum FinanceNumber: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, DisplayS>
+public enum EngineeringNumber: SpanLabel {
+    public typealias Y = Under<Plus<U32, U8>, DisplayS>
     public typealias FillColor = TextPrimary
     public typealias Size = DisplayS
     public typealias Weight = WeightBold
-    public typealias Content = Tally<FinanceTeam>
+    public typealias Content = Tally<EngineeringTeam>
 }
-public enum FinanceCaption: SpanLabelMid {
-    public typealias Y = Under<U64, TextXS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextXS
-    public typealias Weight = WeightRegular
-    public typealias Content = FinanceWord
-}
-public enum KpiRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<EdgeMargin>.self
-        Flexible<Layered<HeroFace, Layered<PeopleNumber, PeopleCaption>>>.self
-        Air<EdgeMargin>.self
-        Flexible<Layered<QuietFace, Layered<AccessNumber, AccessCaption>>>.self
-        Air<EdgeMargin>.self
-        Flexible<Layered<QuietFace, Layered<FinanceNumber, FinanceCaption>>>.self
-        Air<EdgeMargin>.self
-    }
-}
-
-// ── the chips: two counted departments, one live door ──
-
-public enum ChipFace: SpanTrack {
-    public typealias H = Tally<ChipTall>
-    public typealias Radius = R12
-    public typealias Fill = SurfaceTrack
-}
-public enum DoorFace: SpanTrack {
-    public typealias H = Tally<ChipTall>
-    public typealias Radius = R12
-    public typealias Fill = ActionRole
-}
-public enum FinanceChipWord: SpanLabelMid {
-    public typealias Y = Under<U8, TextXS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextXS
-    public typealias Weight = WeightRegular
-    public typealias Content = FinanceWord
-}
-public enum FinanceChipCount: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, TextL>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TextL
-    public typealias Weight = WeightBold
-    public typealias Content = Tally<FinanceTeam>
-}
-public enum EngineeringChipWord: SpanLabelMid {
-    public typealias Y = Under<U8, TextXS>
+public enum EngineeringCaption: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextXS>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
     public typealias Content = EngineeringWord
 }
-public enum EngineeringChipCount: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, TextL>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TextL
-    public typealias Weight = WeightBold
-    public typealias Content = Tally<EngineeringTeam>
+public enum KpiCardsRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U256, U16>, HeroFace>.self
+        Air<U16>.self
+        Fixed<Plus<U256, U16>, QuietFace>.self
+        Air<U16>.self
+        Fixed<Plus<U256, U16>, QuietFace>.self
+        RestAir.self
+    }
+}
+public enum PeopleTextRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<Plus<U16, U16>>.self
+        Fixed<Plus<U128, U64>, Layered<PeopleCaption, PeopleNumber>>.self
+        RestAir.self
+    }
+}
+public enum AccessTextRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<Plus<U256, U64>>.self
+        Fixed<Plus<U128, U64>, Layered<AccessCaption, AccessNumber>>.self
+        RestAir.self
+    }
+}
+public enum EngineeringTextRow: HFlow {
+    public typealias Given = WideSurface
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<Plus<U512, Plus<U64, U32>>>.self
+        Fixed<Plus<U128, U64>, Layered<EngineeringCaption, EngineeringNumber>>.self
+        RestAir.self
+    }
+}
+public enum KpiBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        KpiCardsRow.self
+        PeopleTextRow.self
+        AccessTextRow.self
+        EngineeringTextRow.self
+    }
+}
+
+// ── the door: one live link into the real company's site ──
+
+public enum DoorFace: SpanTrack {
+    public typealias H = Tally<ChipTall>
+    public typealias Radius = R12
+    public typealias Fill = ActionRole
 }
 public enum DoorWord: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, TextL>
+    public typealias Y = Under<Plus<U16, U8>, TextS>
     public typealias FillColor = OnActionRole
     public typealias Size = TextS
     public typealias Weight = WeightBold
     public typealias Content = WalkWord
 }
-public enum ChipsRow: HFlow {
+public enum ChipCardsRow: HFlow {
     public typealias Given = WideSurface
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<Layered<ChipFace, Layered<FinanceChipWord, FinanceChipCount>>>.self
-        Air<EdgeMargin>.self
-        Flexible<Layered<ChipFace, Layered<EngineeringChipWord, EngineeringChipCount>>>.self
-        Air<EdgeMargin>.self
-        Flexible<SpanLink<SitePage, Layered<DoorFace, DoorWord>>>.self
-        Air<EdgeMargin>.self
+        Fixed<Plus<U128, U64>, SpanLink<SitePage, Layered<DoorFace, DoorWord>>>.self
+        RestAir.self
+    }
+}
+public enum ChipsBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        ChipCardsRow.self
     }
 }
 
@@ -955,7 +1061,7 @@ public enum FootRow: HFlow {
     }
 }
 
-// ── the page: the vertical axis takes the bands, the frame derives itself ──
+// ── the page: the bands stack down one axis, and the height is their sum ──
 
 public enum OrganizationArt: GrownDiagram {
     public typealias Across = WideSurface
@@ -965,26 +1071,25 @@ public enum OrganizationArt: GrownDiagram {
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
         Fixed<HeaderTall, SpanHosted<HeaderRow>>.self
-        Banded<KpiTall, SpanHosted<FrozenReveal<Tally<Never>, KpiRow>>>.self
-        Banded<ChipTall, SpanHosted<FrozenReveal<Tally<U1>, ChipsRow>>>.self
-        Banded<FootTall, SpanHosted<FrozenReveal<Tally<U2>, FootRow>>>.self
+        Banded<KpiTall, SpanHosted<FrozenReveal<Tally<Never>, KpiBand>>>.self
+        Banded<ChipTall, SpanHosted<FrozenReveal<Tally<Half<Half<U1>>>, ChipsBand>>>.self
+        Banded<FootTall, SpanHosted<FrozenReveal<Tally<Half<U1>>, FootRow>>>.self
         Air<EdgeMargin>.self
     }
 }
 
-// ── the data the page reads: the company itself ──
+// ── the data the page reads: the company itself. Given names, family names, and
+// birth years are cycles: Next points at the next value, so Hire one more can
+// pick the next name without a list. ──
 
-/// This is Ada.
 public enum Ada: GivenNameCycle {
     public typealias Next = Grace
     public typealias Sex = Female
 }
-/// This is Grace.
 public enum Grace: GivenNameCycle {
     public typealias Next = Alan
     public typealias Sex = Female
 }
-/// This is Alan.
 public enum Alan: GivenNameCycle {
     public typealias Next = Ada
     public typealias Sex = Male
@@ -1115,10 +1220,14 @@ const sitePool = ["OnSite", "Hybrid", "Remote"];
 function makeBigCompany(count) {
     const lines = [];
     lines.push("import VerificationIsIdentification", "import DocumentKit", "");
-    lines.push("// A company of " + count + ", generated by the same rotations the repository");
-    lines.push("// uses: every coordinate stated directly by its index. The page above reads");
-    lines.push("// its numbers off this roster, and the judge re-proves every premise as you type.", "");
-    lines.push(organizationView.slice(organizationView.indexOf("// ── the words")));
+    lines.push("// A generated company of " + count + " people. Every field is computed from the");
+    lines.push("// person's index, so no person depends on another. The cards above count");
+    lines.push("// this list live: edit anyone, and the judge re-checks the file as you type.", "");
+    let view = organizationView.slice(organizationView.indexOf("// ── the display strings"));
+    view = view.replace('"The Organization"', '"The Organization, N = ' + count + '"');
+    view = view.replace('"drawn from the company in the editor: add a person, the numbers follow"',
+        '"generated from one formula: every field is computed from the index"');
+    lines.push(view);
     for (let i = 0; i < givenPool.length; i += 1) {
         lines.push("public enum " + givenPool[i][0] + ": GivenNameCycle {");
         lines.push("    public typealias Next = " + givenPool[(i + 1) % givenPool.length][0]);
@@ -1175,430 +1284,1856 @@ function makeBigCompany(count) {
 const organizationView = organizationFile.slice(0,
     organizationFile.indexOf("// ── the data the page reads"));
 
-const landingFile = `import DocumentKit
+const introFile = `import DocumentKit
 
-// A landing page, stated as types: six bands down a grown axis, a cascade of frozen
-// reveals, breathing accents. No number below belongs to the page: every height is a
-// rung, every baseline hangs a text size under one, and nothing points anywhere else.
+// The introduction is a Swift file like every other tab: the page draws its own
+// manual. Edit any string below: the preview follows on the keystroke.
 
-// ── the words ──
+// ── the display strings ──
 
-public enum Wordmark: Close {}
-extension Wordmark {
-    public static var typeName: String { "Verification Is Identification" }
+public enum IntroTitle: Close {}
+extension IntroTitle {
+    public static var typeName: String { "The playground" }
 }
-public enum NavClaim: Close {}
-extension NavClaim {
-    public static var typeName: String { "written as types" }
+public enum LineOneWord: Close {}
+extension LineOneWord {
+    public static var typeName: String { "The preview on the right is drawn from the Swift types on the left." }
 }
-public enum HeroTitle: Close {}
-extension HeroTitle {
-    public static var typeName: String { "The build is the run." }
+public enum LineTwoWord: Close {}
+extension LineTwoWord {
+    public static var typeName: String { "Nothing runs: the types are checked and drawn, never executed." }
 }
-public enum HeroSub: Close {}
-extension HeroSub {
-    public static var typeName: String { "A page stated as Swift types: proved and rendered with no runtime at all." }
+public enum LineThreeWord: Close {}
+extension LineThreeWord {
+    public static var typeName: String { "Each claim the types make is answered by one dictionary lookup: the judge." }
 }
-public enum CtaWord: Close {}
-extension CtaWord {
-    public static var typeName: String { "edit anything on the left: this page follows" }
+public enum LineFourWord: Close {}
+extension LineFourWord {
+    public static var typeName: String { "A claim reads like: Emp01 works in Finance, and holds FinanceShare." }
 }
-public enum ClaimOne: Close {}
-extension ClaimOne {
-    public static var typeName: String { "pure types" }
+public enum CurveHeadWord: Close {}
+extension CurveHeadWord {
+    public static var typeName: String { "One company, two checkers" }
 }
-public enum ClaimTwo: Close {}
-extension ClaimTwo {
-    public static var typeName: String { "zero runtime" }
+public enum BuildLegend: Close {}
+extension BuildLegend {
+    public static var typeName: String { "swift build, the full package" }
 }
-public enum ClaimThree: Close {}
-extension ClaimThree {
-    public static var typeName: String { "proved at build" }
+public enum JudgeLegend: Close {}
+extension JudgeLegend {
+    public static var typeName: String { "the judge, the same company file" }
 }
-public enum FeatureOneName: Close {}
-extension FeatureOneName {
-    public static var typeName: String { "Layout" }
+public enum N3200Word: Close {}
+extension N3200Word {
+    public static var typeName: String { "N = 3 200" }
 }
-public enum FeatureOneCopy: Close {}
-extension FeatureOneCopy {
-    public static var typeName: String { "divides space, states no number" }
+public enum N6400Word: Close {}
+extension N6400Word {
+    public static var typeName: String { "N = 6 400" }
 }
-public enum FeatureTwoName: Close {}
-extension FeatureTwoName {
-    public static var typeName: String { "Verdicts" }
+public enum N12800Word: Close {}
+extension N12800Word {
+    public static var typeName: String { "N = 12 800" }
 }
-public enum FeatureTwoCopy: Close {}
-extension FeatureTwoCopy {
-    public static var typeName: String { "every broken claim named as typed" }
+public enum Build3200Word: Close {}
+extension Build3200Word {
+    public static var typeName: String { "34 s" }
 }
-public enum FeatureThreeName: Close {}
-extension FeatureThreeName {
-    public static var typeName: String { "Films" }
+public enum Build6400Word: Close {}
+extension Build6400Word {
+    public static var typeName: String { "82 s" }
 }
-public enum FeatureThreeCopy: Close {}
-extension FeatureThreeCopy {
-    public static var typeName: String { "time as data on the SVG clock" }
+public enum Build12800Word: Close {}
+extension Build12800Word {
+    public static var typeName: String { "199 s" }
 }
-public enum StatOneFigure: Close {}
-extension StatOneFigure {
-    public static var typeName: String { "199 s → 0.18 s" }
+public enum Judge3200Word: Close {}
+extension Judge3200Word {
+    public static var typeName: String { "0.28 s" }
 }
-public enum StatOneCopy: Close {}
-extension StatOneCopy {
-    public static var typeName: String { "the compiler's corpus, in the browser" }
+public enum Judge6400Word: Close {}
+extension Judge6400Word {
+    public static var typeName: String { "0.55 s" }
 }
-public enum StatTwoFigure: Close {}
-extension StatTwoFigure {
-    public static var typeName: String { "×1100" }
+public enum Judge12800Word: Close {}
+extension Judge12800Word {
+    public static var typeName: String { "1.10 s" }
 }
-public enum StatTwoCopy: Close {}
-extension StatTwoCopy {
-    public static var typeName: String { "the linear judge against the arbiter" }
+public enum CurveMoral: Close {}
+extension CurveMoral {
+    public static var typeName: String { "Each doubling of N doubles the judge. The build grows near N^1.3." }
 }
-public enum StatThreeFigure: Close {}
-extension StatThreeFigure {
-    public static var typeName: String { "108 844" }
+public enum CurveNoteOne: Close {}
+extension CurveNoteOne {
+    public static var typeName: String { "A bar's width is its seconds. N counts people, built on the At scale tab." }
 }
-public enum StatThreeCopy: Close {}
-extension StatThreeCopy {
-    public static var typeName: String { "premises re-proved per keystroke" }
+public enum ExplainHeadWord: Close {}
+extension ExplainHeadWord {
+    public static var typeName: String { "What is happening" }
 }
-public enum FootWord: Close {}
-extension FootWord {
-    public static var typeName: String { "two readers of one dictionary: the judge checks, the renderer draws" }
+public enum ExplainOneWord: Close {}
+extension ExplainOneWord {
+    public static var typeName: String { "A program lives in two times: build time and run time." }
 }
-public enum LandingAlt: Close {}
-extension LandingAlt {
-    public static var typeName: String { "A landing page: hero, claims, features, figures, all stated as types." }
+public enum BuildTimeHead: Close {}
+extension BuildTimeHead {
+    public static var typeName: String { "Build time" }
 }
-
-// ── the rungs: every band's height, stated once ──
-
-public typealias NavTall = Plus<U32, U8>
-public typealias HeroTall = Plus<U64, U32>
-public typealias CtaTall = Plus<U32, U16>
-public typealias ClaimsTall = Plus<U16, U8>
-public typealias FeatureTall = Plus<U64, Plus<U32, Plus<U16, U8>>>
-public typealias StatsTall = Plus<U64, U16>
-public typealias FootTall = Plus<U16, U8>
-
-// ── the nav ──
-
-public enum NavDot: SpanBreathingDot {
-    public typealias CY = Halfway<NavTall, Never>
-    public typealias R = Tally<Plus<U4, U1>>
-    public typealias Fill = AccentRole
+public enum BuildLineOne: Close {}
+extension BuildLineOne {
+    public static var typeName: String { "the compiler constructs" }
 }
-public enum NavName: SpanLabel {
-    public typealias Y = Under<U8, TextM>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TextM
-    public typealias Weight = WeightBold
-    public typealias Content = Wordmark
+public enum BuildLineTwo: Close {}
+extension BuildLineTwo {
+    public static var typeName: String { "types are checked" }
 }
-public enum NavSide: SpanLabelEnd {
-    public typealias Y = Under<U8, TextS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextS
-    public typealias Weight = WeightRegular
-    public typealias Content = NavClaim
+public enum BuildLineThree: Close {}
+extension BuildLineThree {
+    public static var typeName: String { "this page lives here" }
 }
-public enum NavRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<EdgeMargin>.self
-        Fixed<U16, NavDot>.self
-        Air<U8>.self
-        Flexible<Layered<NavName, NavSide>>.self
-        Air<EdgeMargin>.self
-    }
+public enum RunTimeHead: Close {}
+extension RunTimeHead {
+    public static var typeName: String { "Run time" }
 }
-
-// ── the hero ──
-
-public enum HeroTitleFace: SpanLabelMid {
-    public typealias Y = Under<U16, Display>
-    public typealias FillColor = TextPrimary
-    public typealias Size = Display
-    public typealias Weight = WeightBold
-    public typealias Content = HeroTitle
+public enum RunLineOne: Close {}
+extension RunLineOne {
+    public static var typeName: String { "the artifact executes" }
 }
-public enum HeroSubFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U64, U8>, TextM>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextM
-    public typealias Weight = WeightRegular
-    public typealias Content = HeroSub
+public enum RunLineTwo: Close {}
+extension RunLineTwo {
+    public static var typeName: String { "values flow" }
 }
-public enum HeroRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<EdgeMargin>.self
-        Flexible<Layered<HeroTitleFace, HeroSubFace>>.self
-        Air<EdgeMargin>.self
-    }
+public enum RunLineThree: Close {}
+extension RunLineThree {
+    public static var typeName: String { "none of this page" }
+}
+public enum ExplainThreeWord: Close {}
+extension ExplainThreeWord {
+    public static var typeName: String { "Generics already work this way: the specialized type is nowhere in source." }
+}
+public enum ExplainFourWord: Close {}
+extension ExplainFourWord {
+    public static var typeName: String { "The compiler builds it at build time from the constraints you wrote." }
+}
+public enum ExplainFiveWord: Close {}
+extension ExplainFiveWord {
+    public static var typeName: String { "Swift checks a whole SwiftUI view tree at build time: this page stops there." }
+}
+public enum ExplainSixWord: Close {}
+extension ExplainSixWord {
+    public static var typeName: String { "This page keeps only build time: everything you write is a declaration," }
+}
+public enum ExplainSevenWord: Close {}
+extension ExplainSevenWord {
+    public static var typeName: String { "and a declaration is checked and drawn, never stepped through." }
+}
+public enum TryOneWord: Close {}
+extension TryOneWord {
+    public static var typeName: String { "Press Plant a lie on The organization: it flips one typealias to a lie," }
+}
+public enum TryOneTailWord: Close {}
+extension TryOneTailWord {
+    public static var typeName: String { "and the judge refuses the file, naming the exact line." }
+}
+public enum TryTwoWord: Close {}
+extension TryTwoWord {
+    public static var typeName: String { "Type func or var anywhere: the law refuses it, types only." }
+}
+public enum TryThreeWord: Close {}
+extension TryThreeWord {
+    public static var typeName: String { "Rules and the FAQ are the last two tabs, and they are files too." }
+}
+public enum IntroAlt: Close {}
+extension IntroAlt {
+    public static var typeName: String { "The page's own manual: what it is, the measured curve, what to try." }
 }
 
-// ── the call: one accent chip, pointing back into the editor ──
+// ── the geometry, stated as counts. A bar's width is its seconds: 34, 82, 199.
+// The judge's bars share one width, a hair: the exact seconds stand in the label. ──
 
-public enum CtaFace: SpanHeroFace {
-    public typealias H = Tally<CtaTall>
+public typealias HeadTall = Plus<U32, U8>
+public typealias LineTall = Plus<U16, U4>
+public typealias CompareTall = Plus<U64, Plus<U32, U16>>
+public typealias InnerMargin = Plus<U16, U16>
+public typealias FarColumn = Plus<U256, Plus<U16, U8>>
+public typealias BarTall = Plus<U16, U8>
+public typealias RowTall = Plus<U16, U8>
+public typealias LegendTall = U16
+public typealias NColumn = Plus<U64, U32>
+public typealias Build3200W = Plus<U32, U2>
+public typealias Build6400W = Plus<U64, Plus<U16, U2>>
+public typealias Build12800W = Plus<U128, Plus<U64, Plus<U4, Plus<U2, U1>>>>
+
+public enum BuildBar: SpanTrack {
+    public typealias H = Tally<BarTall>
     public typealias Radius = R12
     public typealias Fill = AccentRole
 }
-public enum CtaLabel: SpanLabelMid {
-    public typealias Y = Under<U16, TextM>
-    public typealias FillColor = OnAccent
-    public typealias Size = TextM
-    public typealias Weight = WeightBold
-    public typealias Content = CtaWord
-}
-public enum CtaRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<Times<U64, U4>>.self
-        Flexible<Layered<CtaFace, CtaLabel>>.self
-        Air<Times<U64, U4>>.self
-    }
-}
-
-// ── the claims strip ──
-
-public enum ClaimDot: SpanBreathingDot {
-    public typealias CY = Halfway<ClaimsTall, Never>
-    public typealias R = Tally<U2>
+public enum JudgeBar: SpanTrack {
+    public typealias H = Tally<BarTall>
+    public typealias Radius = Tally<U1>
     public typealias Fill = ActionRole
 }
-public enum ClaimOneFace: SpanLabelMid {
-    public typealias Y = Under<U4, TextS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextS
-    public typealias Weight = WeightRegular
-    public typealias Content = ClaimOne
-}
-public enum ClaimTwoFace: SpanLabelMid {
-    public typealias Y = Under<U4, TextS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextS
-    public typealias Weight = WeightRegular
-    public typealias Content = ClaimTwo
-}
-public enum ClaimThreeFace: SpanLabelMid {
-    public typealias Y = Under<U4, TextS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextS
-    public typealias Weight = WeightRegular
-    public typealias Content = ClaimThree
-}
-public enum ClaimsRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<Times<U64, U2>>.self
-        Flexible<ClaimOneFace>.self
-        Fixed<U16, ClaimDot>.self
-        Flexible<ClaimTwoFace>.self
-        Fixed<U16, ClaimDot>.self
-        Flexible<ClaimThreeFace>.self
-        Air<Times<U64, U2>>.self
-    }
-}
-
-// ── the features ──
-
-public enum FeatureHero: SpanHeroFace {
-    public typealias H = Tally<FeatureTall>
-    public typealias Radius = R20
+public enum BuildDot: SpanDot {
+    public typealias CY = Halfway<LegendTall, Never>
+    public typealias R = Tally<U4>
     public typealias Fill = AccentRole
 }
-public enum FeatureQuiet: SpanTrackOutlined {
-    public typealias H = Tally<FeatureTall>
-    public typealias Radius = R20
+public enum JudgeDot: SpanDot {
+    public typealias CY = Halfway<LegendTall, Never>
+    public typealias R = Tally<U4>
+    public typealias Fill = ActionRole
+}
+
+public enum TitleLabel: SpanLabel {
+    public typealias Y = Under<U8, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = IntroTitle
+}
+public enum LineOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LineOneWord
+}
+public enum LineTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LineTwoWord
+}
+public enum LineThreeLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LineThreeWord
+}
+public enum LineFourLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LineFourWord
+}
+public enum CurveHeadLabel: SpanLabel {
+    public typealias Y = Under<U4, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = CurveHeadWord
+}
+public enum BuildLegendLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = BuildLegend
+}
+public enum JudgeLegendLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = JudgeLegend
+}
+public enum N3200Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = N3200Word
+}
+public enum N6400Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = N6400Word
+}
+public enum N12800Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = N12800Word
+}
+public enum Build3200Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Build3200Word
+}
+public enum Build6400Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Build6400Word
+}
+public enum Build12800Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Build12800Word
+}
+public enum Judge3200Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Judge3200Word
+}
+public enum Judge6400Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Judge6400Word
+}
+public enum Judge12800Label: SpanLabel {
+    public typealias Y = Under<U4, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Judge12800Word
+}
+public enum MoralLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = CurveMoral
+}
+public enum CurveNoteOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = CurveNoteOne
+}
+public enum ExplainHeadLabel: SpanLabel {
+    public typealias Y = Under<U4, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = ExplainHeadWord
+}
+public enum ExplainOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ExplainOneWord
+}
+public enum BuildCard: SpanTrack {
+    public typealias H = Tally<CompareTall>
+    public typealias Radius = R12
+    public typealias Fill = AccentRole
+}
+public enum RunCard: SpanTrackOutlined {
+    public typealias H = Tally<CompareTall>
+    public typealias Radius = R12
     public typealias Fill = SurfaceCard
     public typealias Stroke = LineRole
 }
-public enum FeatureOneNameFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U32, U8>, TextL>
+public enum BuildHeadLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextS>
     public typealias FillColor = OnAccent
-    public typealias Size = TextL
+    public typealias Size = TextS
     public typealias Weight = WeightBold
-    public typealias Content = FeatureOneName
+    public typealias Content = BuildTimeHead
 }
-public enum FeatureOneCopyFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U64, U8>, TextXS>
+public enum BuildOneLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U8>, TextXS>
     public typealias FillColor = OnAccent
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
-    public typealias Content = FeatureOneCopy
+    public typealias Content = BuildLineOne
 }
-public enum FeatureTwoNameFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U32, U8>, TextL>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TextL
+public enum BuildTwoLabel: SpanLabel {
+    public typealias Y = Under<Plus<U64, U2>, TextXS>
+    public typealias FillColor = OnAccent
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = BuildLineTwo
+}
+public enum BuildThreeLabel: SpanLabel {
+    public typealias Y = Under<Plus<U64, Plus<U16, U8>>, TextXS>
+    public typealias FillColor = OnAccent
+    public typealias Size = TextXS
     public typealias Weight = WeightBold
-    public typealias Content = FeatureTwoName
+    public typealias Content = BuildLineThree
 }
-public enum FeatureTwoCopyFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U64, U8>, TextXS>
+public enum RunHeadLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = RunTimeHead
+}
+public enum RunOneLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U8>, TextXS>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
-    public typealias Content = FeatureTwoCopy
+    public typealias Content = RunLineOne
 }
-public enum FeatureThreeNameFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U32, U8>, TextL>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TextL
-    public typealias Weight = WeightBold
-    public typealias Content = FeatureThreeName
-}
-public enum FeatureThreeCopyFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U64, U8>, TextXS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextXS
-    public typealias Weight = WeightRegular
-    public typealias Content = FeatureThreeCopy
-}
-public enum FeaturesRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<EdgeMargin>.self
-        Flexible<Layered<FeatureHero, Layered<FeatureOneNameFace, FeatureOneCopyFace>>>.self
-        Air<EdgeMargin>.self
-        Flexible<Layered<FeatureQuiet, Layered<FeatureTwoNameFace, FeatureTwoCopyFace>>>.self
-        Air<EdgeMargin>.self
-        Flexible<Layered<FeatureQuiet, Layered<FeatureThreeNameFace, FeatureThreeCopyFace>>>.self
-        Air<EdgeMargin>.self
-    }
-}
-
-// ── the figures ──
-
-public enum StatFace: SpanTrack {
-    public typealias H = Tally<StatsTall>
-    public typealias Radius = R12
-    public typealias Fill = SurfaceTrack
-}
-public enum StatOneFigureFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, TitleT>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TitleT
-    public typealias Weight = WeightBold
-    public typealias Content = StatOneFigure
-}
-public enum StatOneCopyFace: SpanLabelMid {
+public enum RunTwoLabel: SpanLabel {
     public typealias Y = Under<Plus<U64, U2>, TextXS>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
-    public typealias Content = StatOneCopy
+    public typealias Content = RunLineTwo
 }
-public enum StatTwoFigureFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, TitleT>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TitleT
-    public typealias Weight = WeightBold
-    public typealias Content = StatTwoFigure
-}
-public enum StatTwoCopyFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U64, U2>, TextXS>
+public enum RunThreeLabel: SpanLabel {
+    public typealias Y = Under<Plus<U64, Plus<U16, U8>>, TextXS>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
-    public typealias Weight = WeightRegular
-    public typealias Content = StatTwoCopy
-}
-public enum StatThreeFigureFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U16, U8>, TitleT>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TitleT
     public typealias Weight = WeightBold
-    public typealias Content = StatThreeFigure
+    public typealias Content = RunLineThree
 }
-public enum StatThreeCopyFace: SpanLabelMid {
-    public typealias Y = Under<Plus<U64, U2>, TextXS>
+public enum ExplainThreeLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
     public typealias FillColor = TextSecondary
-    public typealias Size = TextXS
+    public typealias Size = TextS
     public typealias Weight = WeightRegular
-    public typealias Content = StatThreeCopy
+    public typealias Content = ExplainThreeWord
 }
-public enum StatsRow: HFlow {
-    public typealias Given = WideSurface
+public enum ExplainFourLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ExplainFourWord
+}
+public enum ExplainFiveLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ExplainFiveWord
+}
+public enum ExplainSixLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ExplainSixWord
+}
+public enum ExplainSevenLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ExplainSevenWord
+}
+public enum TryOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TryOneWord
+}
+public enum TryOneTailLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TryOneTailWord
+}
+public enum TryTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TryTwoWord
+}
+public enum TryThreeLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TryThreeWord
+}
+
+// ── the rows ──
+
+public enum TitleRow: HFlow {
+    public typealias Given = U512
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<Layered<StatFace, Layered<StatOneFigureFace, StatOneCopyFace>>>.self
+        Flexible<TitleLabel>.self
         Air<EdgeMargin>.self
-        Flexible<Layered<StatFace, Layered<StatTwoFigureFace, StatTwoCopyFace>>>.self
+    }
+}
+public enum LineOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<Layered<StatFace, Layered<StatThreeFigureFace, StatThreeCopyFace>>>.self
+        Flexible<LineOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LineTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LineTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LineThreeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LineThreeLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LineFourRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LineFourLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum CurveHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<CurveHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LegendRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<U8, BuildDot>.self
+        Air<U4>.self
+        Fixed<Plus<U128, U64>, BuildLegendLabel>.self
+        Air<U8>.self
+        Fixed<U8, JudgeDot>.self
+        Air<U4>.self
+        Flexible<JudgeLegendLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum Build3200Row: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<NColumn, N3200Label>.self
+        Fixed<Build3200W, BuildBar>.self
+        Air<U8>.self
+        Flexible<Build3200Label>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum Judge3200Row: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Air<NColumn>.self
+        Fixed<HairBreath, JudgeBar>.self
+        Air<U8>.self
+        Flexible<Judge3200Label>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum Build6400Row: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<NColumn, N6400Label>.self
+        Fixed<Build6400W, BuildBar>.self
+        Air<U8>.self
+        Flexible<Build6400Label>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum Judge6400Row: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Air<NColumn>.self
+        Fixed<HairBreath, JudgeBar>.self
+        Air<U8>.self
+        Flexible<Judge6400Label>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum Build12800Row: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<NColumn, N12800Label>.self
+        Fixed<Build12800W, BuildBar>.self
+        Air<U8>.self
+        Flexible<Build12800Label>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum Judge12800Row: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Air<NColumn>.self
+        Fixed<HairBreath, JudgeBar>.self
+        Air<U8>.self
+        Flexible<Judge12800Label>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum MoralRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<MoralLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum CurveNoteOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<CurveNoteOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum ExplainHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ExplainHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum ExplainOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ExplainOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum CompareCardsRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<BuildCard>.self
+        Air<U16>.self
+        Flexible<RunCard>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum BuildTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<BuildHeadLabel, Layered<BuildOneLabel, Layered<BuildTwoLabel, BuildThreeLabel>>>>.self
+        Air<FarColumn>.self
+    }
+}
+public enum RunTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<FarColumn>.self
+        Flexible<Layered<RunHeadLabel, Layered<RunOneLabel, Layered<RunTwoLabel, RunThreeLabel>>>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum CompareBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        CompareCardsRow.self
+        BuildTextRow.self
+        RunTextRow.self
+    }
+}
+public enum ExplainThreeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ExplainThreeLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum ExplainFourRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ExplainFourLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum ExplainFiveRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ExplainFiveLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum ExplainSixRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ExplainSixLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum ExplainSevenRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ExplainSevenLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TryOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TryOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TryOneTailRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TryOneTailLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TryTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TryTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TryThreeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TryThreeLabel>.self
         Air<EdgeMargin>.self
     }
 }
 
-// ── the footer ──
-
-public enum FootFace: SpanLabel {
-    public typealias Y = Under<U4, TextXS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextXS
-    public typealias Weight = WeightRegular
-    public typealias Content = FootWord
-}
-public enum FootRow: HFlow {
-    public typealias Given = WideSurface
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<EdgeMargin>.self
-        Flexible<FootFace>.self
-        Air<EdgeMargin>.self
-    }
-}
-
-// ── the page: bands cascade in and stay ──
-
-public enum LandingArt: GrownDiagram {
-    public typealias Across = WideSurface
-    public typealias AriaLabel = LandingAlt
-    public typealias Defs = SoftShadow
+public enum IntroArt: GrownDiagram {
+    public typealias Across = U512
+    public typealias AriaLabel = IntroAlt
     @StructureBuilder
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
-        Fixed<NavTall, SpanHosted<NavRow>>.self
-        Air<U16>.self
-        Fixed<HeroTall, SpanHosted<FrozenReveal<Tally<Never>, HeroRow>>>.self
+        Fixed<HeadTall, SpanHosted<TitleRow>>.self
+        Fixed<LineTall, SpanHosted<LineOneRow>>.self
+        Fixed<LineTall, SpanHosted<LineTwoRow>>.self
+        Fixed<LineTall, SpanHosted<LineThreeRow>>.self
+        Fixed<LineTall, SpanHosted<LineFourRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<RowTall, SpanHosted<CurveHeadRow>>.self
         Air<U8>.self
-        Fixed<CtaTall, SpanHosted<FrozenReveal<Tally<U1>, CtaRow>>>.self
+        Fixed<LegendTall, SpanHosted<LegendRow>>.self
         Air<U16>.self
-        Fixed<ClaimsTall, SpanHosted<FrozenReveal<Tally<U1>, ClaimsRow>>>.self
+        Fixed<RowTall, SpanHosted<Build3200Row>>.self
+        Air<U4>.self
+        Fixed<RowTall, SpanHosted<Judge3200Row>>.self
+        Air<U8>.self
+        Fixed<RowTall, SpanHosted<Build6400Row>>.self
+        Air<U4>.self
+        Fixed<RowTall, SpanHosted<Judge6400Row>>.self
+        Air<U8>.self
+        Fixed<RowTall, SpanHosted<Build12800Row>>.self
+        Air<U4>.self
+        Fixed<RowTall, SpanHosted<Judge12800Row>>.self
+        Air<U8>.self
+        Fixed<LegendTall, SpanHosted<MoralRow>>.self
+        Air<U4>.self
+        Fixed<LineTall, SpanHosted<CurveNoteOneRow>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<FeatureTall, SpanHosted<FrozenReveal<Tally<U2>, FeaturesRow>>>.self
+        Fixed<RowTall, SpanHosted<ExplainHeadRow>>.self
+        Fixed<LineTall, SpanHosted<ExplainOneRow>>.self
+        Air<U8>.self
+        Fixed<CompareTall, SpanHosted<CompareBand>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<LineTall, SpanHosted<ExplainThreeRow>>.self
+        Fixed<LineTall, SpanHosted<ExplainFourRow>>.self
+        Fixed<LineTall, SpanHosted<ExplainFiveRow>>.self
+        Air<U8>.self
+        Fixed<LineTall, SpanHosted<ExplainSixRow>>.self
+        Fixed<LineTall, SpanHosted<ExplainSevenRow>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<StatsTall, SpanHosted<FrozenReveal<Tally<Plus<U2, U1>>, StatsRow>>>.self
-        Air<Plus<U16, U8>>.self
-        Fixed<FootTall, SpanHosted<FrozenReveal<Tally<U4>, FootRow>>>.self
+        Fixed<LineTall, SpanHosted<TryOneRow>>.self
+        Fixed<LineTall, SpanHosted<TryOneTailRow>>.self
+        Fixed<LineTall, SpanHosted<TryTwoRow>>.self
+        Fixed<LineTall, SpanHosted<TryThreeRow>>.self
         Air<EdgeMargin>.self
     }
 }
 `;
 
-const basicsFile = plateFile + "\n" + cardsFile;
+const rulesFile = `import DocumentKit
+
+// The rules are a file too: the two moves, the five forms, the law, the names.
+// A form card is a Group of rows sharing one slot: the face row, then the text
+// row with its own margins. The film tab layers rows the same way.
+
+// ── the display strings ──
+
+public enum RulesTitle: Close {}
+extension RulesTitle {
+    public static var typeName: String { "How to write here" }
+}
+public enum MovesHeadWord: Close {}
+extension MovesHeadWord {
+    public static var typeName: String { "The two moves" }
+}
+public enum MovesIntroOne: Close {}
+extension MovesIntroOne {
+    public static var typeName: String { "An axis is a slot a conformance demands of a name: Rank, Home, or Given." }
+}
+public enum MovesIntroTwo: Close {}
+extension MovesIntroTwo {
+    public static var typeName: String { "In Swift terms: the axis is an associatedtype, your typealias its witness." }
+}
+public enum ExpandHead: Close {}
+extension ExpandHead {
+    public static var typeName: String { "expand" }
+}
+public enum ExpandLineOne: Close {}
+extension ExpandLineOne {
+    public static var typeName: String { "opens an axis" }
+}
+public enum ExpandLineTwo: Close {}
+extension ExpandLineTwo {
+    public static var typeName: String { "the protocols already did" }
+}
+public enum CompressHead: Close {}
+extension CompressHead {
+    public static var typeName: String { "compress" }
+}
+public enum CompressLineOne: Close {}
+extension CompressLineOne {
+    public static var typeName: String { "closes one axis" }
+}
+public enum CompressLineTwo: Close {}
+extension CompressLineTwo {
+    public static var typeName: String { "the move you make" }
+}
+public enum MovesNoteOne: Close {}
+extension MovesNoteOne {
+    public static var typeName: String { "Employee wants Rank, Home, Given, and more: axes opened for you." }
+}
+public enum MovesNoteTwo: Close {}
+extension MovesNoteTwo {
+    public static var typeName: String { "Every typealias you write closes exactly one of them." }
+}
+public enum FormsHeadWord: Close {}
+extension FormsHeadWord {
+    public static var typeName: String { "The five forms" }
+}
+public enum FormOneCode: Close {}
+extension FormOneCode {
+    public static var typeName: String { "public enum Name: Conf {}" }
+}
+public enum FormOneNote: Close {}
+extension FormOneNote {
+    public static var typeName: String { "declares a thing: Conf lists the axes it must close" }
+}
+public enum FormTwoCode: Close {}
+extension FormTwoCode {
+    public static var typeName: String { "public typealias Axis = Value" }
+}
+public enum FormTwoNote: Close {}
+extension FormTwoNote {
+    public static var typeName: String { "closes one owed axis with one value: the move you repeat" }
+}
+public enum FormThreeCode: Close {}
+extension FormThreeCode {
+    public static var typeName: String { "extension Name { typeName }" }
+}
+public enum FormThreeNote: Close {}
+extension FormThreeNote {
+    public static var typeName: String { "attaches the display string: the one admitted constant" }
+}
+public enum FormFourCode: Close {}
+extension FormFourCode {
+    public static var typeName: String { "@StructureBuilder static var body" }
+}
+public enum FormFourNote: Close {}
+extension FormFourNote {
+    public static var typeName: String { "lists the members, one per line, each as Name.self" }
+}
+public enum FormFiveCode: Close {}
+extension FormFiveCode {
+    public static var typeName: String { "anything else" }
+}
+public enum FormFiveNote: Close {}
+extension FormFiveNote {
+    public static var typeName: String { "is refused with its line number: nothing is guessed" }
+}
+public enum LawHeadWord: Close {}
+extension LawHeadWord {
+    public static var typeName: String { "The law" }
+}
+public enum LawOneWord: Close {}
+extension LawOneWord {
+    public static var typeName: String { "Rule 0, pure types: a file declares types and nothing that runs." }
+}
+public enum LawTwoWord: Close {}
+extension LawTwoWord {
+    public static var typeName: String { "Every other func, var, let, or init is refused with its line number." }
+}
+public enum LawThreeWord: Close {}
+extension LawThreeWord {
+    public static var typeName: String { "Two value forms are admitted, typeName and body: both declared, never run." }
+}
+public enum NamesHeadWord: Close {}
+extension NamesHeadWord {
+    public static var typeName: String { "The names" }
+}
+public enum NamesOneWord: Close {}
+extension NamesOneWord {
+    public static var typeName: String { "The completion popup lists every name the page knows as you type." }
+}
+public enum NamesTwoWord: Close {}
+extension NamesTwoWord {
+    public static var typeName: String { "Place the caret on any name: the inspector under the editor reads it." }
+}
+public enum RulesAlt: Close {}
+extension RulesAlt {
+    public static var typeName: String { "The two moves, the five forms, the law, and the names, as cards and bands." }
+}
+
+// ── the geometry ──
+
+public typealias HeadTall = Plus<U32, U8>
+public typealias SectionTall = Plus<U16, U16>
+public typealias LineTall = Plus<U16, U4>
+public typealias MoveTall = Plus<U64, U16>
+public typealias FormTall = Plus<U32, Plus<U16, U8>>
+public typealias InnerMargin = Plus<U16, U16>
+public typealias FarColumn = Plus<U256, Plus<U16, U8>>
+
+public enum ExpandCard: SpanTrackOutlined {
+    public typealias H = Tally<MoveTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum CompressCard: SpanTrack {
+    public typealias H = Tally<MoveTall>
+    public typealias Radius = R12
+    public typealias Fill = ActionRole
+}
+public enum FormCard: SpanTrackOutlined {
+    public typealias H = Tally<FormTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+
+public enum TitleLabel: SpanLabel {
+    public typealias Y = Under<U8, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = RulesTitle
+}
+public enum MovesHeadLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = MovesHeadWord
+}
+public enum MovesIntroOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = MovesIntroOne
+}
+public enum MovesIntroTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = MovesIntroTwo
+}
+public enum ExpandHeadLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = ExpandHead
+}
+public enum ExpandOneLabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = ExpandLineOne
+}
+public enum ExpandTwoLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, Plus<U16, U4>>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = ExpandLineTwo
+}
+public enum CompressHeadLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = OnActionRole
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = CompressHead
+}
+public enum CompressOneLabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = OnActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = CompressLineOne
+}
+public enum CompressTwoLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, Plus<U16, U4>>, TextXS>
+    public typealias FillColor = OnActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = CompressLineTwo
+}
+public enum MovesNoteOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = MovesNoteOne
+}
+public enum MovesNoteTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = MovesNoteTwo
+}
+public enum FormsHeadLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = FormsHeadWord
+}
+public enum FormOneCodeLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = FormOneCode
+}
+public enum FormOneNoteLabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FormOneNote
+}
+public enum FormTwoCodeLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = FormTwoCode
+}
+public enum FormTwoNoteLabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FormTwoNote
+}
+public enum FormThreeCodeLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = FormThreeCode
+}
+public enum FormThreeNoteLabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FormThreeNote
+}
+public enum FormFourCodeLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = FormFourCode
+}
+public enum FormFourNoteLabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FormFourNote
+}
+public enum FormFiveCodeLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = FormFiveCode
+}
+public enum FormFiveNoteLabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FormFiveNote
+}
+public enum LawHeadLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = LawHeadWord
+}
+public enum LawOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LawOneWord
+}
+public enum LawTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LawTwoWord
+}
+public enum LawThreeLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LawThreeWord
+}
+public enum NamesHeadLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U4>, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = NamesHeadWord
+}
+public enum NamesOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = NamesOneWord
+}
+public enum NamesTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = NamesTwoWord
+}
+
+// ── the rows. A card band is a Group: the face row, then the text row inset by
+// its own margins, both drawn into one slot. ──
+
+public enum TitleRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TitleLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum MovesHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<MovesHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum MovesIntroOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<MovesIntroOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum MovesIntroTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<MovesIntroTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum MoveCardsRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<ExpandCard>.self
+        Air<U16>.self
+        Flexible<CompressCard>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum ExpandTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<ExpandHeadLabel, Layered<ExpandOneLabel, ExpandTwoLabel>>>.self
+        Air<FarColumn>.self
+    }
+}
+public enum CompressTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<FarColumn>.self
+        Flexible<Layered<CompressHeadLabel, Layered<CompressOneLabel, CompressTwoLabel>>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum MovesBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        MoveCardsRow.self
+        ExpandTextRow.self
+        CompressTextRow.self
+    }
+}
+public enum MovesNoteOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<MovesNoteOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum MovesNoteTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<MovesNoteTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FormsHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<FormsHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FormCardRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<FormCard>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FormOneTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<FormOneCodeLabel, FormOneNoteLabel>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum FormOneBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FormCardRow.self
+        FormOneTextRow.self
+    }
+}
+public enum FormTwoTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<FormTwoCodeLabel, FormTwoNoteLabel>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum FormTwoBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FormCardRow.self
+        FormTwoTextRow.self
+    }
+}
+public enum FormThreeTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<FormThreeCodeLabel, FormThreeNoteLabel>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum FormThreeBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FormCardRow.self
+        FormThreeTextRow.self
+    }
+}
+public enum FormFourTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<FormFourCodeLabel, FormFourNoteLabel>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum FormFourBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FormCardRow.self
+        FormFourTextRow.self
+    }
+}
+public enum FormFiveTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<FormFiveCodeLabel, FormFiveNoteLabel>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum FormFiveBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FormCardRow.self
+        FormFiveTextRow.self
+    }
+}
+public enum LawHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LawHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LawOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LawOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LawTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LawTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LawThreeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LawThreeLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum NamesHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<NamesHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum NamesOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<NamesOneLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum NamesTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<NamesTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+public enum RulesArt: GrownDiagram {
+    public typealias Across = U512
+    public typealias AriaLabel = RulesAlt
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<HeadTall, SpanHosted<TitleRow>>.self
+        Air<U8>.self
+        Fixed<SectionTall, SpanHosted<MovesHeadRow>>.self
+        Fixed<LineTall, SpanHosted<MovesIntroOneRow>>.self
+        Fixed<LineTall, SpanHosted<MovesIntroTwoRow>>.self
+        Air<U8>.self
+        Fixed<MoveTall, SpanHosted<MovesBand>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<LineTall, SpanHosted<MovesNoteOneRow>>.self
+        Fixed<LineTall, SpanHosted<MovesNoteTwoRow>>.self
+        Air<U16>.self
+        Fixed<SectionTall, SpanHosted<FormsHeadRow>>.self
+        Fixed<FormTall, SpanHosted<FormOneBand>>.self
+        Air<U8>.self
+        Fixed<FormTall, SpanHosted<FormTwoBand>>.self
+        Air<U8>.self
+        Fixed<FormTall, SpanHosted<FormThreeBand>>.self
+        Air<U8>.self
+        Fixed<FormTall, SpanHosted<FormFourBand>>.self
+        Air<U8>.self
+        Fixed<FormTall, SpanHosted<FormFiveBand>>.self
+        Air<U16>.self
+        Fixed<SectionTall, SpanHosted<LawHeadRow>>.self
+        Fixed<LineTall, SpanHosted<LawOneRow>>.self
+        Fixed<LineTall, SpanHosted<LawTwoRow>>.self
+        Fixed<LineTall, SpanHosted<LawThreeRow>>.self
+        Air<U16>.self
+        Fixed<SectionTall, SpanHosted<NamesHeadRow>>.self
+        Fixed<LineTall, SpanHosted<NamesOneRow>>.self
+        Fixed<LineTall, SpanHosted<NamesTwoRow>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
+
+const faqFile = `import DocumentKit
+
+// Five questions, each a card: the question in bold, the answer in two lines.
+// The card band is a Group of rows sharing one slot, like the Rules tab.
+// Edit any answer string below: the page redraws it on the keystroke.
+
+// ── the display strings ──
+
+public enum FaqTitle: Close {}
+extension FaqTitle {
+    public static var typeName: String { "FAQ" }
+}
+public enum FaqSub: Close {}
+extension FaqSub {
+    public static var typeName: String { "five questions from this very file: edit any answer in the editor" }
+}
+public enum QOneWord: Close {}
+extension QOneWord {
+    public static var typeName: String { "Is this real Swift?" }
+}
+public enum AOneAWord: Close {}
+extension AOneAWord {
+    public static var typeName: String { "Every tab here is a Swift file, in a stated subset of the language. Download" }
+}
+public enum AOneBWord: Close {}
+extension AOneBWord {
+    public static var typeName: String { "one, and the theory's repository compiles it: the verdicts are the same." }
+}
+public enum QTwoWord: Close {}
+extension QTwoWord {
+    public static var typeName: String { "What runs when I type?" }
+}
+public enum ATwoAWord: Close {}
+extension ATwoAWord {
+    public static var typeName: String { "One dictionary pass over the file, then one lookup per claim. No code of" }
+}
+public enum ATwoBWord: Close {}
+extension ATwoBWord {
+    public static var typeName: String { "yours executes: there is no evaluator, only lookups in fixed tables." }
+}
+public enum QThreeWord: Close {}
+extension QThreeWord {
+    public static var typeName: String { "Why is it fast?" }
+}
+public enum AThreeAWord: Close {}
+extension AThreeAWord {
+    public static var typeName: String { "A verdict is a lookup, not a search: each keystroke builds the dictionary" }
+}
+public enum AThreeBWord: Close {}
+extension AThreeBWord {
+    public static var typeName: String { "once, and every claim after that is one read. The chart is in Read me." }
+}
+public enum QFourWord: Close {}
+extension QFourWord {
+    public static var typeName: String { "Who checks this checker?" }
+}
+public enum AFourAWord: Close {}
+extension AFourAWord {
+    public static var typeName: String { "Four verdicts recorded from the reference judge, a Swift program, re-run" }
+}
+public enum AFourBWord: Close {}
+extension AFourBWord {
+    public static var typeName: String { "on every load. The badge counts the matches: 4/4 means this page agrees." }
+}
+public enum QFiveWord: Close {}
+extension QFiveWord {
+    public static var typeName: String { "What is the law?" }
+}
+public enum AFiveAWord: Close {}
+extension AFiveAWord {
+    public static var typeName: String { "Rule 0 of the linter: a file declares types and nothing that runs. func," }
+}
+public enum AFiveBWord: Close {}
+extension AFiveBWord {
+    public static var typeName: String { "var, let, and init are refused, each with its own line number." }
+}
+public enum FaqAlt: Close {}
+extension FaqAlt {
+    public static var typeName: String { "Five question cards, each with a two-line answer." }
+}
+
+// ── the geometry ──
+
+public typealias HeadTall = U64
+public typealias FaqTall = Plus<U64, U8>
+public typealias InnerMargin = Plus<U16, U16>
+
+public enum FaqCard: SpanTrackOutlined {
+    public typealias H = Tally<FaqTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+
+public enum TitleLabel: SpanLabel {
+    public typealias Y = Under<U8, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = FaqTitle
+}
+public enum SubLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U8>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FaqSub
+}
+public enum QOneLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = QOneWord
+}
+public enum AOneALabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AOneAWord
+}
+public enum AOneBLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U16>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AOneBWord
+}
+public enum QTwoLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = QTwoWord
+}
+public enum ATwoALabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = ATwoAWord
+}
+public enum ATwoBLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U16>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = ATwoBWord
+}
+public enum QThreeLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = QThreeWord
+}
+public enum AThreeALabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AThreeAWord
+}
+public enum AThreeBLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U16>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AThreeBWord
+}
+public enum QFourLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = QFourWord
+}
+public enum AFourALabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AFourAWord
+}
+public enum AFourBLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U16>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AFourBWord
+}
+public enum QFiveLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = QFiveWord
+}
+public enum AFiveALabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AFiveAWord
+}
+public enum AFiveBLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U16>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = AFiveBWord
+}
+
+// ── the rows: a shared card face, then each entry's inset text ──
+
+public enum HeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<TitleLabel, SubLabel>>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FaqCardRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<FaqCard>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum EntryOneTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<QOneLabel, Layered<AOneALabel, AOneBLabel>>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum EntryOneBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FaqCardRow.self
+        EntryOneTextRow.self
+    }
+}
+public enum EntryTwoTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<QTwoLabel, Layered<ATwoALabel, ATwoBLabel>>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum EntryTwoBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FaqCardRow.self
+        EntryTwoTextRow.self
+    }
+}
+public enum EntryThreeTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<QThreeLabel, Layered<AThreeALabel, AThreeBLabel>>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum EntryThreeBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FaqCardRow.self
+        EntryThreeTextRow.self
+    }
+}
+public enum EntryFourTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<QFourLabel, Layered<AFourALabel, AFourBLabel>>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum EntryFourBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FaqCardRow.self
+        EntryFourTextRow.self
+    }
+}
+public enum EntryFiveTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<QFiveLabel, Layered<AFiveALabel, AFiveBLabel>>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum EntryFiveBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FaqCardRow.self
+        EntryFiveTextRow.self
+    }
+}
+
+public enum FaqArt: GrownDiagram {
+    public typealias Across = U512
+    public typealias AriaLabel = FaqAlt
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<HeadTall, SpanHosted<HeadRow>>.self
+        Air<U16>.self
+        Fixed<FaqTall, SpanHosted<EntryOneBand>>.self
+        Air<U8>.self
+        Fixed<FaqTall, SpanHosted<EntryTwoBand>>.self
+        Air<U8>.self
+        Fixed<FaqTall, SpanHosted<EntryThreeBand>>.self
+        Air<U8>.self
+        Fixed<FaqTall, SpanHosted<EntryFourBand>>.self
+        Air<U8>.self
+        Fixed<FaqTall, SpanHosted<EntryFiveBand>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
 
 const tabs = [
+    { id: "readme", title: "Read me", file: "ReadMe.swift", text: introFile,
+      caption: "the page draws its own manual: this introduction is the file on the left" },
     { id: "organization", title: "The organization", file: "Organization.swift",
       text: organizationFile,
-      caption: "a company as types: the cards derive from the roster below" },
+      caption: "a company as types: the cards count the people declared in the file" },
     { id: "scale", title: "At scale", file: "BigCompany.swift", text: null,
-      caption: "a generated roster: 12 800 people judge in about 0.2 s" },
-    { id: "film", title: "A film", file: "Film.swift", text: filmFile,
-      caption: "frames on the SVG clock: a cue edit replays the film" },
-    { id: "landing", title: "A landing", file: "Landing.swift", text: landingFile,
-      caption: "six bands on one grown axis: the order is the page" },
+      caption: "12,800 people: judged here in 0.2 s, by the Swift judge in 1.1 s" },
     { id: "basics", title: "Basics", file: "Basics.swift", text: basicsFile,
-      caption: "a plate and a card row: widths divide, the frame derives" },
+      caption: "layout in four steps: a row, three shares, a dot, a film" },
+    { id: "rules", title: "Rules", file: "Rules.swift", text: rulesFile,
+      caption: "how to write here: the two moves, the five forms, the law" },
+    { id: "faq", title: "FAQ", file: "FAQ.swift", text: faqFile,
+      caption: "the FAQ is a file: edit an answer and the page redraws it" },
 ];
 
 // the lies the buttons plant on the company tab, anchored on the pristine snippets
@@ -1694,9 +3229,10 @@ function syncPaint() {
         return;
     }
     const lines = paint(editor.value).split("\n");
-    for (const [line, note] of notesFresh ? lineNotes : new Map()) {
+    for (const [line, entry] of notesFresh ? lineNotes : new Map()) {
         if (line - 1 < lines.length) {
-            lines[line - 1] += '<span class="line-note">' + escapeMarkup(note) + "</span>";
+            lines[line - 1] += '<span class="line-note' + (entry.kind === "law" ? " law" : "")
+                + '">' + escapeMarkup(entry.note) + "</span>";
         }
     }
     highlight.innerHTML = lines.join("\n") + "\n";
@@ -1712,7 +3248,8 @@ function syncGutter() {
     const visible = Math.ceil(editor.clientHeight / editorLineHeight) + 10;
     const rows = [];
     for (let line = first + 1; line <= Math.min(total, first + visible); line += 1) {
-        rows.push('<div class="' + (notesFresh && lineNotes.has(line) ? "has-error" : "")
+        const entry = notesFresh ? lineNotes.get(line) : undefined;
+        rows.push('<div class="' + (entry ? (entry.kind === "law" ? "has-law" : "has-error") : "")
             + '">' + line + "</div>");
     }
     gutterInner.style.top = (14 + first * editorLineHeight - editor.scrollTop) + "px";
@@ -1737,10 +3274,17 @@ const lastGood = new Map();
 let standingMarkup = "";
 
 // the engine tripping is a state like any other: named in the chip, never a frozen page
+function setCanvasMarkup(markup) {
+    canvases.innerHTML = markup;
+    for (const svg of canvases.querySelectorAll("svg")) {
+        svg.style.maxWidth = (svg.viewBox.baseVal.width * 1.5) + "px";
+    }
+}
+
 function renderFailed(failure) {
     const chip = document.getElementById("verdict-chip");
     chip.className = "chip bad";
-    chip.textContent = "✗ the engine tripped · the canvas keeps the last state that held";
+    chip.textContent = "✗ the page's engine failed · the canvas shows the last good state";
     status.textContent = "";
     verdicts.innerHTML = "";
     const card = document.createElement("div");
@@ -1776,57 +3320,87 @@ function render() {
     }
     document.getElementById("crash").style.display = "none";
     lastReads = drawn.reads;
+    // the `?` reading is the echo of a field already reported by name: show it only alone
+    if (drawn.errors.length > 1) {
+        drawn.errors = drawn.errors.filter((error) => error !== "no reading for `?`");
+    }
     lineNotes = new Map();
     for (const refusal of verdict.refusals) {
-        if (!lineNotes.has(refusal.line)) lineNotes.set(refusal.line, refusal.premise);
+        if (!lineNotes.has(refusal.line)) {
+            lineNotes.set(refusal.line, { note: refusal.premise, kind: "judge" });
+        }
+    }
+    const importRefusals = [];
+    editor.value.split("\n").forEach((line, index) => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("import ")
+            && trimmed !== "import VerificationIsIdentification"
+            && trimmed !== "import DocumentKit") {
+            importRefusals.push({ line: index + 1,
+                premise: "the imports are fixed: only VerificationIsIdentification and DocumentKit stand here" });
+        }
+    });
+    for (const refusal of importRefusals) {
+        if (!lineNotes.has(refusal.line)) {
+            lineNotes.set(refusal.line, { note: refusal.premise, kind: "judge" });
+        }
+    }
+    const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, editor.value);
+    for (const objection of objections) {
+        if (!lineNotes.has(objection.line)) {
+            lineNotes.set(objection.line, { note: objection.premise, kind: "law" });
+        }
+    }
+    for (const error of drawn.errors) {
+        const line = errorLine(error);
+        if (line && !lineNotes.has(line)) lineNotes.set(line, { note: error, kind: "judge" });
     }
     notesFresh = true;
     syncPaint();
-    const broke = verdict.refusals.length > 0 || drawn.errors.length > 0;
+    const broke = verdict.refusals.length > 0 || drawn.errors.length > 0
+        || importRefusals.length > 0;
     const markup = drawn.canvases.map((canvas) => canvas.svg).join("");
     if (broke && lastGood.has(activeTab.id)) {
         canvases.classList.add("stale");
         if (standingMarkup !== lastGood.get(activeTab.id)) {
             standingMarkup = lastGood.get(activeTab.id);
-            canvases.innerHTML = standingMarkup;
+            setCanvasMarkup(standingMarkup);
         }
     } else {
         canvases.classList.remove("stale");
         if (standingMarkup !== markup) {
             standingMarkup = markup;
-            canvases.innerHTML = markup;
+            setCanvasMarkup(markup);
         }
         if (!broke) lastGood.set(activeTab.id, markup);
     }
-    status.innerHTML = "<b>" + verdict.declarations + "</b> declarations · <b>"
-        + verdict.lookups + "</b> lookups · <b>" + verdict.premises
-        + "</b> premises · <b>" + verdict.milliseconds.toFixed(1) + "</b> ms";
+    status.innerHTML = counted(verdict.declarations, "declaration") + " · "
+        + (verdict.lookups + verdict.premises === 0
+            ? "no claims in this file"
+            : counted(verdict.lookups, "lookup") + " · " + counted(verdict.premises, "premise"))
+        + " · <b>" + verdict.milliseconds.toFixed(1) + "</b>&nbsp;ms";
     const chip = document.getElementById("verdict-chip");
-    const broken = verdict.refusals.length + drawn.errors.length;
-    if (broken === 0) {
+    const broken = verdict.refusals.length + drawn.errors.length + importRefusals.length;
+    if (broken === 0 && objections.length > 0) {
+        chip.className = "chip law";
+        chip.textContent = "✓ the judge holds · the law objects to " + objections.length
+            + " line" + (objections.length > 1 ? "s" : "");
+    } else if (broken === 0) {
         chip.className = "chip ok";
         chip.textContent = "✓ the judge holds";
     } else {
         chip.className = "chip bad";
         chip.textContent = "✗ refuses " + broken + " claim" + (broken > 1 ? "s" : "")
-            + (lastGood.has(activeTab.id) ? " · the canvas keeps the last state that held" : "");
+            + (lastGood.has(activeTab.id) ? " · the canvas shows the last good state" : "");
     }
     verdicts.innerHTML = "";
-    if (broken === 0) return;
-    for (const refusal of verdict.refusals) {
+    if (broken === 0 && objections.length === 0) return;
+    for (const refusal of [...verdict.refusals, ...importRefusals]) {
         const card = document.createElement("div");
         card.className = "refusal";
         const where = document.createElement("div");
         where.className = "where";
         where.textContent = activeTab.file + " : " + refusal.line;
-        const why = document.createElement("span");
-        why.className = "why";
-        why.textContent = "why?";
-        why.addEventListener("click", (event) => {
-            event.stopPropagation();
-            fragmentPanel.classList.add("open");
-        });
-        where.append(why);
         const what = document.createElement("div");
         what.className = "what";
         what.textContent = refusal.premise;
@@ -1834,18 +3408,45 @@ function render() {
         card.addEventListener("click", () => reveal(refusal.line));
         verdicts.append(card);
     }
+    const spokenLines = new Set([...verdict.refusals, ...importRefusals].map((r) => r.line));
+    for (const objection of objections.filter((o) => !spokenLines.has(o.line))) {
+        const card = document.createElement("div");
+        card.className = "refusal law";
+        const where = document.createElement("div");
+        where.className = "where";
+        where.textContent = activeTab.file + " : " + objection.line + " · " + objection.rule;
+        const what = document.createElement("div");
+        what.className = "what";
+        what.textContent = objection.premise;
+        card.append(where, what);
+        card.addEventListener("click", () => reveal(objection.line));
+        verdicts.append(card);
+    }
     for (const error of drawn.errors) {
         const card = document.createElement("div");
         card.className = "refusal";
         const where = document.createElement("div");
         where.className = "where";
-        where.textContent = "the renderer";
+        const line = errorLine(error);
+        where.textContent = "the renderer" + (line ? " · " + activeTab.file + " : " + line : "");
         const what = document.createElement("div");
         what.className = "what";
         what.textContent = error;
         card.append(where, what);
+        if (line) card.addEventListener("click", () => reveal(line));
         verdicts.append(card);
     }
+}
+
+// a renderer message names the declaration it stumbled on: that name has a line
+function errorLine(message) {
+    if (!lastParsed) return null;
+    const quoted = message.match(/`([A-Za-z_][A-Za-z0-9_.]*)`/);
+    const leading = message.match(/^([A-Z][A-Za-z0-9]*)\b/);
+    const name = (quoted && quoted[1]) || (leading && leading[1]);
+    if (!name) return null;
+    const declaration = lastParsed.declarations.get(name);
+    return declaration ? declaration.line : null;
 }
 
 function reveal(line) {
@@ -1946,6 +3547,7 @@ function plantDeepLie() {
 function generateCompany(count) {
     storage.removeItem(storageKey(activeTab));
     replaceEditorText(makeBigCompany(count));
+    renderActions(activeTab);
 }
 
 function actionButton(label, handler, loud) {
@@ -1954,6 +3556,13 @@ function actionButton(label, handler, loud) {
     if (loud) button.className = "loud";
     button.addEventListener("click", handler);
     return button;
+}
+
+function thousands(value) {
+    return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+}
+function counted(value, word) {
+    return "<b>" + thousands(value) + "</b> " + word + (value === 1 ? "" : "s");
 }
 
 function renderActions(tab) {
@@ -1969,11 +3578,17 @@ function renderActions(tab) {
             actionButton("Break a name", () => plantLie("rank")));
     }
     if (tab.id === "scale") {
-        bar.append(actionButton("200", () => generateCompany(200)),
-            actionButton("1 000", () => generateCompany(1000)),
-            actionButton("5 000", () => generateCompany(5000)),
-            actionButton("12 800", () => generateCompany(12800), true),
-            actionButton("Plant a lie deep", plantDeepLie));
+        const current = (editor.value.match(/public enum Emp\d+: Employee/g) || []).length;
+        caption.textContent = current === 12800
+            ? "12\u2009800 people: 0.2 s here, 1.1 s by the Swift judge"
+            : "a generated company of " + thousands(current) + " people";
+        for (const size of [200, 1000, 5000, 12800]) {
+            bar.append(actionButton(thousands(size), () => generateCompany(size), size === current));
+        }
+        bar.append(actionButton("Plant a lie deep", plantDeepLie));
+    }
+    if (tab.id === "basics") {
+        bar.append(actionButton("Replay the film", () => { setCanvasMarkup(standingMarkup); }));
     }
 }
 
@@ -1984,6 +3599,8 @@ function selectTab(tab) {
     }
     editor.value = storage.getItem(storageKey(tab))
         ?? tab.text ?? (tab.text = makeBigCompany(200));
+    editor.scrollTop = 0;
+    editor.scrollLeft = 0;
     renderActions(tab);
     syncPaint();
     render();
@@ -2231,13 +3848,16 @@ function completionKind(name) {
     if (name === "self" || keywordPool.includes(name)) return "keyword";
     if (name === "StructureBuilder") return "attribute";
     if (name === "Next") return "cycle";
-    if (localNames.has(name)) return "here";
+    if (localNames.has(name)) return "this file";
     if (seedCount.has(name)) return "count";
     if (seedText.has(name)) return "style";
-    if (gatePremises.has(name)) return "gate";
-    if (kitReadings.has(name) || spanShapes.has(name)) return "kit";
-    return "name";
+    if (gatePremises.has(name)) return "checked pair";
+    if (kitReadings.has(name) || spanShapes.has(name)) return "drawing";
+    return "people";
 }
+
+// a popup that lost its editor is stale: the row's own mousedown prevents this blur
+editor.addEventListener("blur", () => hideCompletion());
 
 function hideCompletion() {
     completion.style.display = "none";
@@ -2454,11 +4074,14 @@ editor.addEventListener("keydown", (event) => {
 editor.addEventListener("blur", () => setTimeout(hideCompletion, 150));
 
 let pending = null;
-editor.addEventListener("input", () => {
+editor.addEventListener("input", (event) => {
     notesFresh = false;
     if (editor.value.length < 1000000) storage.setItem(storageKey(activeTab), editor.value);
     syncPaint();
-    offerCompletion();
+    const typing = (event.inputType || "").startsWith("insertText")
+        || event.inputType === "insertCompositionText";
+    if (typing) offerCompletion();
+    else hideCompletion();
     requestAnimationFrame(() => {
         highlight.scrollTop = editor.scrollTop;
         highlight.scrollLeft = editor.scrollLeft;
@@ -2469,9 +4092,31 @@ editor.addEventListener("input", () => {
 });
 window.addEventListener("resize", syncGutter);
 
+// ── the splitter: the preview width is an input you hold in your hand ──
+const splitter = document.getElementById("splitter");
+const editorWrap = document.getElementById("editor-wrap");
+let splitDrag = null;
+splitter.addEventListener("pointerdown", (event) => {
+    splitDrag = { fromX: event.clientX, fromWidth: editorWrap.getBoundingClientRect().width };
+    splitter.classList.add("dragging");
+    try { splitter.setPointerCapture(event.pointerId); } catch { /* a capture is comfort, not correctness */ }
+    event.preventDefault();
+});
+splitter.addEventListener("pointermove", (event) => {
+    if (!splitDrag) return;
+    const total = splitter.parentElement.getBoundingClientRect().width;
+    const width = splitDrag.fromWidth + (event.clientX - splitDrag.fromX);
+    const clamped = Math.max(280, Math.min(total - 240, width));
+    editorWrap.style.flex = "0 0 " + clamped + "px";
+});
+const splitDone = () => { splitDrag = null; splitter.classList.remove("dragging"); };
+splitter.addEventListener("pointerup", splitDone);
+splitter.addEventListener("pointercancel", splitDone);
+splitter.addEventListener("dblclick", () => { editorWrap.style.flex = ""; });
+
 document.getElementById("theme").addEventListener("click", () => {
     const dark = canvases.classList.toggle("dark");
-    document.getElementById("theme").textContent = dark ? "Light" : "Dark";
+    document.getElementById("theme").textContent = dark ? "Light canvas" : "Dark canvas";
 });
 
 document.getElementById("reset").addEventListener("click", () => {
@@ -2510,100 +4155,10 @@ function selfCheck() {
                 && verdict.refusals[index].premise === want.premise);
         if (matches) passed += 1;
     }
-    badge.textContent = "against the Swift judge: " + passed + "/" + total;
+    badge.textContent = "self-test: " + passed + "/" + total + " vs the reference judge";
     badge.className = "badge " + (passed === total ? "ok" : "bad");
 }
 
-// ── the fragment panel: every rule read off the tables the judge actually consults ──
-function chips(names, kind) {
-    return '<div class="chips">' + names.map((name) =>
-        '<span class="chip-name ' + (kind ?? "") + '">' + name + "</span>").join("") + "</div>";
-}
-
-function usedInFile() {
-    const used = { gates: new Set(), conformances: new Set(), kit: new Set() };
-    if (!lastParsed) return used;
-    for (const declaration of lastParsed.declarations.values()) {
-        for (const conformance of declaration.conformances) {
-            if (conformanceRequirements.has(conformance)) used.conformances.add(conformance);
-            if (kitReadings.has(conformance) || spanShapes.has(conformance)) {
-                used.kit.add(conformance);
-            }
-        }
-        for (const entry of declaration.entries) {
-            if (gatePremises.has(entry.head)) used.gates.add(entry.head);
-            if (kitReadings.has(entry.head)) used.kit.add(entry.head);
-        }
-    }
-    return used;
-}
-
-function buildFragmentPanel() {
-    const parts = [];
-    parts.push('<p class="panel-intro">This page speaks a small stated subset of Swift. '
-        + "Everything below is read from the judge's own tables, so it cannot drift.</p>");
-
-    parts.push("<h4>The grammar, whole</h4>");
-    for (const form of [
-        "<code>public enum Name: Conf {</code> declares a thing, nested slices legal",
-        "<code>public typealias Key = Target</code> states a coordinate: a name, a dotted path, a reader",
-        "<code>extension Name { … typeName … }</code> gives an atom its literal reading",
-        "<code>@StructureBuilder … body</code> lists members: <code>Name.self</code> or <code>Gate&lt;A, B&gt;.self</code>",
-        "anything else is refused with its line, since the language is stated, never guessed",
-    ]) parts.push('<div class="row">' + form + "</div>");
-
-    const used = usedInFile();
-    parts.push("<h4>In this file</h4>");
-    if (lastParsed) {
-        parts.push('<div class="row muted">' + lastParsed.declarations.size
-            + " declarations of yours, checked against the rows below</div>");
-    }
-    for (const gate of used.gates) {
-        const premise = gatePremises.get(gate);
-        const right = premise[1] ? "B." + premise[1] : "B";
-        parts.push('<div class="row"><b>' + gate + "</b>&lt;A, B&gt; <span class=\"muted\">requires</span> A."
-            + premise[0] + " == " + right + "</div>");
-    }
-    for (const name of used.conformances) {
-        parts.push('<div class="row"><b>' + name + "</b> <span class=\"muted\">wants</span> "
-            + conformanceRequirements.get(name)
-                .map((requirement) => requirement[0] + " in " + requirement[1]).join(", ")
-            + "</div>");
-    }
-    for (const name of used.kit) {
-        if (kitReadings.has(name)) {
-            parts.push('<div class="row"><b>' + name + "</b> <span class=\"muted\">"
-                + kitReadings.get(name) + "</span></div>");
-        }
-    }
-    if (used.gates.size + used.conformances.size + used.kit.size === 0) {
-        parts.push('<div class="row muted">this file only declares atoms so far</div>');
-    }
-
-    parts.push("<h4>Every name you may use</h4>");
-    parts.push('<div class="sub">the kit\'s combinators</div>');
-    parts.push(chips([...kitReadings.keys()]));
-    parts.push('<div class="sub">counts the axes measure by</div>');
-    parts.push(chips([...seedCount.keys()].filter((name) => name !== "Never")));
-    parts.push('<div class="sub">colours, sizes, weights</div>');
-    parts.push(chips([...seedText.keys()]
-        .filter((name) => name !== "SoftShadow" && name !== "FontStack")));
-    parts.push('<div class="sub">the people vocabulary</div>');
-    parts.push(chips([...ranks, ...departments, ...workplaces, ...shareHomes.keys()], "people"));
-    parts.push('<div class="row muted">a name none of these tables answer for waves red in the editor</div>');
-    document.getElementById("fragment-body").innerHTML = parts.join("");
-}
-
-const fragmentPanel = document.getElementById("fragment-panel");
-document.getElementById("fragment-button").addEventListener("click", () => {
-    buildFragmentPanel();
-    fragmentPanel.classList.toggle("open");
-});
-document.getElementById("fragment-close").addEventListener("click", () => {
-    fragmentPanel.classList.remove("open");
-});
-
-buildFragmentPanel();
 selfCheck();
 selectTab(tabs[0]);
 </script>
