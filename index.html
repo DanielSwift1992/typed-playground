@@ -122,13 +122,23 @@
     width: 10px; height: 10px; border-radius: 3px; display: inline-block;
     border: 1px solid var(--line);
   }
+  #pager {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    display: none; align-items: center; gap: 6px; background: var(--paper);
+    padding-left: 10px; font-size: 11.5px; color: var(--ink);
+  }
+  #pager button {
+    font: 12px system-ui, sans-serif; padding: 1px 8px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--mist); cursor: pointer;
+  }
+  #pager button:hover { border-color: var(--action); color: var(--action); }
   #inspector .tag {
     font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
     color: var(--muted); margin-right: 8px;
   }
   #inspector b { color: var(--ink); font-weight: 600; }
-  #editor { padding-bottom: 40px; }
-  #highlight { padding-bottom: 40px; }
+  #editor { padding-bottom: 120px; }
+  #highlight { padding-bottom: 120px; }
   #actions-row {
     display: flex; align-items: center; background: var(--paper);
     border-bottom: 1px solid var(--line); padding-right: 16px;
@@ -225,7 +235,7 @@
     <pre id="highlight"></pre>
     <textarea id="editor" spellcheck="false"></textarea>
     <div id="gutter"><div id="gutter-inner"></div></div>
-    <div id="inspector"><span class="tag">inspect</span>caret on a name shows its meaning here · ⌥-click jumps to its declaration</div>
+    <div id="inspector"><span class="tag">inspect</span>caret on a name shows its meaning here · ⌥-click jumps to its declaration<span id="pager"><button id="page-prev">‹</button><span id="page-label"></span><button id="page-next">›</button></span></div>
   </div>
   <div id="splitter" title="drag to resize the preview · double-click to reset"></div>
   <aside>
@@ -313,7 +323,8 @@ const kitVocabulary = {
     bareSeeds: new Set(["RestAir"]),
 };
 
-const basicsFile = `import DocumentKit
+const basicsFile = `import VerificationIsIdentification
+import DocumentKit
 
 // Layout as a story, four steps down one canvas: a row that divides a width,
 // a row of three equal shares, a band with a breathing dot, and a three-frame
@@ -1284,7 +1295,8 @@ function makeBigCompany(count) {
 const organizationView = organizationFile.slice(0,
     organizationFile.indexOf("// ── the data the page reads"));
 
-const introFile = `import DocumentKit
+const introFile = `import VerificationIsIdentification
+import DocumentKit
 
 // The introduction is a Swift file like every other tab: the page draws its own
 // manual. Edit any string below: the preview follows on the keystroke.
@@ -2117,7 +2129,8 @@ public enum IntroArt: GrownDiagram {
 }
 `;
 
-const rulesFile = `import DocumentKit
+const rulesFile = `import VerificationIsIdentification
+import DocumentKit
 
 // The rules are a file too: the two moves, the five forms, the law, the names.
 // A form card is a Group of rows sharing one slot: the face row, then the text
@@ -2786,7 +2799,8 @@ public enum RulesArt: GrownDiagram {
 }
 `;
 
-const faqFile = `import DocumentKit
+const faqFile = `import VerificationIsIdentification
+import DocumentKit
 
 // Five questions, each a card: the question in bold, the answer in two lines.
 // The card band is a Group of rows sharing one slot, like the Rules tab.
@@ -3225,48 +3239,12 @@ function paint(text) {
 let lineNotes = new Map();
 let notesFresh = false;
 
-// a giant file keeps its highlight, but only the visible window of it: the
-// mirror holds ~60 painted lines between two spacers, rebuilt next frame
-let giantLines = null;
-let giantFrame = 0;
-function scheduleGiantPaint(dirty) {
-    if (dirty) giantLines = null;
-    if (giantFrame) return;
-    giantFrame = requestAnimationFrame(() => {
-        giantFrame = 0;
-        if (editor.value.length <= 300000) return;
-        if (!giantLines) giantLines = editor.value.split("\n");
-        const total = giantLines.length;
-        const first = Math.max(0, Math.floor(editor.scrollTop / editorLineHeight) - 5);
-        const visible = Math.ceil(editor.clientHeight / editorLineHeight) + 10;
-        const last = Math.min(total, first + visible);
-        const lines = paint(giantLines.slice(first, last).join("\n")).split("\n");
-        for (let i = 0; i < lines.length; i += 1) {
-            const entry = notesFresh ? lineNotes.get(first + i + 1) : undefined;
-            if (entry) {
-                lines[i] += '<span class="line-note' + (entry.kind === "law" ? " law" : "")
-                    + '">' + escapeMarkup(entry.note) + "</span>";
-            }
-        }
-        highlight.innerHTML = '<div style="height:' + (first * editorLineHeight) + 'px"></div>'
-            + lines.join("\n")
-            + '<div style="height:' + ((total - last) * editorLineHeight) + 'px"></div>';
-        highlight.scrollTop = editor.scrollTop;
-        highlight.scrollLeft = editor.scrollLeft;
-        syncGutter();
-    });
-}
-
 function syncPaint() {
-    if (editor.value.length > 300000) {
-        scheduleGiantPaint(true);
-        return;
-    }
-    giantLines = null;
     const lines = paint(editor.value).split("\n");
     for (const [line, entry] of notesFresh ? lineNotes : new Map()) {
-        if (line - 1 < lines.length) {
-            lines[line - 1] += '<span class="line-note' + (entry.kind === "law" ? " law" : "")
+        const local = line - pageStart();
+        if (local >= 1 && local - 1 < lines.length) {
+            lines[local - 1] += '<span class="line-note' + (entry.kind === "law" ? " law" : "")
                 + '">' + escapeMarkup(entry.note) + "</span>";
         }
     }
@@ -3283,18 +3261,15 @@ function syncGutter() {
     const visible = Math.ceil(editor.clientHeight / editorLineHeight) + 10;
     const rows = [];
     for (let line = first + 1; line <= Math.min(total, first + visible); line += 1) {
-        const entry = notesFresh ? lineNotes.get(line) : undefined;
+        const globalLine = line + pageStart();
+        const entry = notesFresh ? lineNotes.get(globalLine) : undefined;
         rows.push('<div class="' + (entry ? (entry.kind === "law" ? "has-law" : "has-error") : "")
-            + '">' + line + "</div>");
+            + '">' + globalLine + "</div>");
     }
     gutterInner.style.top = (14 + first * editorLineHeight - editor.scrollTop) + "px";
     gutterInner.innerHTML = rows.join("");
 }
 editor.addEventListener("scroll", () => {
-    if (editor.value.length > 300000) {
-        scheduleGiantPaint(false);
-        return;
-    }
     highlight.scrollTop = editor.scrollTop;
     highlight.scrollLeft = editor.scrollLeft;
     syncGutter();
@@ -3362,7 +3337,7 @@ function render() {
     let verdict;
     let drawn;
     try {
-        verdict = judge(activeTab.file, editor.value, kitVocabulary);
+        verdict = judge(activeTab.file, fullText(), kitVocabulary);
         lastParsed = verdict.parsed;
         localNames = new Set([...verdict.parsed.declarations.keys(),
             ...verdict.parsed.topAliases.keys(), ...verdict.parsed.literals.keys()]);
@@ -3384,12 +3359,13 @@ function render() {
     }
     lineNotes = new Map();
     for (const refusal of verdict.refusals) {
-        if (!lineNotes.has(refusal.line)) {
-            lineNotes.set(refusal.line, { note: refusal.premise, kind: "judge" });
+        refusal.shownLine = refineRefusalLine(refusal.premise, refusal.line);
+        if (!lineNotes.has(refusal.shownLine)) {
+            lineNotes.set(refusal.shownLine, { note: refusal.premise, kind: "judge" });
         }
     }
     const importRefusals = [];
-    const allLines = editor.value.split("\n");
+    const allLines = fullText().split("\n");
     allLines.forEach((line, index) => {
         const trimmed = line.trim();
         if (trimmed.startsWith("import ")
@@ -3411,7 +3387,7 @@ function render() {
             lineNotes.set(refusal.line, { note: refusal.premise, kind: "judge" });
         }
     }
-    const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, editor.value);
+    const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, fullText());
     for (const objection of objections) {
         if (!lineNotes.has(objection.line)) {
             lineNotes.set(objection.line, { note: objection.premise, kind: "law" });
@@ -3462,16 +3438,17 @@ function render() {
     verdicts.innerHTML = "";
     if (broken === 0 && objections.length === 0) return;
     for (const refusal of [...verdict.refusals, ...importRefusals]) {
+        const shown = refusal.shownLine ?? refusal.line;
         const card = document.createElement("div");
         card.className = "refusal";
         const where = document.createElement("div");
         where.className = "where";
-        where.textContent = activeTab.file + " : " + refusal.line;
+        where.textContent = activeTab.file + " : " + shown;
         const what = document.createElement("div");
         what.className = "what";
         what.textContent = refusal.premise;
         card.append(where, what);
-        card.addEventListener("click", () => reveal(refusal.line));
+        card.addEventListener("click", () => reveal(shown));
         verdicts.append(card);
     }
     const spokenLines = new Set([...verdict.refusals, ...importRefusals].map((r) => r.line));
@@ -3504,6 +3481,39 @@ function render() {
     }
 }
 
+// the judge pins a gate refusal to the line its buffer drained on, one entry
+// late (the Swift judge does the same, and the golden vectors seal it): the page
+// refines the shown line by the names the premise itself carries
+function refineRefusalLine(premise, fallback) {
+    const lines = fullText().split("\n");
+    const gate = premise.match(/requires (\w+)\.(\w+) == (\w+)/);
+    if (gate) {
+        const [, left, , right] = gate;
+        const leftWord = new RegExp("\\b" + left + "\\b");
+        const rightWord = new RegExp("\\b" + right + "\\b");
+        for (let i = 0; i < lines.length; i += 1) {
+            if (!leftWord.test(lines[i])) continue;
+            for (let j = Math.max(0, i - 3); j <= Math.min(lines.length - 1, i + 3); j += 1) {
+                if (j !== i && rightWord.test(lines[j])) return i + 1;
+                if (j === i && lines[i].indexOf(right) > lines[i].indexOf(left)) return i + 1;
+            }
+        }
+        return fallback;
+    }
+    const slot = premise.match(/^(\w+)\.(\w+)[ :=]/) || premise.match(/(\w+)\.(\w+) = /);
+    if (slot && lastParsed) {
+        const [, owner, axis] = slot;
+        const declaration = lastParsed.declarations.get(owner);
+        if (declaration) {
+            for (let i = declaration.line - 1; i < Math.min(lines.length, declaration.line + 40); i += 1) {
+                if (lines[i].includes("typealias " + axis)) return i + 1;
+                if (lines[i].trim() === "}") break;
+            }
+        }
+    }
+    return fallback;
+}
+
 // a renderer message names the declaration it stumbled on: that name has a line
 function errorLine(message) {
     if (!lastParsed) return null;
@@ -3516,6 +3526,10 @@ function errorLine(message) {
 }
 
 function reveal(line) {
+    if (bigDoc) {
+        gotoPage(Math.floor((line - 1) / pageLines));
+        line -= pageStart();
+    }
     const lines = editor.value.split("\n");
     let position = 0;
     for (let index = 0; index < line - 1 && index < lines.length; index += 1) {
@@ -3535,25 +3549,77 @@ function insertText(text) {
 }
 
 // replaces the whole text by touching only the span that differs, through the undo stack
-// a button does not edit: it refreshes the state to a known file, whole and at once
-function setEditorFile(next) {
-    editor.value = next;
+// a giant file reads in pages of two thousand lines: the editor holds one page,
+// the judge reads the whole file, and a refusal card turns to its page itself
+const pageLines = 2000;
+let bigDoc = null;
+
+function pageStart() {
+    return bigDoc ? bigDoc.page * pageLines : 0;
+}
+
+function fullText() {
+    if (!bigDoc) return editor.value;
+    return bigDoc.headText + editor.value + bigDoc.tailText;
+}
+
+function loadFile(next, page) {
+    if (next.length > 300000) {
+        const lines = next.split("\n");
+        const total = Math.max(1, Math.ceil(lines.length / pageLines));
+        const at = Math.max(0, Math.min(page ?? 0, total - 1));
+        const head = lines.slice(0, at * pageLines);
+        const slice = lines.slice(at * pageLines, (at + 1) * pageLines);
+        const tail = lines.slice((at + 1) * pageLines);
+        bigDoc = {
+            page: at, total,
+            headText: head.length > 0 ? head.join("\n") + "\n" : "",
+            tailText: tail.length > 0 ? "\n" + tail.join("\n") : "",
+        };
+        editor.value = slice.join("\n");
+    } else {
+        bigDoc = null;
+        editor.value = next;
+    }
     editor.scrollTop = 0;
     editor.scrollLeft = 0;
+    syncPager();
+}
+
+function gotoPage(page) {
+    if (!bigDoc || page === bigDoc.page) return;
+    loadFile(fullText(), page);
+    syncPaint();
+}
+
+function syncPager() {
+    const pager = document.getElementById("pager");
+    if (!bigDoc) {
+        pager.style.display = "none";
+        return;
+    }
+    pager.style.display = "inline-flex";
+    document.getElementById("page-label").textContent =
+        "page " + (bigDoc.page + 1) + " of " + bigDoc.total;
+}
+
+// a button does not edit: it refreshes the state to a known file, whole and at once
+function setEditorFile(next) {
+    loadFile(next, 0);
     editor.dispatchEvent(new Event("input"));
 }
 
 function plantLie(name) {
     const [anchor, planted] = lies[name];
-    if (!editor.value.includes(anchor)) {
+    if (!fullText().includes(anchor)) {
         status.innerHTML = "the anchor is edited away: reset first";
         return;
     }
-    setEditorFile(editor.value.replace(anchor, planted));
+    setEditorFile(fullText().replace(anchor, planted));
 }
 
 function hireOne() {
-    const text = editor.value;
+    const text = fullText();
     const indices = [...text.matchAll(/public enum Emp(\d+): Employee/g)]
         .map((match) => Number(match[1]));
     if (indices.length === 0) return;
@@ -3586,7 +3652,7 @@ function hireOne() {
 }
 
 function plantDeepLie() {
-    const text = editor.value;
+    const text = fullText();
     const head = text.lastIndexOf("VerifiedView<");
     if (head < 0) return;
     const tail = text.indexOf(">.self", head);
@@ -3634,7 +3700,7 @@ function renderActions(tab) {
             actionButton("Break a name", () => plantLie("rank")));
     }
     if (tab.id === "scale") {
-        const current = (editor.value.match(/public enum Emp\d+: Employee/g) || []).length;
+        const current = (fullText().match(/public enum Emp\d+: Employee/g) || []).length;
         caption.textContent = current === 12800
             ? "12\u2009800 people: 0.2 s here, 1.1 s by the Swift judge"
             : "a generated company of " + thousands(current) + " people";
@@ -3653,10 +3719,8 @@ function selectTab(tab) {
     for (const button of tabBar.children) {
         button.className = button.dataset.id === tab.id ? "active" : "";
     }
-    editor.value = storage.getItem(storageKey(tab))
-        ?? tab.text ?? (tab.text = makeBigCompany(12800));
-    editor.scrollTop = 0;
-    editor.scrollLeft = 0;
+    loadFile(storage.getItem(storageKey(tab))
+        ?? tab.text ?? (tab.text = makeBigCompany(12800)), 0);
     renderActions(tab);
     syncPaint();
     render();
@@ -4003,10 +4067,6 @@ function settleOwner(path, position) {
 function offerCompletion() {
     const at = editor.selectionStart;
     const text = editor.value;
-    if (text.length > 300000) {
-        hideCompletion();
-        return;
-    }
     let start = at;
     while (start > 0 && /[A-Za-z0-9_]/.test(text[start - 1])) start -= 1;
     const prefix = text.slice(start, at);
@@ -4148,9 +4208,9 @@ editor.addEventListener("input", (event) => {
     });
     clearTimeout(pending);
     pending = setTimeout(() => {
-        if (editor.value.length < 1000000) storage.setItem(storageKey(activeTab), editor.value);
+        if (fullText().length < 1000000) storage.setItem(storageKey(activeTab), fullText());
         render();
-    }, editor.value.length > 1000000 ? 350 : 120);
+    }, bigDoc ? 350 : 120);
 });
 window.addEventListener("resize", syncGutter);
 
@@ -4175,6 +4235,13 @@ const splitDone = () => { splitDrag = null; splitter.classList.remove("dragging"
 splitter.addEventListener("pointerup", splitDone);
 splitter.addEventListener("pointercancel", splitDone);
 splitter.addEventListener("dblclick", () => { editorWrap.style.flex = ""; });
+
+document.getElementById("page-prev").addEventListener("click", () => {
+    if (bigDoc) gotoPage(bigDoc.page - 1);
+});
+document.getElementById("page-next").addEventListener("click", () => {
+    if (bigDoc) gotoPage(bigDoc.page + 1);
+});
 
 document.getElementById("theme").addEventListener("click", () => {
     const dark = canvases.classList.toggle("dark");
