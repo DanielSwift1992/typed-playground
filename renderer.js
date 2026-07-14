@@ -37,7 +37,7 @@ const seedText = new Map([
 const seedCount = new Map([
     ["U1", 1], ["U2", 2], ["U4", 4], ["U8", 8], ["U16", 16], ["U32", 32],
     ["U64", 64], ["U128", 128], ["U256", 256], ["U512", 512],
-    ["EdgeMargin", 16], ["Breath", 16], ["HairBreath", 2],
+    ["EdgeMargin", 16], ["Breath", 16], ["HairBreath", 8],
     ["WideSurface", 960], ["FilmStripTall", 150], ["Never", 0],
     ["TrackHeight", 32], ["DotSlot", 12], ["KeySide", 80],
 ]);

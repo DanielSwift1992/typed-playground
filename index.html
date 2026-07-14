@@ -266,7 +266,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 28</span>
+  <span style="float: right; color: var(--muted);">rev 29</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -285,9 +285,9 @@ window.addEventListener("error", (event) => {
 });
 </script>
 <script src="codemirror.js"></script>
-<script src="judge.js?v=7"></script>
-<script src="lint.js?v=3"></script>
-<script src="press.js?v=1"></script>
+<script src="judge.js?v=8"></script>
+<script src="lint.js?v=4"></script>
+<script src="press.js?v=2"></script>
 <script src="renderer.js?v=5"></script>
 <script>
 "use strict";
@@ -1886,7 +1886,7 @@ public enum Judge3200Row: HFlow {
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
         Air<NColumn>.self
-        Fixed<HairBreath, JudgeBar>.self
+        Fixed<U2, JudgeBar>.self
         Air<U8>.self
         Flexible<Judge3200Label>.self
         Air<EdgeMargin>.self
@@ -1910,7 +1910,7 @@ public enum Judge6400Row: HFlow {
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
         Air<NColumn>.self
-        Fixed<HairBreath, JudgeBar>.self
+        Fixed<U2, JudgeBar>.self
         Air<U8>.self
         Flexible<Judge6400Label>.self
         Air<EdgeMargin>.self
@@ -1934,7 +1934,7 @@ public enum Judge12800Row: HFlow {
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
         Air<NColumn>.self
-        Fixed<HairBreath, JudgeBar>.self
+        Fixed<U2, JudgeBar>.self
         Air<U8>.self
         Flexible<Judge12800Label>.self
         Air<EdgeMargin>.self
@@ -4191,7 +4191,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 28;
+const contentRevision = 29;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
@@ -5034,15 +5034,20 @@ function offerCompletion() {
     const pool = completionPool;
     const seen = new Set();
     const lowered = prefix.toLowerCase();
-    completionItems = [];
+    // a name offers itself on any part, not only its head: `Stage` finds
+    // PinStage0; names that start with the typed piece still sort first
+    const heads = [];
+    const tails = [];
     for (const name of pool) {
-        if (name.toLowerCase().startsWith(lowered) && name !== prefix && !seen.has(name)
-            && !quietNames.has(name)) {
-            seen.add(name);
-            completionItems.push(name);
-        }
+        if (name === prefix || seen.has(name) || quietNames.has(name)) continue;
+        const at = name.toLowerCase().indexOf(lowered);
+        if (at < 0) continue;
+        seen.add(name);
+        (at === 0 ? heads : tails).push(name);
     }
-    completionItems.sort((a, b) => a.length - b.length);
+    heads.sort((a, b) => a.length - b.length);
+    tails.sort((a, b) => a.length - b.length);
+    completionItems = heads.concat(tails);
     presentCompletion(start, completionItems, prefix.length);
 }
 
