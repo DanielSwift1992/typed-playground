@@ -1,11 +1,12 @@
 "use strict";
 
 // THE APPLIER, ported: a line-for-line reading of `Press` from the theory's
-// Sources/Tools/Press.swift, over one file instead of two. A button over a state
-// file is a rewrite triple, not a program: find the rule's slot alias, compare the
-// slot's term with the rule's pattern, substitute the template. One match or none,
-// and a mismatch leaves the file byte-identical. No domain logic stands here or
-// ever will: a system's behaviour is its triples, written in the same file.
+// Sources/Tools/Press.swift (the triples-2 matcher), over one file instead of
+// two. A button over a state file is a rewrite triple, not a program: find the
+// rule's slot alias, unify the slot's term with the rule's pattern, substitute
+// the template. One match or none, and a mismatch leaves the file byte-identical.
+// No domain logic stands here or ever will: a system's behaviour is its triples,
+// written in the same file.
 
 // Reads one rule's triple out of the file's text: the enum's generic parameter
 // names, and its Slot/From/Into aliases. A rule body holding anything else is
@@ -72,26 +73,110 @@ function fillTemplate(template, bindings) {
     return out.endsWith(" ") ? out.slice(0, -1) : out;
 }
 
-// One press: compare, substitute, or stand. A comma spells a chord: several
-// rules of ONE slot behind one face; at any state at most one may match, two
-// matches name an unlawful chord and refuse. Returns the next text with
-// `applied: true`, the same text with `applied: false` (a lawful no-op), or an
-// error naming what refused.
-function press(text, ruleArgument) {
-    const rules = [];
-    for (const name of ruleArgument.split(",")) {
-        const rule = readRule(name.trim(), text);
-        if (rule.error) return { text, applied: false, error: rule.error };
-        rules.push(rule);
+// ── terms: the one shape every pattern, slot term, and instance argument shares ──
+
+function parseTerm(text) {
+    const trimmed = text.trim();
+    const open = trimmed.indexOf("<");
+    if (open < 0 || !trimmed.endsWith(">")) {
+        return { head: trimmed, args: [] };
     }
-    const slots = new Set(rules.map((rule) => rule.slot));
+    const head = trimmed.slice(0, open);
+    const inner = trimmed.slice(open + 1, -1);
+    const args = [];
+    let depth = 0;
+    let piece = "";
+    for (const ch of inner) {
+        if (ch === "<") depth += 1;
+        if (ch === ">") depth -= 1;
+        if (ch === "," && depth === 0) {
+            args.push(parseTerm(piece));
+            piece = "";
+        } else {
+            piece += ch;
+        }
+    }
+    if (piece.trim() !== "") args.push(parseTerm(piece));
+    return { head, args };
+}
+
+function serializeTerm(term) {
+    return term.args.length === 0
+        ? term.head
+        : term.head + "<" + term.args.map(serializeTerm).join(", ") + ">";
+}
+
+// Collects each variable's occurrence count across a pattern: linearity is the
+// theorem's premise (one occurrence keeps the match unique), so a repeated
+// variable refuses the rule before any state is touched.
+function occurrences(pattern, variables, counts) {
+    if (pattern.args.length === 0 && variables.includes(pattern.head)) {
+        counts.set(pattern.head, (counts.get(pattern.head) || 0) + 1);
+        return;
+    }
+    for (const argument of pattern.args) {
+        occurrences(argument, variables, counts);
+    }
+}
+
+// Structural unification of a linear pattern against a term: a variable node
+// binds whole (or agrees with its instance pre-binding), a constant node demands
+// the same head and unifies its arguments. One match or none.
+function unify(pattern, term, variables, bindings) {
+    if (pattern.args.length === 0 && variables.includes(pattern.head)) {
+        const value = serializeTerm(term);
+        if (bindings.has(pattern.head)) {
+            return bindings.get(pattern.head) === value;
+        }
+        bindings.set(pattern.head, value);
+        return true;
+    }
+    if (pattern.head !== term.head || pattern.args.length !== term.args.length) {
+        return false;
+    }
+    for (let index = 0; index < pattern.args.length; index += 1) {
+        if (!unify(pattern.args[index], term.args[index], variables, bindings)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// One press: unify, substitute, or stand. A comma at depth zero spells a chord:
+// several rules of ONE slot behind one face (§S30). An angle bracket spells an
+// instance: `TypeGlyph<Letter.h>` hands the rule the arguments its pattern
+// cannot bind — the judge of the NEXT state is what vets them. At any state at
+// most one member may match; two matches name an unlawful chord and refuse.
+function press(text, ruleArgument) {
+    const memberTexts = [];
+    let depth = 0;
+    let piece = "";
+    for (const ch of ruleArgument) {
+        if (ch === "<") depth += 1;
+        if (ch === ">") depth -= 1;
+        if (ch === "," && depth === 0) {
+            memberTexts.push(piece);
+            piece = "";
+        } else {
+            piece += ch;
+        }
+    }
+    memberTexts.push(piece);
+    const members = [];
+    for (const memberText of memberTexts) {
+        const spelled = parseTerm(memberText);
+        const rule = readRule(spelled.head, text);
+        if (rule.error) return { text, applied: false, error: rule.error };
+        members.push({ rule, instance: spelled.args });
+    }
+    const slots = new Set(members.map((member) => member.rule.slot));
     if (slots.size !== 1) {
         return { text, applied: false, error: "a chord holds one slot: "
             + ruleArgument + " mixes " + [...slots].sort().join(", ") };
     }
 
     // the slot marker drops its `Slot` suffix to name the alias in the state lines
-    let aliasName = rules[0].slot;
+    let aliasName = members[0].rule.slot;
     if (aliasName.endsWith("Slot")) aliasName = aliasName.slice(0, -4);
     const marker = "typealias " + aliasName + " = ";
     const lines = text.split("\n");
@@ -111,14 +196,39 @@ function press(text, ruleArgument) {
     const found = lines[slotLine];
     const current = found.slice(found.indexOf(marker) + marker.length).trim();
 
-    // the match: a bare-variable pattern binds the whole term, a literal pattern
-    // must be the term verbatim. One match or none, across the whole chord.
+    // the match: a variable node binds whole, a constant node demands its head,
+    // and the pattern is LINEAR (each variable once) so the match is unique or
+    // absent. A parameter the pattern never mentions is instance-bound: it must
+    // arrive with the press. One match or none, across the whole chord.
+    const currentTerm = parseTerm(current);
     let matched = null;
-    for (const rule of rules) {
+    for (const { rule, instance } of members) {
+        const pattern = parseTerm(rule.from);
+        const counts = new Map();
+        occurrences(pattern, rule.variables, counts);
+        for (const [variable, count] of counts) {
+            if (count > 1) {
+                return { text, applied: false, error: rule.name + " repeats "
+                    + variable
+                    + " in its pattern: linearity is the premise of the unique match" };
+            }
+        }
         const bindings = new Map();
-        if (rule.variables.includes(rule.from)) {
-            bindings.set(rule.from, current);
-        } else if (rule.from !== current) {
+        const instanceBound = rule.variables.filter((variable) => !counts.has(variable));
+        if (instance.length > instanceBound.length) {
+            return { text, applied: false, error: rule.name + " takes "
+                + instanceBound.length + " instance argument(s), "
+                + instance.length + " given" };
+        }
+        if (instance.length < instanceBound.length) {
+            return { text, applied: false, error: rule.name
+                + " needs its instance argument(s) " + instanceBound.join(", ")
+                + ": press " + rule.name + "<…>" };
+        }
+        instanceBound.forEach((variable, index) => {
+            bindings.set(variable, serializeTerm(instance[index]));
+        });
+        if (!unify(pattern, currentTerm, rule.variables, bindings)) {
             continue;
         }
         if (matched !== null) {
@@ -131,7 +241,7 @@ function press(text, ruleArgument) {
     if (matched === null) {
         return { text, applied: false, noop: aliasName + " is " + current + ", "
             + ruleArgument + " expects "
-            + rules.map((rule) => rule.from).join(" or ") };
+            + members.map((member) => member.rule.from).join(" or ") };
     }
     const next = fillTemplate(matched.rule.into, matched.bindings);
     lines[slotLine] = found.slice(0, found.indexOf(marker)) + marker + next;
@@ -139,5 +249,5 @@ function press(text, ruleArgument) {
 }
 
 if (typeof module !== "undefined") {
-    module.exports = { press, readRule, fillTemplate };
+    module.exports = { press, readRule, fillTemplate, parseTerm, serializeTerm };
 }

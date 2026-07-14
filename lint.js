@@ -41,12 +41,18 @@ function lawBraceBalance(line) {
     return balance;
 }
 
+// §S28's mechanical edge: a SlotRule conformer is one substitution, so its body may
+// hold nothing but the three aliases. Anything else is an engine trying to enter
+// through a rule's door, refused by name.
+const slotRuleMemberPattern = /^\s*(?:public\s+)?typealias\s+(?:Slot|From|Into)\s*=/;
+
 // One pass over one file: every objection carries the rule, the line, and the line's text.
 function lint(file, text) {
     const objections = [];
     let insideStringLiteral = false;
     let witnessDepth = 0;      // a witness body is the function's spelling, not runtime
     let witnessSignature = false;
+    let insideSlotRule = false;
     const lines = text.split("\n");
     for (let index = 0; index < lines.length; index += 1) {
         const raw = lines[index];
@@ -89,6 +95,18 @@ function lint(file, text) {
             objections.push({ file, line: number, rule: "rule 0, pure types",
                 premise: "the law admits types only, and this line declares a value form: `"
                     + raw.trim().slice(0, 60) + "`" });
+        }
+        const trimmed = source.trim();
+        if (insideSlotRule) {
+            if (trimmed.startsWith("}")) {
+                insideSlotRule = false;
+            } else if (trimmed !== "" && !slotRuleMemberPattern.test(source)) {
+                objections.push({ file, line: number, rule: "rule S28, one substitution",
+                    premise: "a rule is one substitution, three aliases only: `"
+                        + raw.trim().slice(0, 60) + "`" });
+            }
+        } else if (source.includes(": SlotRule") && bare.includes("{")) {
+            insideSlotRule = true;
         }
     }
     return objections;

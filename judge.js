@@ -41,6 +41,19 @@ function trimEntry(text) {
     return text.replace(/^[; \n\t]+/, "").replace(/[; \n\t]+$/, "");
 }
 
+// the length of the bracketed run that opens at `from`: past its matching close
+function angleSpan(text, from) {
+    let depth = 0;
+    for (let index = from; index < text.length; index += 1) {
+        if (text[index] === "<") depth += 1;
+        if (text[index] === ">") {
+            depth -= 1;
+            if (depth === 0) return index - from + 1;
+        }
+    }
+    return text.length - from;
+}
+
 // ── pass 1: the dictionary ──
 
 function parse(file, text, declarations, order, refusals, extras) {
@@ -180,11 +193,19 @@ function parse(file, text, declarations, order, refusals, extras) {
             const afterKeyword = line.replaceAll("public enum ", "").replaceAll("enum ", "");
             const selfClosed = /\{\s*\}$/.test(afterKeyword);
             const head = afterKeyword.replace(/\s*\{\s*\}$/, "").replace(/\s*\{$/, "");
-            const colon = head.indexOf(":");
-            const name = (colon >= 0 ? head.slice(0, colon) : head).trim();
+            // a generic declaration names itself before its angles: `Wrap<T: Counting>`
+            // declares Wrap, and the colon that matters is the one past the brackets
+            const angle = head.indexOf("<");
+            let nameEnd = head.indexOf(":");
+            let restStart = nameEnd;
+            if (angle >= 0 && (nameEnd < 0 || angle < nameEnd)) {
+                nameEnd = angle;
+                restStart = head.indexOf(":", angle + angleSpan(head, angle));
+            }
+            const name = (nameEnd >= 0 ? head.slice(0, nameEnd) : head).trim();
             let conformances = [];
-            if (colon >= 0) {
-                conformances = head.slice(colon + 1).split(",").map((piece) => piece.trim());
+            if (restStart >= 0) {
+                conformances = head.slice(restStart + 1).split(",").map((piece) => piece.trim());
             }
             const parent = stack.length > 0 ? stack[stack.length - 1].qualified : null;
             const qualified = parent ? parent + "." + name : name;
