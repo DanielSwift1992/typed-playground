@@ -266,7 +266,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 38</span>
+  <span style="float: right; color: var(--muted);">rev 39</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -3171,15 +3171,15 @@ import DocumentKit
 // mid-walk resets them, and a wrong first digit matches nothing at all.
 // Unlock it and a secret line below the pad takes readable ink: its color,
 // like the dots', is carried by the state's own term.
-// The count is a written example, not a drawn row: BumpUp is one rule with a
-// variable, admitted for every Count at once. Its key returns when the kit
-// grows a reader that counts a chain as a number.
+// The count shows a rule with a variable: BumpUp wraps whatever Count holds
+// in one more Tick, and the number on the row is the chain's own count:
+// Tick counts one more than what it wraps, and Never counts zero.
 
 // ── the state: the world is these two lines, and a press rewrites one ──
 
 typealias LampMode = LampOff
 typealias PinProgress = PinStage0
-typealias Count = CountZero
+typealias Count = Never
 
 // ── the lamp's terms: each carries its own ink, and the dot reads it ──
 
@@ -3235,10 +3235,10 @@ public enum PinUnlocked: Close {
     public typealias SecretInk = TextPrimary
 }
 
-// ── the counter's terms: a zero and a wrap, an infinite space from two names ──
+// ── the counter's terms: a floor and a wrap, an infinite space from two names.
+// Tick counts itself: one more than what it wraps, and Never counts zero ──
 
 public enum CountSlot: Close {}
-public enum CountZero: Close {}
 public enum Tick<P: Counting>: Close {}
 
 // ── the rules: the lamp's two, then the pin's table of thirty-one ──
@@ -3625,6 +3625,47 @@ public enum LampDot: SpanDot {
     public typealias R = Tally<U8>
     public typealias Fill = LampMode.Ink
 }
+public enum CountLesson: Close {}
+extension CountLesson {
+    public static var typeName: String { "BumpUp wraps Count in one more Tick: the number is the chain's own count." }
+}
+public enum CountWord: Close {}
+extension CountWord {
+    public static var typeName: String { "the count" }
+}
+public enum PlusOneWord: Close {}
+extension PlusOneWord {
+    public static var typeName: String { "+1" }
+}
+public enum PlusOneLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = PlusOneWord
+}
+public typealias PlusOneKey = Layered<KeyTrack, PlusOneLabel>
+public enum CountLessonLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = CountLesson
+}
+public enum CountCaption: SpanLabel {
+    public typealias Y = CenteredBaseline<TrackHeight, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = CountWord
+}
+public enum CountNumber: SpanLabel {
+    public typealias Y = CenteredBaseline<TrackHeight, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<Count>
+}
 public enum LampCaption: SpanLabel {
     public typealias Y = CenteredBaseline<TrackHeight, TextS>
     public typealias FillColor = TextSecondary
@@ -3900,6 +3941,29 @@ public enum TryTwoRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
+public enum CountLessonRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<CountLessonLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum CountRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Air<DotSlot>.self
+        Air<U8>.self
+        Fixed<U64, CountCaption>.self
+        Air<U8>.self
+        Flexible<CountNumber>.self
+        Fixed<KeySide, RuleKey<BumpUp, PlusOneKey>>.self
+        Air<EdgeMargin>.self
+    }
+}
 public enum LampRow: HFlow {
     public typealias Given = U512
     @StructureBuilder
@@ -3996,6 +4060,10 @@ public enum WorldArt: GrownDiagram {
         Fixed<TrackHeight, SpanHosted<LampRow>>.self
         Air<U8>.self
         Fixed<Plus<U16, U4>, SpanHosted<LampMechRow>>.self
+        Air<Breath>.self
+        Fixed<Plus<U16, U4>, SpanHosted<CountLessonRow>>.self
+        Air<U8>.self
+        Fixed<TrackHeight, SpanHosted<CountRow>>.self
         Air<Breath>.self
         Fixed<Plus<U16, U4>, SpanHosted<PinLessonRow>>.self
         Fixed<Plus<U16, U4>, SpanHosted<PinChordRow>>.self
@@ -4468,7 +4536,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 38;
+const contentRevision = 39;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);

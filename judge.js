@@ -42,6 +42,16 @@ function trimEntry(text) {
 }
 
 // the length of the bracketed run that opens at `from`: past its matching close
+// how many generic angles a piece of type text leaves open
+function angleBalance(text) {
+    let depth = 0;
+    for (const character of text) {
+        if (character === "<") depth += 1;
+        if (character === ">") depth -= 1;
+    }
+    return depth;
+}
+
 function angleSpan(text, from) {
     let depth = 0;
     for (let index = from; index < text.length; index += 1) {
@@ -124,12 +134,18 @@ function parse(file, text, declarations, order, refusals, extras) {
 
         if (pendingAlias !== null) {
             const settled = pendingAlias;
+            const gathered = settled.buffer === undefined
+                ? line : (settled.buffer + " " + line);
+            if (settled.buffer !== undefined && angleBalance(gathered) > 0) {
+                settled.buffer = gathered;
+                continue;
+            }
             pendingAlias = null;
             if (settled.owner) {
-                settled.owner.aliases.set(settled.key, { target: line, line: settled.line });
+                settled.owner.aliases.set(settled.key, { target: gathered, line: settled.line });
             } else {
                 extras.topAliases.set(settled.key,
-                    { target: line, line: settled.line, params: settled.params });
+                    { target: gathered, line: settled.line, params: settled.params });
             }
             continue;
         }
@@ -198,9 +214,14 @@ function parse(file, text, declarations, order, refusals, extras) {
             const angle = head.indexOf("<");
             let nameEnd = head.indexOf(":");
             let restStart = nameEnd;
+            let params = [];
             if (angle >= 0 && (nameEnd < 0 || angle < nameEnd)) {
                 nameEnd = angle;
-                restStart = head.indexOf(":", angle + angleSpan(head, angle));
+                const span = angleSpan(head, angle);
+                restStart = head.indexOf(":", angle + span);
+                params = head.slice(angle + 1, angle + span - 1).split(",")
+                    .map((piece) => piece.split(":")[0].trim())
+                    .filter((piece) => piece !== "");
             }
             const name = (nameEnd >= 0 ? head.slice(0, nameEnd) : head).trim();
             let conformances = [];
@@ -217,8 +238,8 @@ function parse(file, text, declarations, order, refusals, extras) {
                 if (!selfClosed) stack.push(standing);
                 continue;
             }
-            const declaration = { name, qualified, parent, conformances, line: number,
-                aliases: new Map(), entries: [] };
+            const declaration = { name, qualified, parent, conformances, params,
+                line: number, aliases: new Map(), entries: [] };
             declarations.set(qualified, declaration);
             order.push(qualified);
             if (!selfClosed) stack.push(declaration);
@@ -240,6 +261,8 @@ function parse(file, text, declarations, order, refusals, extras) {
                 }
                 if (target === "") {
                     pendingAlias = { owner, key, line: number };
+                } else if (angleBalance(target) > 0) {
+                    pendingAlias = { owner, key, line: number, buffer: target };
                 } else {
                     owner.aliases.set(key, { target, line: number });
                 }
@@ -254,6 +277,9 @@ function parse(file, text, declarations, order, refusals, extras) {
                 const target = body.slice(equals + 1).trim();
                 if (target === "") {
                     pendingAlias = { owner: null, key: bare, line: number, params };
+                } else if (angleBalance(target) > 0) {
+                    pendingAlias = { owner: null, key: bare, line: number, params,
+                        buffer: target };
                 } else {
                     extras.topAliases.set(bare, { target, line: number, params });
                 }

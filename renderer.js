@@ -39,7 +39,7 @@ const seedCount = new Map([
     ["U64", 64], ["U128", 128], ["U256", 256], ["U512", 512],
     ["EdgeMargin", 16], ["Breath", 16], ["HairBreath", 8],
     ["WideSurface", 960], ["FilmStripTall", 150], ["Never", 0],
-    ["TrackHeight", 32], ["DotSlot", 12], ["KeySide", 80],
+    ["TrackHeight", 32], ["DotSlot", 12], ["KeySide", 80], ["PanelWide", 440],
 ]);
 
 const spanShapes = new Set(["SpanTrack", "SpanTrackOutlined", "SpanHeroFace",
@@ -188,14 +188,18 @@ function countOf(env, rawNode) {
     if (node.head === "Times") return countOf(env, node.args[0]) * countOf(env, node.args[1]);
     if (node.head === "Twice") return 2 * countOf(env, node.args[0]);
     if (node.head === "Half") return countOf(env, node.args[0]) / 2;
-    // the wrapped line tally: how many lines a literal earns under the same
-    // greedy measure the wrapped label draws with, over a stated width. A
-    // band's height is then a type: Times over LineTally. Awaits the kit's
-    // native reader on the theory's side.
+    // the counter's constructor counts itself: one more than what it wraps
+    // (Tick.count = Previous.count + 1, the floor Never counts 0)
+    if (node.head === "Tick") return 1 + countOf(env, node.args[0]);
+    // the wrapped line tally, mirrored from Vector.swift: how many lines a
+    // literal earns under the same greedy measure the wrapped labels draw
+    // with, over a stated dictionary width. A band's height is then a type:
+    // Times over LineTally. Keep the drawing's slice the same rung, or the
+    // measure lies.
     if (node.head === "LineTally") {
         const content = textOf(env, node.args[0]);
-        const size = parseInt(textOf(env, node.args[1]), 10) || 0;
-        const given = countOf(env, node.args[2]);
+        const given = countOf(env, node.args[1]);
+        const size = parseInt(textOf(env, node.args[2]), 10) || 0;
         let lines = 1;
         let line = "";
         for (const word of content.split(" ").filter((piece) => piece !== "")) {
@@ -331,8 +335,23 @@ function spanningOf(env, rawNode) {
         complain(env, "`" + node.head + "` conforms to no span the renderer carries");
         return () => "";
     }
-    const read = (key) => textOf(env, aliasNode(declaration, key)
-        ?? (complain(env, node.head + " states no " + key), { head: "?", args: [] }));
+    let bindings = null;
+    if (declaration.params && declaration.params.length > 0
+        && node.args.length === declaration.params.length) {
+        bindings = new Map();
+        declaration.params.forEach((parameter, index) => {
+            bindings.set(parameter, node.args[index]);
+        });
+    }
+    const read = (key) => {
+        let slotNode = aliasNode(declaration, key);
+        if (!slotNode) {
+            complain(env, node.head + " states no " + key);
+            slotNode = { head: "?", args: [] };
+        }
+        if (bindings) slotNode = substitute(slotNode, bindings);
+        return textOf(env, slotNode);
+    };
     if (shape === "SpanTrack") {
         return (x, w) => '<rect x="' + px(x) + '" width="' + px(w) + '" height="'
             + read("H") + '" rx="' + read("Radius") + '" fill="' + read("Fill") + '"/>\n';
@@ -355,10 +374,10 @@ function spanningOf(env, rawNode) {
             + read("Content") + "</text>\n";
     }
     if (shape === "SpanLabelMidWrapped" || shape === "SpanLabelWrapped") {
-        // the words fill measured lines within the width the slice hands over,
-        // breaking greedily by the same measure the fitted gate reads, each line
-        // one stated pitch below the last. Wrapping earns lines, never
-        // truncation: a single word wider than the slice refuses, loudly.
+        // mirrored from Vector.swift: the words fill measured lines within the
+        // width the slice hands over, breaking greedily by the fitted gate's
+        // measure, each line one stated pitch below the last. Wrapping earns
+        // lines, never truncation: a word wider than the slice refuses, loudly.
         const size = parseInt(read("Size"), 10) || 0;
         const base = parseInt(read("Y"), 10) || 0;
         const pitch = parseInt(read("LinePitch"), 10) || 0;
