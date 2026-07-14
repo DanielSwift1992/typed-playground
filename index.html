@@ -266,7 +266,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 29</span>
+  <span style="float: right; color: var(--muted);">rev 38</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -288,7 +288,7 @@ window.addEventListener("error", (event) => {
 <script src="judge.js?v=8"></script>
 <script src="lint.js?v=4"></script>
 <script src="press.js?v=2"></script>
-<script src="renderer.js?v=5"></script>
+<script src="renderer.js?v=7"></script>
 <script>
 "use strict";
 
@@ -338,7 +338,8 @@ const kitVocabulary = {
     generics: new Set(["Air", "Flexible", "Layered", "TimedReveal", "FrozenReveal",
         "Tally", "CanvasSize", "Plus", "Times", "Twice", "Half",
         "Fixed", "SpanHosted", "SpanLink", "Halfway", "Under", "Paired",
-        "RuleKey", "TermText", "CenteredBaseline", "Chord"]),
+        "RuleKey", "TermText", "CenteredBaseline", "Chord",
+        "LineTally", "SpanLabelMidWrapped", "SpanLabelWrapped"]),
     bareSeeds: new Set(["RestAir"]),
 };
 
@@ -3170,11 +3171,15 @@ import DocumentKit
 // mid-walk resets them, and a wrong first digit matches nothing at all.
 // Unlock it and a secret line below the pad takes readable ink: its color,
 // like the dots', is carried by the state's own term.
+// The count is a written example, not a drawn row: BumpUp is one rule with a
+// variable, admitted for every Count at once. Its key returns when the kit
+// grows a reader that counts a chain as a number.
 
 // ── the state: the world is these two lines, and a press rewrites one ──
 
 typealias LampMode = LampOff
 typealias PinProgress = PinStage0
+typealias Count = CountZero
 
 // ── the lamp's terms: each carries its own ink, and the dot reads it ──
 
@@ -3229,6 +3234,12 @@ public enum PinUnlocked: Close {
     public typealias StageWord = OpenWord
     public typealias SecretInk = TextPrimary
 }
+
+// ── the counter's terms: a zero and a wrap, an infinite space from two names ──
+
+public enum CountSlot: Close {}
+public enum CountZero: Close {}
+public enum Tick<P: Counting>: Close {}
 
 // ── the rules: the lamp's two, then the pin's table of thirty-one ──
 
@@ -3402,6 +3413,14 @@ public enum KeyNineResetsStage3: SlotRule {
     public typealias From = PinStage3
     public typealias Into = PinStage0
 }
+
+// the counter: one rule with a variable, admitted for every T at once
+public enum BumpUp<T: Counting>: SlotRule {
+    public typealias Slot = CountSlot
+    public typealias From = T
+    public typealias Into = Tick<T>
+}
+
 
 // ── the chords: one key, several rules of one slot, at most one can match ──
 
@@ -3731,6 +3750,20 @@ public enum TryTwoLabel: SpanLabel {
     public typealias Weight = WeightRegular
     public typealias Content = TryTwo
 }
+public enum NoteLessonLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = NoteLesson
+}
+public enum NoteLessonTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = NoteLessonTwo
+}
 public enum TryLineLabel: SpanLabel {
     public typealias Y = Under<U2, TextXS>
     public typealias FillColor = TextSecondary
@@ -3982,9 +4015,243 @@ public enum WorldArt: GrownDiagram {
         Air<U8>.self
         Fixed<Plus<U16, U4>, SpanHosted<SecretHintRow>>.self
         Fixed<Plus<U16, U4>, SpanHosted<SecretRow>>.self
+
         Air<Plus<U16, U8>>.self
         Fixed<Plus<U16, U4>, SpanHosted<TryRow>>.self
         Fixed<Plus<U16, U4>, SpanHosted<TryTwoRow>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
+
+const typewriterFile = `import VerificationIsIdentification
+import DocumentKit
+
+// A typewriter: the sheet is drawn from this file, and the text on it lives
+// right here, as the literal inside Note's typeName. Typing appends one
+// character to that literal; Backspace removes one; Escape clears it. This is
+// the medium's prose genre: free text lives in a literal slot, a label draws
+// it with no reader in between, and the judge vets the FORM of the file, never
+// the words. The literal's alphabet is letters, digits, space, and .,!?- :
+// everything that could escape the literal (quotes, slashes, angles) is
+// outside it, refused by name, so the file survives every keystroke.
+// Nothing of yours runs: a keystroke edits one literal on one line.
+// Any enum whose extension states a one-line typeName literal is such a
+// slot: declare one, and append presses it by name. The sheet's height is
+// a type too: SheetTall counts the lines the literal earns at this width.
+
+// ── the note: the whole state of this world is the string below ──
+
+enum Note: Close {}
+extension Note {
+    static var typeName: String { "" }
+}
+
+// ── the display strings ──
+
+public enum SheetTitle: Close {}
+extension SheetTitle {
+    public static var typeName: String { "A typewriter is a literal" }
+}
+public enum SheetSub: Close {}
+extension SheetSub {
+    public static var typeName: String { "Each keystroke on your keyboard appends one character to the Note literal." }
+}
+public enum SheetSubTwo: Close {}
+extension SheetSubTwo {
+    public static var typeName: String { "The sheet below draws that literal, and nothing else runs." }
+}
+public enum SheetSubThree: Close {}
+extension SheetSubThree {
+    public static var typeName: String { "Backspace removes one character. Escape clears the sheet." }
+}
+public enum SheetSubFour: Close {}
+extension SheetSubFour {
+    public static var typeName: String { "The text wraps by the font's own measure. The sheet grows with its lines." }
+}
+public enum TrySheet: Close {}
+extension TrySheet {
+    public static var typeName: String { "Try a quote: it is outside the literal's alphabet, and the page refuses it." }
+}
+public enum TrySheetTwo: Close {}
+extension TrySheetTwo {
+    public static var typeName: String { "A single word wider than the sheet refuses to draw: the renderer names it." }
+}
+public enum SheetAlt: Close {}
+extension SheetAlt {
+    public static var typeName: String { "A typed sheet of paper: the text on it is the Note literal of this file." }
+}
+
+// ── the faces: the sheet grows with its lines, the height is a type ──
+
+public typealias SheetWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
+public typealias SheetTextWide = Plus<U256, Plus<U128, U64>>
+public typealias SheetLines = LineTally<Note, TextL, SheetTextWide>
+public typealias SheetTall = Plus<Times<SheetLines, Plus<U16, U4>>, Plus<U16, U8>>
+public enum SheetFace: SpanTrackOutlined {
+    public typealias H = Tally<SheetTall>
+    public typealias Radius = R12
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum SheetText: SpanLabelWrapped {
+    public typealias Y = Tally<Plus<U16, U8>>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextL
+    public typealias Weight = WeightRegular
+    public typealias Content = Note
+}
+public enum SheetInnerRow: HFlow {
+    public typealias Given = SheetWide
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<SheetText>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SheetTitleLabel: SpanLabel {
+    public typealias Y = Under<U8, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = SheetTitle
+}
+public enum SheetSubLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = SheetSub
+}
+public enum SheetSubTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = SheetSubTwo
+}
+public enum SheetSubThreeLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = SheetSubThree
+}
+public enum SheetSubFourLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = SheetSubFour
+}
+public enum TrySheetLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = TrySheet
+}
+public enum TrySheetTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = TrySheetTwo
+}
+
+// ── the rows ──
+
+public enum SheetTitleRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<SheetTitleLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SheetSubRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<SheetSubLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SheetSubTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<SheetSubTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SheetSubThreeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<SheetSubThreeLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SheetSubFourRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<SheetSubFourLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SheetRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<Layered<SheetFace, SpanHosted<SheetInnerRow>>>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TrySheetRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TrySheetLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TrySheetTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TrySheetTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+
+public enum SheetArt: GrownDiagram {
+    public typealias Across = U512
+    public typealias AriaLabel = SheetAlt
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U32, U8>, SpanHosted<SheetTitleRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SheetSubRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SheetSubTwoRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SheetSubThreeRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SheetSubFourRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<SheetTall, SpanHosted<SheetRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<TrySheetRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<TrySheetTwoRow>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -4000,6 +4267,8 @@ const tabs = [
       caption: "12,800 people: judged here in 0.2 s, by the Swift judge in 1.1 s" },
     { id: "basics", title: "Basics", file: "Basics.swift", text: basicsFile,
       caption: "layout in four steps: a row, three shares, a dot, a film" },
+    { id: "writer", title: "A typewriter", file: "Typewriter.swift", text: typewriterFile,
+      caption: "type on your keyboard: a keystroke appends one character to the Note literal in the file" },
     { id: "buttons", title: "Buttons", file: "World.swift", text: worldFile,
       caption: "every key on the canvas is a rule declared in the file: a press rewrites one typealias line" },
     { id: "rules", title: "Rules", file: "Rules.swift", text: rulesFile,
@@ -4049,6 +4318,7 @@ const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "
     "Begin", "Dwell", "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
     "Slot", "From", "Into", "Ink", "DotOneInk", "DotTwoInk", "DotThreeInk",
     "DotFourInk", "StageWord", "SecretInk",
+    "G", "P", "N", "T", "Glyph", "PageTerm", "NoteTerm", "Counting", "LinePitch",
     "DocumentKit", "VerificationIsIdentification", "Organization"]);
 let localNames = new Set();
 
@@ -4063,6 +4333,7 @@ const fixedNames = new Set([
     "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
     "Slot", "From", "Into", "Ink", "DotOneInk", "DotTwoInk", "DotThreeInk",
     "DotFourInk", "StageWord", "SecretInk",
+    "G", "P", "N", "T", "Glyph", "PageTerm", "NoteTerm", "Counting", "LinePitch",
     "SpanLabel", "SpanLink", "SoftShadow", "DisplayS", "Never", "Spanning",
     // the modules an import names
     "DocumentKit", "VerificationIsIdentification", "Organization",
@@ -4154,27 +4425,23 @@ const status = document.getElementById("status");
 const verdicts = document.getElementById("verdicts");
 const canvases = document.getElementById("canvases");
 
-// a drawn key names its rewrite rule: the host reads the name off the markup,
-// asks the applier for one substitution, and swaps the file. The page knows no
-// domain: the rule, its pattern, and its template all live in the file itself.
-canvases.addEventListener("click", (event) => {
-    const key = event.target.closest("g.vi-rule");
-    if (!key) return;
-    const names = key.getAttribute("data-vi-rules");
-    if (!names) return;
-    const pressed = press(fullText(), names.trim().split(/\s+/).join(","));
+// one press for every trigger: the applier substitutes one line, the reader's
+// place is kept, the rewritten line flashes, and a refusal speaks briefly in
+// the caption. What pressed — a click or a keystroke — the medium never knows.
+function speakBriefly(message, holdMs) {
+    const caption = document.querySelector("#actions .caption");
+    const standing = activeTab.caption;
+    caption.textContent = message;
+    setTimeout(() => { caption.textContent = standing; }, holdMs || 4000);
+}
+function applyPress(ruleArgument) {
+    const pressed = press(fullText(), ruleArgument);
     if (pressed.error) {
-        // a refused press is worth hearing: the applier's own words, briefly
-        const caption = document.querySelector("#actions .caption");
-        const standing = activeTab.caption;
-        caption.textContent = "the applier refuses: " + pressed.error;
-        setTimeout(() => { caption.textContent = standing; }, 4000);
+        speakBriefly("the applier refuses: " + pressed.error);
         return;
     }
     if (!pressed.applied) return;
-    // a mismatch is a lawful no-op: the file stands byte-identical, nothing moves.
-    // an applied press keeps the reader's place: the scroll and the caret stay,
-    // and the one rewritten line flashes so the key points at its own edit
+    // a mismatch is a lawful no-op: the file stands byte-identical, nothing moves
     const keptScroll = cm.getScrollInfo();
     const keptCursor = cm.getCursor();
     setEditorFile(pressed.text);
@@ -4185,13 +4452,23 @@ canvases.addEventListener("click", (event) => {
         cm.addLineClass(local, "background", "line-pressed");
         setTimeout(() => cm.removeLineClass(local, "background", "line-pressed"), 1200);
     }
+}
+
+// a drawn key names its rewrite rules: the host reads the names off the markup
+// and presses. The page knows no domain: the rules live in the file itself.
+canvases.addEventListener("click", (event) => {
+    const key = event.target.closest("g.vi-rule");
+    if (!key) return;
+    const names = key.getAttribute("data-vi-rules");
+    if (!names) return;
+    applyPress(names.trim().split(/\s+/).join(","));
 });
 const tabBar = document.getElementById("tabs");
 let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 29;
+const contentRevision = 38;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
@@ -5180,6 +5457,33 @@ document.getElementById("theme").addEventListener("click", () => {
 document.getElementById("reset").addEventListener("click", () => {
     storage.removeItem(storageKey(activeTab));
     setEditorFile(activeTab.text);
+});
+
+// the typewriter listens to the real keyboard: a keystroke is a trigger like a
+// click. A letter maps to its term by the alphabet's own convention (h is
+// LetterH, the same kind of convention that reads FooSlot as Foo), and the
+// press hands that term to TypeGlyph as its instance argument. Whether the
+// term exists is the file's question, not the page's: an undeclared letter is
+// refused aloud, and nothing is typed.
+document.addEventListener("keydown", (event) => {
+    if (activeTab.id !== "writer") return;
+    if (event.target.closest && event.target.closest(".CodeMirror")) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    // the prose genre: a keystroke is append, rubout, or clear on the Note
+    // literal. The character is the layout's own (Russian keys type Russian);
+    // whether it may enter is the literal alphabet's question, answered by the
+    // applier with the character's name.
+    let movement = null;
+    if (event.key.length === 1) {
+        movement = "append Note " + event.key;
+    } else if (event.key === "Backspace") {
+        movement = "rubout Note";
+    } else if (event.key === "Escape") {
+        movement = "clear Note";
+    }
+    if (movement === null) return;
+    event.preventDefault();
+    applyPress(movement);
 });
 
 document.getElementById("download").addEventListener("click", () => {

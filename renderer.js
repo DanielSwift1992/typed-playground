@@ -43,7 +43,27 @@ const seedCount = new Map([
 ]);
 
 const spanShapes = new Set(["SpanTrack", "SpanTrackOutlined", "SpanHeroFace",
-    "SpanLabel", "SpanLabelMid", "SpanLabelEnd", "SpanDot", "SpanBreathingDot"]);
+    "SpanLabel", "SpanLabelMid", "SpanLabelEnd", "SpanLabelMidWrapped",
+    "SpanLabelWrapped", "SpanDot", "SpanBreathingDot"]);
+
+// the stated font's own metrics, mirrored from GeneratedFontMetrics.swift
+// (spelled from Assets' Inter file by `swift run Tools generate font`):
+// codepoint:advance pairs in font units, TextWidth's one table
+const fontUnitsPerEm = 2048;
+const fontCapHeight = 1490;
+const fontAdvances = new Map("32:576 33:589 34:954 35:1297 36:1314 37:2011 38:1319 39:614 40:747 41:747 42:1026 43:1355 44:590 45:942 46:590 47:738 48:1292 49:833 50:1249 51:1265 52:1323 53:1215 54:1270 55:1159 56:1267 57:1270 58:590 59:618 60:1355 61:1355 62:1355 63:1047 64:1978 65:1413 66:1340 67:1496 68:1478 69:1231 70:1209 71:1528 72:1522 73:550 74:1169 75:1376 76:1158 77:1850 78:1543 79:1566 80:1308 81:1566 82:1318 83:1314 84:1322 85:1524 86:1413 87:2018 88:1397 89:1390 90:1288 91:747 92:738 93:747 94:965 95:934 96:661 97:1150 98:1254 99:1170 100:1254 101:1194 102:758 103:1256 104:1211 105:496 106:496 107:1124 108:496 109:1794 110:1210 111:1228 112:1254 113:1254 114:771 115:1081 116:670 117:1211 118:1151 119:1676 120:1118 121:1151 122:1131 123:873 124:681 125:873 126:1355 160:576 161:589 162:1170 163:1251 164:1484 165:1126 166:553 167:1164 168:1210 169:1872 170:929 171:1193 172:1355 174:1364 175:978 176:933 177:1355 178:905 179:913 180:661 181:1200 182:1234 183:590 184:549 185:623 186:988 187:1193 188:1643 189:1735 190:1806 191:1047 192:1413 193:1413 194:1413 195:1413 196:1413 197:1413 198:2035 199:1496 200:1231 201:1231 202:1231 203:1231 204:550 205:550 206:550 207:550 208:1505 209:1543 210:1566 211:1566 212:1566 213:1566 214:1566 215:1355 216:1566 217:1524 218:1524 219:1524 220:1524 221:1390 222:1302 223:1262 224:1150 225:1150 226:1150 227:1150 228:1150 229:1150 230:1879 231:1170 232:1194 233:1194 234:1194 235:1194 236:496 237:496 238:496 239:496 240:1193 241:1210 242:1228 243:1228 244:1228 245:1228 246:1228 247:1355 248:1228 249:1211 250:1211 251:1211 252:1211 253:1151 254:1254 255:1151 8211:1024 8212:2048 8216:534 8217:534 8220:902 8221:902 8230:1770 8594:1954"
+    .split(" ").map((pair) => pair.split(":").map(Number)));
+
+// the measure TextWidth reads: advances summed in font units, ceiled to pixels;
+// a character outside the table measures as an "m" (over-provides, never under)
+function textWidthPx(text, sizePx) {
+    const fallback = fontAdvances.get(109) || fontUnitsPerEm / 2;
+    let total = 0;
+    for (const ch of text) {
+        total += fontAdvances.get(ch.codePointAt(0)) ?? fallback;
+    }
+    return Math.floor((total * sizePx + fontUnitsPerEm - 1) / fontUnitsPerEm);
+}
 const countsAsOne = new Set(["VerifiedView", "VerifiedInDepartment", "VerifiedAtRank",
     "VerifiedAtWorkplace"]);
 
@@ -168,6 +188,27 @@ function countOf(env, rawNode) {
     if (node.head === "Times") return countOf(env, node.args[0]) * countOf(env, node.args[1]);
     if (node.head === "Twice") return 2 * countOf(env, node.args[0]);
     if (node.head === "Half") return countOf(env, node.args[0]) / 2;
+    // the wrapped line tally: how many lines a literal earns under the same
+    // greedy measure the wrapped label draws with, over a stated width. A
+    // band's height is then a type: Times over LineTally. Awaits the kit's
+    // native reader on the theory's side.
+    if (node.head === "LineTally") {
+        const content = textOf(env, node.args[0]);
+        const size = parseInt(textOf(env, node.args[1]), 10) || 0;
+        const given = countOf(env, node.args[2]);
+        let lines = 1;
+        let line = "";
+        for (const word of content.split(" ").filter((piece) => piece !== "")) {
+            const candidate = line === "" ? word : line + " " + word;
+            if (textWidthPx(candidate, size) <= given) {
+                line = candidate;
+            } else {
+                lines += 1;
+                line = word;
+            }
+        }
+        return lines;
+    }
     const declaration = env.declarations.get(node.head);
     if (declaration && declaration.entries.length > 0) {
         let total = 0;
@@ -204,7 +245,8 @@ function textOf(env, rawNode) {
     if (node.head === "CenteredBaseline") {
         const zone = countOf(env, node.args[0]);
         const size = parseInt(textOf(env, node.args[1]), 10) || 0;
-        return String(Math.floor((zone * 2048 + 1490 * size + 2048) / (2 * 2048)));
+        return String(Math.floor((zone * fontUnitsPerEm + fontCapHeight * size
+            + fontUnitsPerEm) / (2 * fontUnitsPerEm)));
     }
     // the dynamics medium's term label: the slot's current term, spelled as written
     if (node.head === "TermText") return spellTerm(env, node.args[0]);
@@ -311,6 +353,48 @@ function spanningOf(env, rawNode) {
             + '" text-anchor="start" fill="' + read("FillColor") + '" font-weight="'
             + read("Weight") + '" font-size="' + read("Size") + '">'
             + read("Content") + "</text>\n";
+    }
+    if (shape === "SpanLabelMidWrapped" || shape === "SpanLabelWrapped") {
+        // the words fill measured lines within the width the slice hands over,
+        // breaking greedily by the same measure the fitted gate reads, each line
+        // one stated pitch below the last. Wrapping earns lines, never
+        // truncation: a single word wider than the slice refuses, loudly.
+        const size = parseInt(read("Size"), 10) || 0;
+        const base = parseInt(read("Y"), 10) || 0;
+        const pitch = parseInt(read("LinePitch"), 10) || 0;
+        const content = read("Content");
+        return (x, w) => {
+            const given = px(w);
+            const lines = [];
+            let line = "";
+            for (const word of content.split(" ").filter((piece) => piece !== "")) {
+                if (textWidthPx(word, size) > given) {
+                    complain(env, "SpanLabelMidWrapped overflow in `" + node.head
+                        + "`: the word \"" + word + "\" measures "
+                        + textWidthPx(word, size) + "px, the slice hands "
+                        + given + "px");
+                    return "";
+                }
+                const candidate = line === "" ? word : line + " " + word;
+                if (textWidthPx(candidate, size) <= given) {
+                    line = candidate;
+                } else {
+                    lines.push(line);
+                    line = word;
+                }
+            }
+            if (line !== "") lines.push(line);
+            const anchored = shape === "SpanLabelMidWrapped"
+                ? (piece, index) => '<text x="' + midPx(x, w) + '" y="'
+                    + (base + pitch * index) + '" text-anchor="middle" fill="'
+                    + read("FillColor") + '" font-weight="' + read("Weight")
+                    + '" font-size="' + read("Size") + '">' + piece + "</text>\n"
+                : (piece, index) => '<text x="' + px(x) + '" y="'
+                    + (base + pitch * index) + '" fill="' + read("FillColor")
+                    + '" font-weight="' + read("Weight") + '" font-size="'
+                    + read("Size") + '">' + piece + "</text>\n";
+            return lines.map(anchored).join("");
+        };
     }
     if (shape === "SpanLabelMid") {
         return (x, w) => '<text x="' + midPx(x, w) + '" y="' + read("Y")

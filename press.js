@@ -142,12 +142,69 @@ function unify(pattern, term, variables, bindings) {
     return true;
 }
 
+// The literal alphabet: what free text may carry into a typeName. Everything
+// that could escape the literal (quotes, slashes, angles) is outside it, so the
+// literal's FORM survives every press and the judge only ever sees a well-formed
+// file. The refusal names the character.
+function vetLiteral(text) {
+    for (const ch of text) {
+        const allowed = /[\p{L}\p{N}]/u.test(ch) || ch === " " || ch === "."
+            || ch === "," || ch === "!" || ch === "?" || ch === "-";
+        if (!allowed) {
+            return '"' + ch + '" is outside the literal\'s alphabet'
+                + " (letters, digits, space, .,!?-)";
+        }
+    }
+    return null;
+}
+
+// The literal slot's three movements: append, rubout, clear. Free text lives in
+// a typeName (the prose genre), a label draws it with no reader between, and
+// the judge vets the file's form, never the words.
+function pressLiteral(text, operation, slotName, payload) {
+    const lines = text.split("\n");
+    let insideExtension = false;
+    for (let number = 0; number < lines.length; number += 1) {
+        const trimmed = lines[number].trim();
+        if (trimmed.startsWith("extension " + slotName + " ")
+            || trimmed.startsWith("extension " + slotName + "{")) {
+            insideExtension = true;
+            continue;
+        }
+        if (!insideExtension) continue;
+        if (trimmed.startsWith("}")) break;
+        const open = lines[number].indexOf('{ "');
+        const close = lines[number].indexOf('" }');
+        if (open < 0 || close < open) continue;
+        const current = lines[number].slice(open + 3, close);
+        let next = current;
+        if (operation === "append") {
+            const objection = vetLiteral(payload);
+            if (objection !== null) return { text, applied: false, error: objection };
+            next = current + payload;
+        } else if (operation === "rubout") {
+            next = current.slice(0, -1);
+        } else {
+            next = "";
+        }
+        lines[number] = lines[number].replace('{ "' + current + '" }', '{ "' + next + '" }');
+        return { text: lines.join("\n"), applied: true, line: number + 1 };
+    }
+    return { text, applied: false, error: "no literal slot " + slotName + " in this file" };
+}
+
 // One press: unify, substitute, or stand. A comma at depth zero spells a chord:
 // several rules of ONE slot behind one face (§S30). An angle bracket spells an
 // instance: `TypeGlyph<Letter.h>` hands the rule the arguments its pattern
 // cannot bind — the judge of the NEXT state is what vets them. At any state at
 // most one member may match; two matches name an unlawful chord and refuse.
 function press(text, ruleArgument) {
+    // the literal genre first: "append <Slot> <raw text>", "rubout <Slot>",
+    // "clear <Slot>" are the applier's own movements, not dictionary rules
+    const literal = ruleArgument.match(/^(append|rubout|clear) (\S+)(?: ([\s\S]*))?$/);
+    if (literal) {
+        return pressLiteral(text, literal[1], literal[2], literal[3] ?? "");
+    }
     const memberTexts = [];
     let depth = 0;
     let piece = "";
@@ -249,5 +306,6 @@ function press(text, ruleArgument) {
 }
 
 if (typeof module !== "undefined") {
-    module.exports = { press, readRule, fillTemplate, parseTerm, serializeTerm };
+    module.exports = { press, readRule, fillTemplate, parseTerm, serializeTerm,
+        pressLiteral, vetLiteral };
 }
