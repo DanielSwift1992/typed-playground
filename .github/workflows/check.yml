@@ -11,3 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: node check.js
+  kit-gates:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: DanielSwift1992/verification-is-identification
+          path: theory
+          fetch-depth: 0
+      - run: THEORY_PATH=theory node check-kit.js
