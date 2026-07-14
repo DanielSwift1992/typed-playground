@@ -6,8 +6,11 @@ canvas draws itself: one static page, no build, no server. The one vendored libr
 CodeMirror 5 (`codemirror.js`, MIT), the editor pane; everything else is hand-written.
 `judge.js`
 is a line-for-line port of the Swift judge in the theory's repository, and the badge in
-the corner re-runs four recorded verdicts against the port on every load
-(`node check.js` runs the same four in CI).
+the corner re-runs four recorded verdicts against the port on every load. In CI,
+`node check.js` runs the same four plus a fifth: the theory's own world
+(`goldens/dynamics-world.swift`) is drawn by the ported renderer and must equal the
+recorded `swift run DynamicsDemo draw` byte for byte, and `node check-kit.js` holds
+every ported kit name against the theory's sources at a pinned commit.
 
 Live: <https://danielswift1992.github.io/typed-playground/>, or open `index.html` from a
 checkout: the page needs its seven files (`index.html`, `judge.js`, `lint.js`,

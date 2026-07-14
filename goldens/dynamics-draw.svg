@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 440 208" role="img" data-vi-canvas="1" font-family="Inter, Roboto, system-ui, sans-serif" aria-label="The world's three slots, read from the compiled types: the lamp, the count, and the pin walk. The buttons are rule keys.">
+<g transform="translate(0, 16)">
+<g transform="translate(16, 0)">
+<circle cx="6" cy="16" r="8" fill="#8A8A8E"/>
+</g>
+<g transform="translate(28, 0)">
+<text x="0" y="21" text-anchor="start" fill="var(--vi-text-primary, rgba(0,0,0,0.80))" font-weight="400" font-size="13">LampOff</text>
+</g>
+<g transform="translate(256, 0)">
+<g class="vi-rule" data-vi-rules="PowerOn" data-vi-slot="LampModeSlot" cursor="pointer">
+<rect x="0" width="80" height="32" rx="10" fill="var(--vi-surface-track, #F6F7F8)"/>
+<text x="40" y="21" text-anchor="middle" fill="var(--vi-action, #336FEE)" font-weight="700" font-size="13">On</text>
+</g>
+</g>
+<g transform="translate(344, 0)">
+<g class="vi-rule" data-vi-rules="PowerOff" data-vi-slot="LampModeSlot" cursor="pointer">
+<rect x="0" width="80" height="32" rx="10" fill="var(--vi-surface-track, #F6F7F8)"/>
+<text x="40" y="21" text-anchor="middle" fill="var(--vi-action, #336FEE)" font-weight="700" font-size="13">Off</text>
+</g>
+</g>
+</g>
+<g transform="translate(0, 64)">
+<g transform="translate(28, 0)">
+<text x="0" y="21" text-anchor="start" fill="var(--vi-text-primary, rgba(0,0,0,0.80))" font-weight="400" font-size="13">0</text>
+</g>
+<g transform="translate(344, 0)">
+<g class="vi-rule" data-vi-rules="BumpUp" data-vi-slot="CountSlot" cursor="pointer">
+<rect x="0" width="80" height="32" rx="10" fill="var(--vi-surface-track, #F6F7F8)"/>
+<text x="40" y="21" text-anchor="middle" fill="var(--vi-action, #336FEE)" font-weight="700" font-size="13">+1</text>
+</g>
+</g>
+</g>
+<g transform="translate(0, 112)">
+<g transform="translate(28, 0)">
+<text x="0" y="21" text-anchor="start" fill="var(--vi-text-primary, rgba(0,0,0,0.80))" font-weight="400" font-size="13">PinStage0</text>
+</g>
+<g transform="translate(256, 0)">
+<g class="vi-rule" data-vi-rules="Key4StartsWalk Key4ResetsStage1 Key4AdvancesStage2 Key4ResetsStage3" data-vi-slot="PinProgressSlot" cursor="pointer">
+<rect x="0" width="80" height="32" rx="10" fill="var(--vi-surface-track, #F6F7F8)"/>
+<text x="40" y="21" text-anchor="middle" fill="var(--vi-action, #336FEE)" font-weight="700" font-size="13">4</text>
+</g>
+</g>
+<g transform="translate(344, 0)">
+<g class="vi-rule" data-vi-rules="Key2AdvancesStage1 Key2ResetsStage2 Key2Unlocks" data-vi-slot="PinProgressSlot" cursor="pointer">
+<rect x="0" width="80" height="32" rx="10" fill="var(--vi-surface-track, #F6F7F8)"/>
+<text x="40" y="21" text-anchor="middle" fill="var(--vi-action, #336FEE)" font-weight="700" font-size="13">2</text>
+</g>
+</g>
+</g>
+<g transform="translate(0, 160)">
+<g transform="translate(28, 0)">
+<text x="0" y="21" text-anchor="start" fill="var(--vi-text-primary, rgba(0,0,0,0.80))" font-weight="400" font-size="13"></text>
+</g>
+</g>
+</svg>
+
