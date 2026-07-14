@@ -3618,9 +3618,13 @@ function loadFile(next, page) {
             headText: head.length > 0 ? head.join("\n") + "\n" : "",
             tailText: tail.length > 0 ? "\n" + tail.join("\n") : "",
         };
+        // the gutter speaks global line numbers: page two of the giant starts
+        // at 2001, so the option is set before the text repaints
+        cm.setOption("firstLineNumber", pageStart() + 1);
         editor.value = slice.join("\n");
     } else {
         bigDoc = null;
+        cm.setOption("firstLineNumber", 1);
         editor.value = next;
     }
     cm.clearHistory();
