@@ -10,8 +10,8 @@ the corner re-runs four recorded verdicts against the port on every load
 (`node check.js` runs the same four in CI).
 
 Live: <https://danielswift1992.github.io/typed-playground/>, or open `index.html` from a
-checkout: the page needs its six files (`index.html`, `judge.js`, `lint.js`,
-`renderer.js`, `codemirror.js`, `codemirror.css`) in one folder.
+checkout: the page needs its seven files (`index.html`, `judge.js`, `lint.js`,
+`renderer.js`, `press.js`, `codemirror.js`, `codemirror.css`) in one folder.
 
 ![The playground: the organization world, judged and drawn](screenshot.png)
 
@@ -24,7 +24,12 @@ checkout: the page needs its six files (`index.html`, `judge.js`, `lint.js`,
   and by name.
 - **12 800** (the At scale tab): a generated company of 12,800 people is judged in
   about 0.2 seconds. `swift build` on the same company measures 199.
-- **Dark** (beside the canvas): the same declarations under the dark palette.
+- **On, Off, and a passcode pad** (the Buttons tab): every key on the canvas is a
+  rule declared in the file as three aliases, `Slot`, `From`, `Into`. A press
+  rewrites exactly one `typealias` line (`press.js`, a line-for-line port of the
+  theory's applier), a mismatch changes nothing, and a key whose rules match twice
+  refuses by name.
+- **Dark canvas** (beside the canvas): the same declarations under the dark palette.
 - Type `func` or `var` anywhere: the law refuses each line, in orange. The rule is §0′
   of the repository's linter: a file declares types and nothing that runs, and the one
   admitted value form is `static var typeName`, a text constant read off the type.

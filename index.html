@@ -179,6 +179,7 @@
   #canvases svg { width: 100%; height: auto; display: block; margin: 0 auto 12px; flex: none; }
   #canvases a { cursor: pointer; }
   #canvases a:hover { opacity: 0.8; }
+  .line-pressed { background: rgba(255, 221, 45, 0.35); }
   #verdict-panel { border-top: 1px solid var(--line); background: var(--paper); }
   #verdict-head { display: flex; align-items: center; gap: 10px; padding: 9px 16px 7px; }
   .chip { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 9px; }
@@ -265,7 +266,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 20</span>
+  <span style="float: right; color: var(--muted);">rev 28</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -286,6 +287,7 @@ window.addEventListener("error", (event) => {
 <script src="codemirror.js"></script>
 <script src="judge.js?v=7"></script>
 <script src="lint.js?v=3"></script>
+<script src="press.js?v=1"></script>
 <script src="renderer.js?v=5"></script>
 <script>
 "use strict";
@@ -309,13 +311,14 @@ const storage = (() => {
 })();
 
 if (typeof judge === "undefined" || typeof renderAll === "undefined"
-    || typeof lint === "undefined" || typeof CodeMirror === "undefined") {
+    || typeof lint === "undefined" || typeof press === "undefined"
+    || typeof CodeMirror === "undefined") {
     window.scriptsMissing = true;
     const banner = document.getElementById("crash");
     banner.style.display = "block";
-    banner.textContent = "a script did not load: the page needs its six files"
-        + " (index.html, judge.js, lint.js, renderer.js, codemirror.js, codemirror.css)"
-        + " in one folder";
+    banner.textContent = "a script did not load: the page needs its seven files"
+        + " (index.html, judge.js, lint.js, renderer.js, press.js,"
+        + " codemirror.js, codemirror.css) in one folder";
     // nothing below can run without the engines: stop here so no stray error
     // overwrites the one banner that names the cause
     throw new Error("the engine files did not load");
@@ -329,10 +332,13 @@ const kitVocabulary = {
         "TextXXS", "TextXS", "TextS", "TextM", "TextL", "TitleT", "DisplayS", "Display",
         "WeightRegular", "WeightBold", "R12", "R20", "HairlineWidth", "FontStack",
         "U1", "U2", "U4", "U8", "U16", "U32", "U64", "U128", "U256", "U512",
-        "EdgeMargin", "Breath", "HairBreath", "WideSurface", "FilmStripTall", "RestAir"]),
+        "EdgeMargin", "Breath", "HairBreath", "WideSurface", "FilmStripTall", "RestAir",
+        // the dynamics medium, ported from the theory's triples branch
+        "SlotRule", "R10", "TrackHeight", "DotSlot", "KeySide"]),
     generics: new Set(["Air", "Flexible", "Layered", "TimedReveal", "FrozenReveal",
         "Tally", "CanvasSize", "Plus", "Times", "Twice", "Half",
-        "Fixed", "SpanHosted", "SpanLink", "Halfway", "Under", "Paired"]),
+        "Fixed", "SpanHosted", "SpanLink", "Halfway", "Under", "Paired",
+        "RuleKey", "TermText", "CenteredBaseline", "Chord"]),
     bareSeeds: new Set(["RestAir"]),
 };
 
@@ -3150,6 +3156,840 @@ public enum FaqArt: GrownDiagram {
 }
 `;
 
+const worldFile = `import VerificationIsIdentification
+import DocumentKit
+
+// A lamp and a four-digit passcode pad, drawn from this file: every key on the
+// canvas is declared below as a rule, and the two state lines right here are
+// the whole state of the world. Pressing a key rewrites exactly one of them.
+// A rule is five lines: the slot it owns, the term it expects (From), and the
+// term it leaves (Into). One physical key may hold several rules of one slot
+// (a Chord): at any state at most one of them can match, so a press is still
+// a comparison, never a choice. Nothing of yours runs.
+// The passcode is 4-2-4-2. A right digit advances the dots, a wrong digit
+// mid-walk resets them, and a wrong first digit matches nothing at all.
+// Unlock it and a secret line below the pad takes readable ink: its color,
+// like the dots', is carried by the state's own term.
+
+// ── the state: the world is these two lines, and a press rewrites one ──
+
+typealias LampMode = LampOff
+typealias PinProgress = PinStage0
+
+// ── the lamp's terms: each carries its own ink, and the dot reads it ──
+
+public enum LampModeSlot: Close {}
+public enum LampOff: Close {
+    public typealias Ink = Muted
+}
+public enum LampOn: Close {
+    public typealias Ink = AccentRole
+}
+
+// ── the pin's terms: each carries its dots' inks, its heading, its secret ink ──
+
+public enum PinProgressSlot: Close {}
+public enum PinStage0: Close {
+    public typealias DotOneInk = LineRole
+    public typealias DotTwoInk = LineRole
+    public typealias DotThreeInk = LineRole
+    public typealias DotFourInk = LineRole
+    public typealias StageWord = LockedWord
+    public typealias SecretInk = Mist
+}
+public enum PinStage1: Close {
+    public typealias DotOneInk = Ink
+    public typealias DotTwoInk = LineRole
+    public typealias DotThreeInk = LineRole
+    public typealias DotFourInk = LineRole
+    public typealias StageWord = LockedWord
+    public typealias SecretInk = Mist
+}
+public enum PinStage2: Close {
+    public typealias DotOneInk = Ink
+    public typealias DotTwoInk = Ink
+    public typealias DotThreeInk = LineRole
+    public typealias DotFourInk = LineRole
+    public typealias StageWord = LockedWord
+    public typealias SecretInk = Mist
+}
+public enum PinStage3: Close {
+    public typealias DotOneInk = Ink
+    public typealias DotTwoInk = Ink
+    public typealias DotThreeInk = Ink
+    public typealias DotFourInk = LineRole
+    public typealias StageWord = LockedWord
+    public typealias SecretInk = Mist
+}
+public enum PinUnlocked: Close {
+    public typealias DotOneInk = AccentRole
+    public typealias DotTwoInk = AccentRole
+    public typealias DotThreeInk = AccentRole
+    public typealias DotFourInk = AccentRole
+    public typealias StageWord = OpenWord
+    public typealias SecretInk = TextPrimary
+}
+
+// ── the rules: the lamp's two, then the pin's table of thirty-one ──
+
+public enum PowerOn: SlotRule {
+    public typealias Slot = LampModeSlot
+    public typealias From = LampOff
+    public typealias Into = LampOn
+}
+public enum PowerOff: SlotRule {
+    public typealias Slot = LampModeSlot
+    public typealias From = LampOn
+    public typealias Into = LampOff
+}
+
+// the right digits of the walk: 4 starts, 2 advances, 4 advances again, 2 unlocks
+public enum Key4StartsWalk: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage0
+    public typealias Into = PinStage1
+}
+public enum Key2AdvancesStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage2
+}
+public enum Key4AdvancesStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage3
+}
+public enum Key2Unlocks: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinUnlocked
+}
+// the right digits pressed at the wrong stage reset like any other wrong digit
+public enum Key4ResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum Key4ResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+public enum Key2ResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+// every other digit resets at every mid-walk stage: the off-path rows of
+// the table, spelled out rather than computed, three triples per key
+public enum KeyZeroResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum KeyZeroResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+public enum KeyZeroResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+public enum KeyOneResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum KeyOneResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+public enum KeyOneResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+public enum KeyThreeResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum KeyThreeResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+public enum KeyThreeResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+public enum KeyFiveResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum KeyFiveResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+public enum KeyFiveResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+public enum KeySixResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum KeySixResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+public enum KeySixResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+public enum KeySevenResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum KeySevenResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+public enum KeySevenResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+public enum KeyEightResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum KeyEightResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+public enum KeyEightResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+public enum KeyNineResetsStage1: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage1
+    public typealias Into = PinStage0
+}
+public enum KeyNineResetsStage2: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage2
+    public typealias Into = PinStage0
+}
+public enum KeyNineResetsStage3: SlotRule {
+    public typealias Slot = PinProgressSlot
+    public typealias From = PinStage3
+    public typealias Into = PinStage0
+}
+
+// ── the chords: one key, several rules of one slot, at most one can match ──
+
+public typealias FourChord = Chord<Key4StartsWalk, Chord<Key4ResetsStage1, Chord<Key4AdvancesStage2, Key4ResetsStage3>>>
+public typealias TwoChord = Chord<Key2AdvancesStage1, Chord<Key2ResetsStage2, Key2Unlocks>>
+public typealias ZeroChord = Chord<KeyZeroResetsStage1, Chord<KeyZeroResetsStage2, KeyZeroResetsStage3>>
+public typealias OneChord = Chord<KeyOneResetsStage1, Chord<KeyOneResetsStage2, KeyOneResetsStage3>>
+public typealias ThreeChord = Chord<KeyThreeResetsStage1, Chord<KeyThreeResetsStage2, KeyThreeResetsStage3>>
+public typealias FiveChord = Chord<KeyFiveResetsStage1, Chord<KeyFiveResetsStage2, KeyFiveResetsStage3>>
+public typealias SixChord = Chord<KeySixResetsStage1, Chord<KeySixResetsStage2, KeySixResetsStage3>>
+public typealias SevenChord = Chord<KeySevenResetsStage1, Chord<KeySevenResetsStage2, KeySevenResetsStage3>>
+public typealias EightChord = Chord<KeyEightResetsStage1, Chord<KeyEightResetsStage2, KeyEightResetsStage3>>
+public typealias NineChord = Chord<KeyNineResetsStage1, Chord<KeyNineResetsStage2, KeyNineResetsStage3>>
+
+// ── the display strings ──
+
+public enum WorldTitle: Close {}
+extension WorldTitle {
+    public static var typeName: String { "A button is a rewrite rule" }
+}
+public enum WorldSub: Close {}
+extension WorldSub {
+    public static var typeName: String { "Every key on this canvas is declared as a rule in the file on the left." }
+}
+public enum WorldSubTwo: Close {}
+extension WorldSubTwo {
+    public static var typeName: String { "A press rewrites one typealias line in that file. Nothing else runs." }
+}
+public enum WorldSubThree: Close {}
+extension WorldSubThree {
+    public static var typeName: String { "The judge checks the rules when it reads the file, not when you press." }
+}
+public enum LampLesson: Close {}
+extension LampLesson {
+    public static var typeName: String { "Press On: the line typealias LampMode becomes LampOn, and the dot lights." }
+}
+public enum LampMech: Close {}
+extension LampMech {
+    public static var typeName: String { "The dot reads its color from the state: LampOn declares Ink = AccentRole." }
+}
+public enum PinLesson: Close {}
+extension PinLesson {
+    public static var typeName: String { "The passcode is 4-2-4-2: the dots fill as you walk, a wrong digit resets." }
+}
+public enum PinChord: Close {}
+extension PinChord {
+    public static var typeName: String { "A key may list several rules over one slot: at most one From matches" }
+}
+public enum PinChordTwo: Close {}
+extension PinChordTwo {
+    public static var typeName: String { "the current state, and a press applies exactly that rule, or none." }
+}
+public enum SecretHint: Close {}
+extension SecretHint {
+    public static var typeName: String { "One more line stands below in Mist ink: unlock the pin to read it." }
+}
+public enum TryLine: Close {}
+extension TryLine {
+    public static var typeName: String { "A rule is five lines in this file: find PowerOn, change its Into to LampOff, press On." }
+}
+public enum TryTwo: Close {}
+extension TryTwo {
+    public static var typeName: String { "Break one: set Key4ResetsStage1 From = PinStage0: pressing 4 refuses, naming both rules." }
+}
+public enum LampWord: Close {}
+extension LampWord {
+    public static var typeName: String { "the lamp" }
+}
+public enum LockedWord: Close {}
+extension LockedWord {
+    public static var typeName: String { "Enter passcode" }
+}
+public enum OpenWord: Close {}
+extension OpenWord {
+    public static var typeName: String { "Unlocked" }
+}
+public enum SecretWord: Close {}
+extension SecretWord {
+    public static var typeName: String { "the secret: this whole pad is thirty-one typealias lines" }
+}
+public enum OnWord: Close {}
+extension OnWord {
+    public static var typeName: String { "On" }
+}
+public enum OffWord: Close {}
+extension OffWord {
+    public static var typeName: String { "Off" }
+}
+public enum WorldAlt: Close {}
+extension WorldAlt {
+    public static var typeName: String { "A lamp with On and Off keys, and a four-digit passcode pad whose dots and secret line read their ink from the state's own term. Every key is a rewrite rule." }
+}
+
+// ── the faces ──
+
+public enum KeyTrack: SpanTrackOutlined {
+    public typealias H = Tally<TrackHeight>
+    public typealias Radius = R10
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum OnKeyLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = OnWord
+}
+public enum OffKeyLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = OffWord
+}
+public typealias OnKey = Layered<KeyTrack, OnKeyLabel>
+public typealias OffKey = Layered<KeyTrack, OffKeyLabel>
+
+// a pad key is a circle: the corner radius is half the side, and the digit
+// on it is counted from a rung, never typed in
+public typealias PadSide = Plus<U32, U16>
+public typealias PadRadius = Plus<U16, U8>
+public enum PadKeyFace: SpanTrackOutlined {
+    public typealias H = Tally<PadSide>
+    public typealias Radius = Tally<PadRadius>
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum DigitOneLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<U1>
+}
+public enum DigitTwoLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<U2>
+}
+public enum DigitThreeLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<Plus<U2, U1>>
+}
+public enum DigitFourLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<U4>
+}
+public enum DigitFiveLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<Plus<U4, U1>>
+}
+public enum DigitSixLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<Plus<U4, U2>>
+}
+public enum DigitSevenLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<Plus<U4, Plus<U2, U1>>>
+}
+public enum DigitEightLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<U8>
+}
+public enum DigitNineLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<Plus<U8, U1>>
+}
+public enum DigitZeroLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<PadSide, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<Never>
+}
+
+public enum LampDot: SpanDot {
+    public typealias CY = Tally<U16>
+    public typealias R = Tally<U8>
+    public typealias Fill = LampMode.Ink
+}
+public enum LampCaption: SpanLabel {
+    public typealias Y = CenteredBaseline<TrackHeight, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LampWord
+}
+public enum LampTerm: SpanLabel {
+    public typealias Y = CenteredBaseline<TrackHeight, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = TermText<LampMode>
+}
+public enum PinHeading: SpanLabelMid {
+    public typealias Y = CenteredBaseline<Plus<U16, U4>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = PinProgress.StageWord
+}
+public enum PinDotOne: SpanDot {
+    public typealias CY = Tally<U8>
+    public typealias R = Tally<U4>
+    public typealias Fill = PinProgress.DotOneInk
+}
+public enum PinDotTwo: SpanDot {
+    public typealias CY = Tally<U8>
+    public typealias R = Tally<U4>
+    public typealias Fill = PinProgress.DotTwoInk
+}
+public enum PinDotThree: SpanDot {
+    public typealias CY = Tally<U8>
+    public typealias R = Tally<U4>
+    public typealias Fill = PinProgress.DotThreeInk
+}
+public enum PinDotFour: SpanDot {
+    public typealias CY = Tally<U8>
+    public typealias R = Tally<U4>
+    public typealias Fill = PinProgress.DotFourInk
+}
+public enum SecretLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<Plus<U16, U4>, TextXS>
+    public typealias FillColor = PinProgress.SecretInk
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = SecretWord
+}
+public enum WorldTitleLabel: SpanLabel {
+    public typealias Y = Under<U8, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = WorldTitle
+}
+public enum WorldSubLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = WorldSub
+}
+public enum WorldSubTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = WorldSubTwo
+}
+public enum LampLessonLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LampLesson
+}
+public enum PinLessonLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = PinLesson
+}
+public enum WorldSubThreeLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = WorldSubThree
+}
+public enum LampMechLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LampMech
+}
+public enum PinChordLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = PinChord
+}
+public enum PinChordTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = PinChordTwo
+}
+public enum SecretHintLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = SecretHint
+}
+public enum TryTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = TryTwo
+}
+public enum TryLineLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = TryLine
+}
+
+// ── the rows ──
+
+public enum TitleRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<WorldTitleLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SubRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<WorldSubLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SubTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<WorldSubTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LampLessonRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LampLessonLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum PinLessonRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<PinLessonLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum PinHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<PinHeading>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SecretRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<SecretLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TryRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TryLineLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SubThreeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<WorldSubThreeLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LampMechRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LampMechLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum PinChordRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<PinChordLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum PinChordTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<PinChordTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum SecretHintRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<SecretHintLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TryTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TryTwoLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LampRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<DotSlot, LampDot>.self
+        Air<U8>.self
+        Fixed<U64, LampCaption>.self
+        Air<U8>.self
+        Flexible<LampTerm>.self
+        Fixed<KeySide, RuleKey<PowerOn, OnKey>>.self
+        Air<U8>.self
+        Fixed<KeySide, RuleKey<PowerOff, OffKey>>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum PinDotsRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<DotSlot, PinDotOne>.self
+        Air<U8>.self
+        Fixed<DotSlot, PinDotTwo>.self
+        Air<U8>.self
+        Fixed<DotSlot, PinDotThree>.self
+        Air<U8>.self
+        Fixed<DotSlot, PinDotFour>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum PadRowOne: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<PadSide, RuleKey<OneChord, Layered<PadKeyFace, DigitOneLabel>>>.self
+        Air<U16>.self
+        Fixed<PadSide, RuleKey<TwoChord, Layered<PadKeyFace, DigitTwoLabel>>>.self
+        Air<U16>.self
+        Fixed<PadSide, RuleKey<ThreeChord, Layered<PadKeyFace, DigitThreeLabel>>>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum PadRowTwo: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<PadSide, RuleKey<FourChord, Layered<PadKeyFace, DigitFourLabel>>>.self
+        Air<U16>.self
+        Fixed<PadSide, RuleKey<FiveChord, Layered<PadKeyFace, DigitFiveLabel>>>.self
+        Air<U16>.self
+        Fixed<PadSide, RuleKey<SixChord, Layered<PadKeyFace, DigitSixLabel>>>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum PadRowThree: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<PadSide, RuleKey<SevenChord, Layered<PadKeyFace, DigitSevenLabel>>>.self
+        Air<U16>.self
+        Fixed<PadSide, RuleKey<EightChord, Layered<PadKeyFace, DigitEightLabel>>>.self
+        Air<U16>.self
+        Fixed<PadSide, RuleKey<NineChord, Layered<PadKeyFace, DigitNineLabel>>>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum PadRowZero: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<PadSide, RuleKey<ZeroChord, Layered<PadKeyFace, DigitZeroLabel>>>.self
+        Flexible<SpanNothing>.self
+    }
+}
+
+public enum WorldArt: GrownDiagram {
+    public typealias Across = U512
+    public typealias AriaLabel = WorldAlt
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U32, U8>, SpanHosted<TitleRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SubRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SubTwoRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SubThreeRow>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<LampLessonRow>>.self
+        Air<U8>.self
+        Fixed<TrackHeight, SpanHosted<LampRow>>.self
+        Air<U8>.self
+        Fixed<Plus<U16, U4>, SpanHosted<LampMechRow>>.self
+        Air<Breath>.self
+        Fixed<Plus<U16, U4>, SpanHosted<PinLessonRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<PinChordRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<PinChordTwoRow>>.self
+        Air<U8>.self
+        Fixed<Plus<U16, U4>, SpanHosted<PinHeadRow>>.self
+        Air<U8>.self
+        Fixed<U16, SpanHosted<PinDotsRow>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<PadSide, SpanHosted<PadRowOne>>.self
+        Air<U8>.self
+        Fixed<PadSide, SpanHosted<PadRowTwo>>.self
+        Air<U8>.self
+        Fixed<PadSide, SpanHosted<PadRowThree>>.self
+        Air<U8>.self
+        Fixed<PadSide, SpanHosted<PadRowZero>>.self
+        Air<U8>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SecretHintRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<SecretRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<TryRow>>.self
+        Fixed<Plus<U16, U4>, SpanHosted<TryTwoRow>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
+
 const tabs = [
     { id: "readme", title: "Read me", file: "ReadMe.swift", text: introFile,
       caption: "the page draws its own manual: this introduction is the file on the left" },
@@ -3160,6 +4000,8 @@ const tabs = [
       caption: "12,800 people: judged here in 0.2 s, by the Swift judge in 1.1 s" },
     { id: "basics", title: "Basics", file: "Basics.swift", text: basicsFile,
       caption: "layout in four steps: a row, three shares, a dot, a film" },
+    { id: "buttons", title: "Buttons", file: "World.swift", text: worldFile,
+      caption: "every key on the canvas is a rule declared in the file: a press rewrites one typealias line" },
     { id: "rules", title: "Rules", file: "Rules.swift", text: rulesFile,
       caption: "how to write here: the two moves, the five forms, the law" },
     { id: "faq", title: "FAQ", file: "FAQ.swift", text: faqFile,
@@ -3205,6 +4047,8 @@ function escapeMarkup(text) {
 const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "Size",
     "Weight", "Content", "Given", "Across", "AriaLabel", "Defs", "CY", "R",
     "Begin", "Dwell", "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
+    "Slot", "From", "Into", "Ink", "DotOneInk", "DotTwoInk", "DotThreeInk",
+    "DotFourInk", "StageWord", "SecretInk",
     "DocumentKit", "VerificationIsIdentification", "Organization"]);
 let localNames = new Set();
 
@@ -3217,6 +4061,8 @@ const fixedNames = new Set([
     "H", "Radius", "Fill", "Stroke", "Y", "FillColor", "Size", "Weight", "Content",
     "Given", "Across", "AriaLabel", "Defs", "CY", "R", "Begin", "Dwell",
     "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
+    "Slot", "From", "Into", "Ink", "DotOneInk", "DotTwoInk", "DotThreeInk",
+    "DotFourInk", "StageWord", "SecretInk",
     "SpanLabel", "SpanLink", "SoftShadow", "DisplayS", "Never", "Spanning",
     // the modules an import names
     "DocumentKit", "VerificationIsIdentification", "Organization",
@@ -3307,12 +4153,45 @@ function applyFlags() {
 const status = document.getElementById("status");
 const verdicts = document.getElementById("verdicts");
 const canvases = document.getElementById("canvases");
+
+// a drawn key names its rewrite rule: the host reads the name off the markup,
+// asks the applier for one substitution, and swaps the file. The page knows no
+// domain: the rule, its pattern, and its template all live in the file itself.
+canvases.addEventListener("click", (event) => {
+    const key = event.target.closest("g.vi-rule");
+    if (!key) return;
+    const names = key.getAttribute("data-vi-rules");
+    if (!names) return;
+    const pressed = press(fullText(), names.trim().split(/\s+/).join(","));
+    if (pressed.error) {
+        // a refused press is worth hearing: the applier's own words, briefly
+        const caption = document.querySelector("#actions .caption");
+        const standing = activeTab.caption;
+        caption.textContent = "the applier refuses: " + pressed.error;
+        setTimeout(() => { caption.textContent = standing; }, 4000);
+        return;
+    }
+    if (!pressed.applied) return;
+    // a mismatch is a lawful no-op: the file stands byte-identical, nothing moves.
+    // an applied press keeps the reader's place: the scroll and the caret stay,
+    // and the one rewritten line flashes so the key points at its own edit
+    const keptScroll = cm.getScrollInfo();
+    const keptCursor = cm.getCursor();
+    setEditorFile(pressed.text);
+    cm.setCursor(keptCursor);
+    cm.scrollTo(keptScroll.left, keptScroll.top);
+    const local = pressed.line - pageStart() - 1;
+    if (local >= 0 && local < cm.lineCount()) {
+        cm.addLineClass(local, "background", "line-pressed");
+        setTimeout(() => cm.removeLineClass(local, "background", "line-pressed"), 1200);
+    }
+});
 const tabBar = document.getElementById("tabs");
 let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 20;
+const contentRevision = 28;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);

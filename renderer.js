@@ -26,7 +26,7 @@ const seedText = new Map([
     ["TextXXS", "10"], ["TextXS", "11"], ["TextS", "13"], ["TextM", "15"],
     ["TextL", "17"], ["TitleT", "21"], ["DisplayS", "28"], ["Display", "40"],
     ["WeightRegular", "400"], ["WeightBold", "700"],
-    ["R12", "12"], ["R20", "20"],
+    ["R10", "10"], ["R12", "12"], ["R20", "20"],
     ["HairlineWidth", "1"],
     ["FontStack", "Inter, Roboto, system-ui, sans-serif"],
     ["SoftShadow", '<filter id="soft-shadow" x="-20%" y="-20%" width="140%" height="140%">\n'
@@ -39,6 +39,7 @@ const seedCount = new Map([
     ["U64", 64], ["U128", 128], ["U256", 256], ["U512", 512],
     ["EdgeMargin", 16], ["Breath", 16], ["HairBreath", 2],
     ["WideSurface", 960], ["FilmStripTall", 150], ["Never", 0],
+    ["TrackHeight", 32], ["DotSlot", 12], ["KeySide", 80],
 ]);
 
 const spanShapes = new Set(["SpanTrack", "SpanTrackOutlined", "SpanHeroFace",
@@ -123,6 +124,20 @@ function resolveHead(env, node) {
     for (let step = 0; step < 32; step += 1) {
         recordRead(env, cursor.head);
         const alias = env.topAliases.get(cursor.head);
+        // a dotted head reads an axis off a resolved owner: `LampMode.Ink` is the
+        // Ink alias of whatever term LampMode stands for
+        if (!alias && cursor.head.includes(".")) {
+            const dot = cursor.head.indexOf(".");
+            const base = resolveHead(env, { head: cursor.head.slice(0, dot), args: [] });
+            const owner = env.declarations.get(base.head);
+            const slot = owner ? owner.aliases.get(cursor.head.slice(dot + 1)) : null;
+            if (slot) {
+                cursor = parseType(slot.target);
+                continue;
+            }
+            complain(env, "`" + cursor.head + "` reads no declared axis");
+            return cursor;
+        }
         if (!alias) return cursor;
         if (alias.params && alias.params.length > 0) {
             if (cursor.args.length !== alias.params.length) return cursor;
@@ -168,6 +183,15 @@ function countOf(env, rawNode) {
 
 // ── texts: an atom's reading ──
 
+// a term's name spelled for markup: angles become entities, aliases resolve first
+function spellTerm(env, node) {
+    const settled = resolveHead(env, node);
+    if (settled.args.length === 0) return settled.head;
+    return settled.head + "&lt;"
+        + settled.args.map((argument) => spellTerm(env, argument)).join(", ")
+        + "&gt;";
+}
+
 function textOf(env, rawNode) {
     if (!rawNode) {
         complain(env, "a reading is missing where a coordinate expects one");
@@ -175,6 +199,15 @@ function textOf(env, rawNode) {
     }
     const node = resolveHead(env, rawNode);
     if (node.head === "Tally") return String(countOf(env, node.args[0]));
+    // the centred baseline of the kit: the zone's middle plus half the font's
+    // own capital height (units 2048, cap 1490), ported from CenteredBaseline
+    if (node.head === "CenteredBaseline") {
+        const zone = countOf(env, node.args[0]);
+        const size = parseInt(textOf(env, node.args[1]), 10) || 0;
+        return String(Math.floor((zone * 2048 + 1490 * size + 2048) / (2 * 2048)));
+    }
+    // the dynamics medium's term label: the slot's current term, spelled as written
+    if (node.head === "TermText") return spellTerm(env, node.args[0]);
     if (node.head === "Halfway") {
         return String(Math.floor((countOf(env, node.args[0])
             + countOf(env, node.args[1])) / 2));
@@ -212,6 +245,38 @@ function spanningOf(env, rawNode) {
         const a = spanningOf(env, node.args[0]);
         const b = spanningOf(env, node.args[1]);
         return (x, w) => a(x, w) + b(x, w);
+    }
+    // the dynamics medium's drawn button: a face that names its rules, so a host
+    // can press what it reads. A `Chord` cons lists several rules of one slot
+    // behind one face; the leaves are gathered in declaration order. Every leaf
+    // must stand in the file: the drawn key of an undeclared rule is refused
+    // here, the page's copy of RuleKey's bound.
+    if (node.head === "RuleKey") {
+        const leaves = [];
+        const gather = (term) => {
+            const settled = resolveHead(env, term);
+            if (settled.head === "Chord" && settled.args.length === 2) {
+                gather(settled.args[0]);
+                gather(settled.args[1]);
+            } else {
+                leaves.push(settled.head);
+            }
+        };
+        gather(node.args[0]);
+        let slot = null;
+        for (const leaf of leaves) {
+            const declared = env.declarations.get(leaf);
+            if (!declared) {
+                complain(env, "RuleKey names `" + leaf
+                    + "`, and the file declares no such rule");
+                return () => "";
+            }
+            slot = slot ?? declared.aliases.get("Slot");
+        }
+        const face = spanningOf(env, node.args[1]);
+        return (x, w) => '<g class="vi-rule" data-vi-rules="' + leaves.join(" ")
+            + '" data-vi-slot="' + (slot ? slot.target : "") + '" cursor="pointer">\n'
+            + face(x, w) + "</g>\n";
     }
     if (node.head === "SpanNothing") return () => "";
     const declaration = env.declarations.get(node.head);
