@@ -4503,23 +4503,39 @@ function speakBriefly(message, holdMs) {
     setTimeout(() => { caption.textContent = standing; }, holdMs || 4000);
 }
 function applyPress(ruleArgument) {
-    const pressed = press(fullText(), ruleArgument);
+    const before = fullText();
+    const pressed = press(before, ruleArgument);
     if (pressed.error) {
         speakBriefly("the applier refuses: " + pressed.error);
         return;
     }
     if (!pressed.applied) return;
-    // a mismatch is a lawful no-op: the file stands byte-identical, nothing moves
+    // a mismatch is a lawful no-op: the file stands byte-identical, nothing moves.
+    // a press rewrites exactly one line, so the editor takes exactly one line:
+    // the document is not re-set whole, and the reader's place never moves
+    const local = pressed.line - pageStart() - 1;
+    const beforeLines = before.split("\n");
+    const afterLines = pressed.text.split("\n");
+    if (afterLines.length === beforeLines.length
+        && local >= 0 && local < cm.lineCount()) {
+        cm.replaceRange(afterLines[pressed.line - 1],
+            { line: local, ch: 0 },
+            { line: local, ch: cm.getLine(local).length }, "press");
+        storage.setItem(storageKey(activeTab), fullText());
+        render();
+        // typing is a stream: the literal movements skip the flash the rule
+        // keys keep, so the sheet types without a blink
+        if (!/^(append|rubout|clear) /.test(ruleArgument)) {
+            cm.addLineClass(local, "background", "line-pressed");
+            setTimeout(() => cm.removeLineClass(local, "background", "line-pressed"), 1200);
+        }
+        return;
+    }
     const keptScroll = cm.getScrollInfo();
     const keptCursor = cm.getCursor();
     setEditorFile(pressed.text);
     cm.setCursor(keptCursor);
     cm.scrollTo(keptScroll.left, keptScroll.top);
-    const local = pressed.line - pageStart() - 1;
-    if (local >= 0 && local < cm.lineCount()) {
-        cm.addLineClass(local, "background", "line-pressed");
-        setTimeout(() => cm.removeLineClass(local, "background", "line-pressed"), 1200);
-    }
 }
 
 // a drawn key names its rewrite rules: the host reads the names off the markup
@@ -5525,6 +5541,12 @@ document.getElementById("theme").addEventListener("click", () => {
 document.getElementById("reset").addEventListener("click", () => {
     storage.removeItem(storageKey(activeTab));
     setEditorFile(activeTab.text);
+});
+
+// an editor measured while the tab was hidden draws blank until remeasured:
+// the classic CodeMirror footgun, closed by refreshing on the first show
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") cm.refresh();
 });
 
 // the typewriter listens to the real keyboard: a keystroke is a trigger like a
