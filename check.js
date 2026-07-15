@@ -134,14 +134,45 @@ for (const [literalName, file] of worlds) {
     const worldLaw = lint(file, worldSource);
     const worldArt = renderAll(worldJudged.parsed.declarations, worldJudged.parsed.order,
         worldJudged.parsed.literals, worldJudged.parsed.topAliases);
+    // a dangling name in any declaration slot is a dead limb the renderer
+    // never reaches but a reader still sees: the vector refuses it by name
+    const known = new Set([...pageKit.seeds, ...pageKit.generics,
+        ...worldJudged.parsed.declarations.keys(),
+        ...worldJudged.parsed.topAliases.keys(),
+        ...worldJudged.parsed.literals.keys(),
+        "Close", "Open", "Never", "Given", "Structure", "Divides", "DividesY",
+        "HFlow", "GrownDiagram", "SpanLabel", "SpanLabelMid", "SpanLabelEnd",
+        "SpanLabelMidWrapped", "SpanLabelWrapped", "SpanTrack",
+        "SpanTrackOutlined", "SpanDot", "SpanBreathingDot", "SlotRule",
+        // the engine's own seeds and the judge's word corpus
+        "SoftShadow", "Female", "Male", "IndividualContributor", "Lead",
+        "Manager", "Finance", "Engineering", "Sales", "People", "OnSite",
+        "Hybrid", "Remote", "FinanceShare", "EngineeringShare", "SalesShare",
+        "PeopleShare"]);
+    const dangling = [];
+    for (const declaration of worldJudged.parsed.declarations.values()) {
+        for (const parameter of declaration.params || []) known.add(parameter);
+        for (const [key, alias] of declaration.aliases) {
+            for (const piece of alias.target.split(/[<>,\s]+/)) {
+                // a dotted head reads an axis: only the owner before the dot
+                // must stand as a name
+                const word = piece.split(".")[0];
+                if (word !== "" && /^[A-Z]/.test(word) && !known.has(word)) {
+                    dangling.push(declaration.name + "." + key + " -> " + word);
+                }
+            }
+        }
+    }
     if (worldJudged.refusals.length === 0 && worldLaw.length === 0
-        && worldArt.errors.length === 0 && worldArt.canvases.length > 0) {
+        && worldArt.errors.length === 0 && worldArt.canvases.length > 0
+        && dangling.length === 0) {
         passed += 1;
     } else {
         failures.push(file + ": refusals " + worldJudged.refusals.length
             + " (" + (worldJudged.refusals[0]?.premise || "").slice(0, 50)
             + "), law " + worldLaw.length + ", renderer "
-            + worldArt.errors.slice(0, 2).join(" | "));
+            + worldArt.errors.slice(0, 2).join(" | ")
+            + (dangling.length ? ", dangling " + dangling.slice(0, 3).join("; ") : ""));
     }
 }
 

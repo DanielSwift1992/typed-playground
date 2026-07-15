@@ -266,7 +266,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 41</span>
+  <span style="float: right; color: var(--muted);">rev 42</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -3791,20 +3791,6 @@ public enum TryTwoLabel: SpanLabel {
     public typealias Weight = WeightRegular
     public typealias Content = TryTwo
 }
-public enum NoteLessonLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextS
-    public typealias Weight = WeightRegular
-    public typealias Content = NoteLesson
-}
-public enum NoteLessonTwoLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
-    public typealias FillColor = TextSecondary
-    public typealias Size = TextS
-    public typealias Weight = WeightRegular
-    public typealias Content = NoteLessonTwo
-}
 public enum TryLineLabel: SpanLabel {
     public typealias Y = Under<U2, TextXS>
     public typealias FillColor = TextSecondary
@@ -4552,7 +4538,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 41;
+const contentRevision = 42;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
