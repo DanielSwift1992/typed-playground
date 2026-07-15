@@ -108,7 +108,44 @@ if (worldVerdict.refusals.length === 0 && worldDrawn.errors.length === 0
             && worldDrawn.canvases[0].svg === drawGolden));
 }
 
+// ── every world the page ships must hold: judged, lawful, and drawn clean.
+// This is the vector the typewriter's broken push taught: a partial tab walk
+// is not a walk.
+const kitVocabulary = literal("kitVocabulary", "{", "\n};");
+const pageKit = {
+    seeds: new Set(kitVocabulary.seeds),
+    generics: new Set(kitVocabulary.generics),
+    bareSeeds: new Set(kitVocabulary.bareSeeds),
+};
+const { lint } = require("./lint.js");
+const worlds = [
+    ["introFile", "ReadMe.swift"],
+    ["organizationFile", "Organization.swift"],
+    ["basicsFile", "Basics.swift"],
+    ["typewriterFile", "Typewriter.swift"],
+    ["worldFile", "World.swift"],
+    ["rulesFile", "Rules.swift"],
+    ["faqFile", "FAQ.swift"],
+];
+for (const [literalName, file] of worlds) {
+    total += 1;
+    const worldSource = literal(literalName, "`", "\n`;");
+    const worldJudged = judge(file, worldSource, pageKit);
+    const worldLaw = lint(file, worldSource);
+    const worldArt = renderAll(worldJudged.parsed.declarations, worldJudged.parsed.order,
+        worldJudged.parsed.literals, worldJudged.parsed.topAliases);
+    if (worldJudged.refusals.length === 0 && worldLaw.length === 0
+        && worldArt.errors.length === 0 && worldArt.canvases.length > 0) {
+        passed += 1;
+    } else {
+        failures.push(file + ": refusals " + worldJudged.refusals.length
+            + " (" + (worldJudged.refusals[0]?.premise || "").slice(0, 50)
+            + "), law " + worldLaw.length + ", renderer "
+            + worldArt.errors.slice(0, 2).join(" | "));
+    }
+}
+
 console.log("self-test: " + passed + "/" + total
-    + " vs the reference judge and draw");
+    + " vs the reference judge, the draw, and every world");
 for (const line of failures) console.error("  " + line);
 process.exit(passed === total ? 0 : 1);
