@@ -265,7 +265,12 @@ function textOf(env, rawNode) {
     if (node.head === "CanvasSize") {
         return "0 0 " + countOf(env, node.args[0]) + " " + countOf(env, node.args[1]);
     }
-    if (env.literals.has(node.head)) return env.literals.get(node.head).value;
+    if (env.literals.has(node.head)) {
+        // a literal travels into markup as text, never as markup: the escape
+        // changes nothing on the literal alphabet and defuses a hand-edited one
+        return env.literals.get(node.head).value.replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
     if (seedText.has(node.head)) return seedText.get(node.head);
     complain(env, "no reading for `" + node.head + "`");
     return "";
@@ -601,7 +606,12 @@ function nodeString(env, rawNode) {
         }
         return markup;
     }
-    if (env.literals.has(node.head)) return env.literals.get(node.head).value;
+    if (env.literals.has(node.head)) {
+        // a literal travels into markup as text, never as markup: the escape
+        // changes nothing on the literal alphabet and defuses a hand-edited one
+        return env.literals.get(node.head).value.replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+    }
     complain(env, "`" + node.head + "` is not a form the renderer carries");
     return "";
 }

@@ -151,7 +151,7 @@ function parse(file, text, declarations, order, refusals, extras) {
         }
 
         if (extensionOwner !== null) {
-            const literal = line.match(/^(?:public )?static var typeName: String \{ "(.*)" \}$/);
+            const literal = line.match(/^(?:public )?static var typeName: String \{ "([^"]*)" \}$/);
             if (literal) {
                 extras.literals.set(extensionOwner, { value: literal[1], line: number });
                 continue;

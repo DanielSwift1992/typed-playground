@@ -173,10 +173,9 @@ function pressLiteral(text, operation, slotName, payload) {
         }
         if (!insideExtension) continue;
         if (trimmed.startsWith("}")) break;
-        const open = lines[number].indexOf('{ "');
-        const close = lines[number].indexOf('" }');
-        if (open < 0 || close < open) continue;
-        const current = lines[number].slice(open + 3, close);
+        const shape = lines[number].match(/\{ "([^"]*)" \}/);
+        if (!shape) continue;
+        const current = shape[1];
         let next = current;
         if (operation === "append") {
             const objection = vetLiteral(payload);
