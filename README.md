@@ -32,6 +32,9 @@ checkout: the page needs its seven files (`index.html`, `judge.js`, `lint.js`,
   rewrites exactly one `typealias` line (`press.js`, a line-for-line port of the
   theory's applier), a mismatch changes nothing, and a key whose rules match twice
   refuses by name.
+- **Code · Table** (under the preview): the same file read as rows, one row per
+  declaration, one column per axis. Nothing is stored: a click on a name opens its
+  line, a touch on a state slot offers the rules that can rewrite it.
 - **Dark canvas** (beside the canvas): the same declarations under the dark palette.
 - Type `func` or `var` anywhere: the law refuses each line, in orange. The rule is §0′
   of the repository's linter: a file declares types and nothing that runs, and the one

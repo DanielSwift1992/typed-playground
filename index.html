@@ -317,7 +317,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 61</span>
+  <span style="float: right; color: var(--muted);">rev 62</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -3460,7 +3460,7 @@ extension FaqTitle {
 }
 public enum FaqSub: Close {}
 extension FaqSub {
-    public static var typeName: String { "five questions from this very file: edit any answer in the editor" }
+    public static var typeName: String { "six questions from this very file: edit any answer in the editor" }
 }
 public enum QOneWord: Close {}
 extension QOneWord {
@@ -3522,9 +3522,21 @@ public enum AFiveBWord: Close {}
 extension AFiveBWord {
     public static var typeName: String { "var, let, and init are refused, each with its own line number." }
 }
+public enum QSixWord: Close {}
+extension QSixWord {
+    public static var typeName: String { "What does the Table switch show?" }
+}
+public enum ASixAWord: Close {}
+extension ASixAWord {
+    public static var typeName: String { "The same file, read as rows: one row per declaration, one column per axis." }
+}
+public enum ASixBWord: Close {}
+extension ASixBWord {
+    public static var typeName: String { "Nothing is stored: the table cannot disagree. Click a name: its line opens." }
+}
 public enum FaqAlt: Close {}
 extension FaqAlt {
-    public static var typeName: String { "Five question cards, each with a two-line answer." }
+    public static var typeName: String { "Six question cards, each with a two-line answer." }
 }
 
 // ── the geometry ──
@@ -3662,6 +3674,30 @@ public enum AFiveBLabel: SpanLabel {
 
 // ── the rows: a shared card face, then each entry's inset text ──
 
+public enum QSixLabel: SpanLabel {
+    public typealias Y = Under<Plus<U8, U2>, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = QSixWord
+}
+public enum ASixALabel: SpanLabel {
+    public typealias Y = Under<U32, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = ASixAWord
+}
+public enum ASixBLabel: SpanLabel {
+    public typealias Y = Under<Plus<U32, U16>, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = ASixBWord
+}
+
+// ── the rows: a shared card face, then each entry's inset text ──
+
 public enum HeadRow: HFlow {
     public typealias Given = U512
     @StructureBuilder
@@ -3760,6 +3796,22 @@ public enum EntryFiveBand: Group {
         EntryFiveTextRow.self
     }
 }
+public enum EntrySixTextRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<InnerMargin>.self
+        Flexible<Layered<QSixLabel, Layered<ASixALabel, ASixBLabel>>>.self
+        Air<InnerMargin>.self
+    }
+}
+public enum EntrySixBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FaqCardRow.self
+        EntrySixTextRow.self
+    }
+}
 
 public enum FaqArt: GrownDiagram {
     public typealias Across = U512
@@ -3778,6 +3830,8 @@ public enum FaqArt: GrownDiagram {
         Fixed<FaqTall, SpanHosted<EntryFourBand>>.self
         Air<U8>.self
         Fixed<FaqTall, SpanHosted<EntryFiveBand>>.self
+        Air<U8>.self
+        Fixed<FaqTall, SpanHosted<EntrySixBand>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -5453,7 +5507,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 61;
+const contentRevision = 62;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
