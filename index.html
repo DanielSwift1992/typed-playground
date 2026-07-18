@@ -317,7 +317,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 133</span>
+  <span style="float: right; color: var(--muted);">rev 135</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -2395,6 +2395,10 @@ public enum TryTwoRow: HFlow {
 }
 
 public typealias IntroParaWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
+public enum ValueParaWord: Close {}
+extension ValueParaWord {
+    public static var typeName: String { "This page is a document that checks itself. Every tab is one file of plain statements: who works where, how bright each line of a lamp is, which jumps are open to an electron. A checker re-reads every statement on each keystroke, and a false statement is a line number on your screen before you finish typing. The biggest file here is 136,000 lines, and its re-read is 0.2 seconds. There is no test run, because nothing runs at all: every statement is written down, and the checker reads what is written." }
+}
 public enum IntroThesisParaWord: Close {}
 extension IntroThesisParaWord {
     public static var typeName: String { "The preview on the right is drawn from the Swift types on the left. Nothing runs: the types are checked and drawn, never executed. Each claim is answered by one dictionary read: the checker is called the judge. A sample claim: Emp01 works in Finance, and holds FinanceShare." }
@@ -2685,6 +2689,24 @@ public enum TabRulesRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
+public enum ValueParaText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = ValueParaWord
+}
+public enum ValueParaRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<IntroParaWide, ValueParaText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
 public enum IntroArt: GrownDiagram {
     public typealias Across = U512
     public typealias AriaLabel = IntroAlt
@@ -2692,6 +2714,8 @@ public enum IntroArt: GrownDiagram {
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
         Fixed<HeadTall, SpanHosted<TitleRow>>.self
+        Fixed<Plus<Times<LineTally<ValueParaWord, IntroParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<ValueParaRow>>.self
+        Air<U8>.self
         Fixed<Plus<Times<LineTally<IntroThesisParaWord, IntroParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<IntroThesisParaRow>>.self
         Air<Plus<U16, U8>>.self
         Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<U4, Beat>>, CurveHeadRow>>>.self
@@ -9994,7 +10018,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 133;
+const contentRevision = 135;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
