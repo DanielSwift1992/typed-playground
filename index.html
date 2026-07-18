@@ -317,7 +317,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 113</span>
+  <span style="float: right; color: var(--muted);">rev 114</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -339,7 +339,7 @@ window.addEventListener("error", (event) => {
 <script src="judge.js?v=10"></script>
 <script src="lint.js?v=4"></script>
 <script src="press.js?v=3"></script>
-<script src="renderer.js?v=9"></script>
+<script src="renderer.js?v=10"></script>
 <script>
 "use strict";
 
@@ -399,7 +399,7 @@ const kitVocabulary = {
         "Fixed", "SpanHosted", "SpanLink", "Halfway", "Under", "Paired",
         "RuleKey", "TermText", "CenteredBaseline", "Chord",
         "LineTally", "SpanLabelMidWrapped", "SpanLabelWrapped", "Succ",
-        "XYZWrite", "PouredCoordinate", "Exactly", "EdgeSame",
+        "XYZWrite", "PouredCoordinate", "Exactly", "EdgeSame", "EdgeEven", "EdgeOdd",
         "EdgeAtLeast", "PerceptualRung"]),
     bareSeeds: new Set(["RestAir"]),
 };
@@ -2783,6 +2783,58 @@ public enum PrismNoteWord: Close {}
 extension PrismNoteWord {
     public static var typeName: String { "The black windows are a prism\u2019s view: it spreads a beam into its lines." }
 }
+public enum NeonYellowName: Close {}
+extension NeonYellowName {
+    public static var typeName: String { "585 nm" }
+}
+public enum NeonRedName: Close {}
+extension NeonRedName {
+    public static var typeName: String { "640 nm" }
+}
+public enum SodiumDName: Close {}
+extension SodiumDName {
+    public static var typeName: String { "D 589 nm" }
+}
+public enum SodiumIRName: Close {}
+extension SodiumIRName {
+    public static var typeName: String { "infrared 819 nm" }
+}
+public enum NoThirdName: Close {}
+extension NoThirdName {
+    public static var typeName: String { "no third line" }
+}
+public enum GasNoteWord: Close {}
+extension GasNoteWord {
+    public static var typeName: String { "The gas is one line of code. These keys rewrite it, and the picker follows." }
+}
+public enum GasHydrogenKeyWord: Close {}
+extension GasHydrogenKeyWord {
+    public static var typeName: String { "hydrogen lamp" }
+}
+public enum GasNeonKeyWord: Close {}
+extension GasNeonKeyWord {
+    public static var typeName: String { "neon" }
+}
+public enum GasSodiumKeyWord: Close {}
+extension GasSodiumKeyWord {
+    public static var typeName: String { "sodium" }
+}
+public enum LiveFringeWord: Close {}
+extension LiveFringeWord {
+    public static var typeName: String { "The stripe below is live: its gap is the LiveGap line in the code." }
+}
+public enum LiveFringeBWord: Close {}
+extension LiveFringeBWord {
+    public static var typeName: String { "Each press moves the gap one half-step. Even is bright, odd is dark." }
+}
+public enum WidenWord: Close {}
+extension WidenWord {
+    public static var typeName: String { "Widen the gap" }
+}
+public enum NarrowWord: Close {}
+extension NarrowWord {
+    public static var typeName: String { "Narrow it" }
+}
 public enum HeadSlits: Close {}
 extension HeadSlits {
     public static var typeName: String { "Two slits" }
@@ -2987,6 +3039,96 @@ public enum YellowAtFull: Close {
 }
 public typealias YellowFact = FitsRedGreen<YellowAtFull>
 
+// ── the gas handle: a gas is its list of weighted lines, and the picker
+// mixes whichever gas the Gas line names. No door knows a gas. ──
+public enum HydrogenGas: Close {
+    public typealias AlphaWeight = HAlphaGlow
+    public typealias BetaWeight = HBetaGlow
+    public typealias IRWeight = PaschenGlow
+    public typealias AlphaName = LineAlphaWord
+    public typealias BetaName = LineBetaWord
+    public typealias IRName = LineIRWord
+}
+public enum NeonGas: Close {
+    public typealias AlphaWeight = NeonYellowGlow
+    public typealias BetaWeight = NeonRedGlow
+    public typealias IRWeight = PaschenGlow
+    public typealias AlphaName = NeonYellowName
+    public typealias BetaName = NeonRedName
+    public typealias IRName = NoThirdName
+}
+public enum SodiumGas: Close {
+    public typealias AlphaWeight = SodiumDGlow
+    public typealias BetaWeight = SodiumIRGlow
+    public typealias IRWeight = PaschenGlow
+    public typealias AlphaName = SodiumDName
+    public typealias BetaName = SodiumIRName
+    public typealias IRName = NoThirdName
+}
+typealias Gas = HydrogenGas
+public enum GasSlot: Close {}
+public enum PickHydrogen<P>: SlotRule {
+    public typealias Slot = GasSlot
+    public typealias From = P
+    public typealias Into = HydrogenGas
+}
+public enum PickNeon<P>: SlotRule {
+    public typealias Slot = GasSlot
+    public typealias From = P
+    public typealias Into = NeonGas
+}
+public enum PickSodium<P>: SlotRule {
+    public typealias Slot = GasSlot
+    public typealias From = P
+    public typealias Into = SodiumGas
+}
+public typealias MixColour<A, B, C> = XYZWrite<PouredCoordinate<A, Gas.AlphaWeight.XShare, B, Gas.BetaWeight.XShare, C, Gas.IRWeight.XShare>, PouredCoordinate<A, Gas.AlphaWeight.YShare, B, Gas.BetaWeight.YShare, C, Gas.IRWeight.YShare>, PouredCoordinate<A, Gas.AlphaWeight.ZShare, B, Gas.BetaWeight.ZShare, C, Gas.IRWeight.ZShare>>
+
+// ── the live fringe: the gap is a line of code, and the stripe reads its
+// parity at the edge — press the gap and the parity follows the file ──
+typealias LiveGap = Rung1
+public enum LiveGapSlot: Close {}
+public enum Widen01: SlotRule {
+    public typealias Slot = LiveGapSlot
+    public typealias From = Rung0
+    public typealias Into = Rung1
+}
+public enum Widen12: SlotRule {
+    public typealias Slot = LiveGapSlot
+    public typealias From = Rung1
+    public typealias Into = Rung2
+}
+public enum Widen23: SlotRule {
+    public typealias Slot = LiveGapSlot
+    public typealias From = Rung2
+    public typealias Into = Rung3
+}
+public enum Widen34: SlotRule {
+    public typealias Slot = LiveGapSlot
+    public typealias From = Rung3
+    public typealias Into = Rung4
+}
+public enum Narrow43: SlotRule {
+    public typealias Slot = LiveGapSlot
+    public typealias From = Rung4
+    public typealias Into = Rung3
+}
+public enum Narrow32: SlotRule {
+    public typealias Slot = LiveGapSlot
+    public typealias From = Rung3
+    public typealias Into = Rung2
+}
+public enum Narrow21: SlotRule {
+    public typealias Slot = LiveGapSlot
+    public typealias From = Rung2
+    public typealias Into = Rung1
+}
+public enum Narrow10: SlotRule {
+    public typealias Slot = LiveGapSlot
+    public typealias From = Rung1
+    public typealias Into = Rung0
+}
+
 // ── the geometry ──
 
 public typealias HeadTall = Plus<U32, U8>
@@ -3000,22 +3142,22 @@ public typealias BarUnit = U16
 public enum MixAlphaPour: SpanTrack {
     public typealias H = Tally<U16>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<MixAlpha, Never, Never>
+    public typealias Fill = MixColour<MixAlpha, Never, Never>
 }
 public enum MixBetaPour: SpanTrack {
     public typealias H = Tally<U16>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, MixBeta, Never>
+    public typealias Fill = MixColour<Never, MixBeta, Never>
 }
 public enum MixIRPour: SpanTrack {
     public typealias H = Tally<U16>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Never, MixIR>
+    public typealias Fill = MixColour<Never, Never, MixIR>
 }
 public enum MixPatch: SpanTrack {
     public typealias H = Tally<Plus<U32, U16>>
     public typealias Radius = Tally<U8>
-    public typealias Fill = HydrogenColour<MixAlpha, MixBeta, MixIR>
+    public typealias Fill = MixColour<MixAlpha, MixBeta, MixIR>
 }
 // the colour map: every mix the ladder reaches, nine by nine, each tile
 // poured by the door. The grid is division, never coordinates: nine bands,
@@ -3023,407 +3165,407 @@ public enum MixPatch: SpanTrack {
 public enum CellA0B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Never, Never>
+    public typealias Fill = MixColour<Never, Never, Never>
 }
 public enum CellA1B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Never, Never>
+    public typealias Fill = MixColour<Rung1, Never, Never>
 }
 public enum CellA2B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Never, Never>
+    public typealias Fill = MixColour<Rung2, Never, Never>
 }
 public enum CellA3B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Never, Never>
+    public typealias Fill = MixColour<Rung3, Never, Never>
 }
 public enum CellA4B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Never, Never>
+    public typealias Fill = MixColour<Rung4, Never, Never>
 }
 public enum CellA5B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Never, Never>
+    public typealias Fill = MixColour<Rung5, Never, Never>
 }
 public enum CellA6B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Never, Never>
+    public typealias Fill = MixColour<Rung6, Never, Never>
 }
 public enum CellA7B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Never, Never>
+    public typealias Fill = MixColour<Rung7, Never, Never>
 }
 public enum CellA8B0: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Never, Never>
+    public typealias Fill = MixColour<Rung8, Never, Never>
 }
 public enum CellA0B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Rung1, Never>
+    public typealias Fill = MixColour<Never, Rung1, Never>
 }
 public enum CellA1B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Rung1, Never>
+    public typealias Fill = MixColour<Rung1, Rung1, Never>
 }
 public enum CellA2B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Rung1, Never>
+    public typealias Fill = MixColour<Rung2, Rung1, Never>
 }
 public enum CellA3B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Rung1, Never>
+    public typealias Fill = MixColour<Rung3, Rung1, Never>
 }
 public enum CellA4B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Rung1, Never>
+    public typealias Fill = MixColour<Rung4, Rung1, Never>
 }
 public enum CellA5B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Rung1, Never>
+    public typealias Fill = MixColour<Rung5, Rung1, Never>
 }
 public enum CellA6B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Rung1, Never>
+    public typealias Fill = MixColour<Rung6, Rung1, Never>
 }
 public enum CellA7B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Rung1, Never>
+    public typealias Fill = MixColour<Rung7, Rung1, Never>
 }
 public enum CellA8B1: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Rung1, Never>
+    public typealias Fill = MixColour<Rung8, Rung1, Never>
 }
 public enum CellA0B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Rung2, Never>
+    public typealias Fill = MixColour<Never, Rung2, Never>
 }
 public enum CellA1B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Rung2, Never>
+    public typealias Fill = MixColour<Rung1, Rung2, Never>
 }
 public enum CellA2B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Rung2, Never>
+    public typealias Fill = MixColour<Rung2, Rung2, Never>
 }
 public enum CellA3B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Rung2, Never>
+    public typealias Fill = MixColour<Rung3, Rung2, Never>
 }
 public enum CellA4B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Rung2, Never>
+    public typealias Fill = MixColour<Rung4, Rung2, Never>
 }
 public enum CellA5B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Rung2, Never>
+    public typealias Fill = MixColour<Rung5, Rung2, Never>
 }
 public enum CellA6B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Rung2, Never>
+    public typealias Fill = MixColour<Rung6, Rung2, Never>
 }
 public enum CellA7B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Rung2, Never>
+    public typealias Fill = MixColour<Rung7, Rung2, Never>
 }
 public enum CellA8B2: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Rung2, Never>
+    public typealias Fill = MixColour<Rung8, Rung2, Never>
 }
 public enum CellA0B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Rung3, Never>
+    public typealias Fill = MixColour<Never, Rung3, Never>
 }
 public enum CellA1B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Rung3, Never>
+    public typealias Fill = MixColour<Rung1, Rung3, Never>
 }
 public enum CellA2B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Rung3, Never>
+    public typealias Fill = MixColour<Rung2, Rung3, Never>
 }
 public enum CellA3B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Rung3, Never>
+    public typealias Fill = MixColour<Rung3, Rung3, Never>
 }
 public enum CellA4B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Rung3, Never>
+    public typealias Fill = MixColour<Rung4, Rung3, Never>
 }
 public enum CellA5B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Rung3, Never>
+    public typealias Fill = MixColour<Rung5, Rung3, Never>
 }
 public enum CellA6B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Rung3, Never>
+    public typealias Fill = MixColour<Rung6, Rung3, Never>
 }
 public enum CellA7B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Rung3, Never>
+    public typealias Fill = MixColour<Rung7, Rung3, Never>
 }
 public enum CellA8B3: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Rung3, Never>
+    public typealias Fill = MixColour<Rung8, Rung3, Never>
 }
 public enum CellA0B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Rung4, Never>
+    public typealias Fill = MixColour<Never, Rung4, Never>
 }
 public enum CellA1B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Rung4, Never>
+    public typealias Fill = MixColour<Rung1, Rung4, Never>
 }
 public enum CellA2B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Rung4, Never>
+    public typealias Fill = MixColour<Rung2, Rung4, Never>
 }
 public enum CellA3B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Rung4, Never>
+    public typealias Fill = MixColour<Rung3, Rung4, Never>
 }
 public enum CellA4B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Rung4, Never>
+    public typealias Fill = MixColour<Rung4, Rung4, Never>
 }
 public enum CellA5B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Rung4, Never>
+    public typealias Fill = MixColour<Rung5, Rung4, Never>
 }
 public enum CellA6B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Rung4, Never>
+    public typealias Fill = MixColour<Rung6, Rung4, Never>
 }
 public enum CellA7B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Rung4, Never>
+    public typealias Fill = MixColour<Rung7, Rung4, Never>
 }
 public enum CellA8B4: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Rung4, Never>
+    public typealias Fill = MixColour<Rung8, Rung4, Never>
 }
 public enum CellA0B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Rung5, Never>
+    public typealias Fill = MixColour<Never, Rung5, Never>
 }
 public enum CellA1B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Rung5, Never>
+    public typealias Fill = MixColour<Rung1, Rung5, Never>
 }
 public enum CellA2B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Rung5, Never>
+    public typealias Fill = MixColour<Rung2, Rung5, Never>
 }
 public enum CellA3B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Rung5, Never>
+    public typealias Fill = MixColour<Rung3, Rung5, Never>
 }
 public enum CellA4B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Rung5, Never>
+    public typealias Fill = MixColour<Rung4, Rung5, Never>
 }
 public enum CellA5B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Rung5, Never>
+    public typealias Fill = MixColour<Rung5, Rung5, Never>
 }
 public enum CellA6B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Rung5, Never>
+    public typealias Fill = MixColour<Rung6, Rung5, Never>
 }
 public enum CellA7B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Rung5, Never>
+    public typealias Fill = MixColour<Rung7, Rung5, Never>
 }
 public enum CellA8B5: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Rung5, Never>
+    public typealias Fill = MixColour<Rung8, Rung5, Never>
 }
 public enum CellA0B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Rung6, Never>
+    public typealias Fill = MixColour<Never, Rung6, Never>
 }
 public enum CellA1B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Rung6, Never>
+    public typealias Fill = MixColour<Rung1, Rung6, Never>
 }
 public enum CellA2B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Rung6, Never>
+    public typealias Fill = MixColour<Rung2, Rung6, Never>
 }
 public enum CellA3B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Rung6, Never>
+    public typealias Fill = MixColour<Rung3, Rung6, Never>
 }
 public enum CellA4B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Rung6, Never>
+    public typealias Fill = MixColour<Rung4, Rung6, Never>
 }
 public enum CellA5B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Rung6, Never>
+    public typealias Fill = MixColour<Rung5, Rung6, Never>
 }
 public enum CellA6B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Rung6, Never>
+    public typealias Fill = MixColour<Rung6, Rung6, Never>
 }
 public enum CellA7B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Rung6, Never>
+    public typealias Fill = MixColour<Rung7, Rung6, Never>
 }
 public enum CellA8B6: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Rung6, Never>
+    public typealias Fill = MixColour<Rung8, Rung6, Never>
 }
 public enum CellA0B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Rung7, Never>
+    public typealias Fill = MixColour<Never, Rung7, Never>
 }
 public enum CellA1B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Rung7, Never>
+    public typealias Fill = MixColour<Rung1, Rung7, Never>
 }
 public enum CellA2B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Rung7, Never>
+    public typealias Fill = MixColour<Rung2, Rung7, Never>
 }
 public enum CellA3B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Rung7, Never>
+    public typealias Fill = MixColour<Rung3, Rung7, Never>
 }
 public enum CellA4B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Rung7, Never>
+    public typealias Fill = MixColour<Rung4, Rung7, Never>
 }
 public enum CellA5B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Rung7, Never>
+    public typealias Fill = MixColour<Rung5, Rung7, Never>
 }
 public enum CellA6B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Rung7, Never>
+    public typealias Fill = MixColour<Rung6, Rung7, Never>
 }
 public enum CellA7B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Rung7, Never>
+    public typealias Fill = MixColour<Rung7, Rung7, Never>
 }
 public enum CellA8B7: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Rung7, Never>
+    public typealias Fill = MixColour<Rung8, Rung7, Never>
 }
 public enum CellA0B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Never, Rung8, Never>
+    public typealias Fill = MixColour<Never, Rung8, Never>
 }
 public enum CellA1B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung1, Rung8, Never>
+    public typealias Fill = MixColour<Rung1, Rung8, Never>
 }
 public enum CellA2B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung2, Rung8, Never>
+    public typealias Fill = MixColour<Rung2, Rung8, Never>
 }
 public enum CellA3B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung3, Rung8, Never>
+    public typealias Fill = MixColour<Rung3, Rung8, Never>
 }
 public enum CellA4B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung4, Rung8, Never>
+    public typealias Fill = MixColour<Rung4, Rung8, Never>
 }
 public enum CellA5B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung5, Rung8, Never>
+    public typealias Fill = MixColour<Rung5, Rung8, Never>
 }
 public enum CellA6B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung6, Rung8, Never>
+    public typealias Fill = MixColour<Rung6, Rung8, Never>
 }
 public enum CellA7B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung7, Rung8, Never>
+    public typealias Fill = MixColour<Rung7, Rung8, Never>
 }
 public enum CellA8B8: SpanTrack {
     public typealias H = Tally<Plus<U16, U4>>
     public typealias Radius = Tally<U2>
-    public typealias Fill = HydrogenColour<Rung8, Rung8, Never>
+    public typealias Fill = MixColour<Rung8, Rung8, Never>
 }
 public enum YouRingFace: SpanDot {
     public typealias CY = Halfway<Plus<U16, U4>, Never>
@@ -3591,7 +3733,7 @@ public enum MixRgbLabel: SpanLabel {
     public typealias FillColor = TextPrimary
     public typealias Size = TextS
     public typealias Weight = WeightBold
-    public typealias Content = HydrogenColour<MixAlpha, MixBeta, MixIR>
+    public typealias Content = MixColour<MixAlpha, MixBeta, MixIR>
 }
 public enum MixAlphaCountLabel: SpanLabel {
     public typealias Y = Under<U4, TextXS>
@@ -4081,7 +4223,7 @@ public enum MixAlphaRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Fixed<MixCapCol, LineAlphaLabel>.self
+        Fixed<MixCapCol, MixAlphaCapLabel>.self
         Fixed<Plus<U16, U8>, RuleKey<Exactly<SetAlpha<Never>>, Rung0Key>>.self
         Air<U2>.self
         Fixed<Plus<U16, U8>, RuleKey<Exactly<SetAlpha<Rung1>>, Rung1Key>>.self
@@ -4113,7 +4255,7 @@ public enum MixBetaRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Fixed<MixCapCol, LineBetaLabel>.self
+        Fixed<MixCapCol, MixBetaCapLabel>.self
         Fixed<Plus<U16, U8>, RuleKey<Exactly<SetBeta<Never>>, Rung0Key>>.self
         Air<U2>.self
         Fixed<Plus<U16, U8>, RuleKey<Exactly<SetBeta<Rung1>>, Rung1Key>>.self
@@ -4145,7 +4287,7 @@ public enum MixIRRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Fixed<MixCapCol, LineIRLabel>.self
+        Fixed<MixCapCol, MixIRCapLabel>.self
         Fixed<Plus<U16, U8>, RuleKey<Exactly<SetIR<Never>>, Rung0Key>>.self
         Air<U2>.self
         Fixed<Plus<U16, U8>, RuleKey<Exactly<SetIR<Rung1>>, Rung1Key>>.self
@@ -5513,6 +5655,152 @@ public enum DiffParaRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
+public enum MixAlphaCapLabel: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Gas.AlphaName
+}
+public enum MixBetaCapLabel: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Gas.BetaName
+}
+public enum MixIRCapLabel: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Gas.IRName
+}
+public enum GasNoteLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = GasNoteWord
+}
+public enum GasNoteRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<GasNoteLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum GasHydrogenKeyLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = GasHydrogenKeyWord
+}
+public enum GasNeonKeyLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = GasNeonKeyWord
+}
+public enum GasSodiumKeyLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = GasSodiumKeyWord
+}
+public typealias GasHydrogenKey = Layered<LightKeyTrack, GasHydrogenKeyLabel>
+public typealias GasNeonKey = Layered<LightKeyTrack, GasNeonKeyLabel>
+public typealias GasSodiumKey = Layered<LightKeyTrack, GasSodiumKeyLabel>
+public enum GasKeysRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U64, U32>, RuleKey<PickHydrogen, GasHydrogenKey>>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, RuleKey<PickNeon, GasNeonKey>>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, RuleKey<PickSodium, GasSodiumKey>>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LiveIntroLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LiveFringeWord
+}
+public enum LiveIntroRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LiveIntroLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LiveGapCount: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<LiveGap>
+}
+public enum WidenKeyLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = WidenWord
+}
+public enum NarrowKeyLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = NarrowWord
+}
+public typealias WidenKey = Layered<LightKeyTrack, WidenKeyLabel>
+public typealias NarrowKey = Layered<LightKeyTrack, NarrowKeyLabel>
+public enum LiveFringeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U32, U16>, Layered<EdgeEven<LiveGap, FringeBright>, EdgeOdd<LiveGap, FringeDark>>>.self
+        Air<U8>.self
+        Fixed<U16, LiveGapCount>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U32>, RuleKey<Chord<Widen01, Chord<Widen12, Chord<Widen23, Widen34>>>, WidenKey>>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, RuleKey<Chord<Narrow43, Chord<Narrow32, Chord<Narrow21, Narrow10>>>, NarrowKey>>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LiveFringeBLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LiveFringeBWord
+}
+public enum LiveFringeBRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LiveFringeBLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
 public enum LightArt: GrownDiagram {
     public typealias Across = U512
     public typealias AriaLabel = LightAlt
@@ -5552,6 +5840,10 @@ public enum LightArt: GrownDiagram {
         Fixed<Plus<U32, U16>, SpanHosted<MixPatchRow>>.self
         Air<U8>.self
         Fixed<Plus<Times<LineTally<MixNoteWord, LightParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<MixNoteRow>>.self
+        Air<U8>.self
+        Fixed<LineTall, SpanHosted<GasNoteRow>>.self
+        Air<U4>.self
+        Fixed<Plus<U32, U8>, SpanHosted<GasKeysRow>>.self
         Air<Plus<U8, U4>>.self
         Fixed<RowTall, SpanHosted<MapHeadRow>>.self
         Fixed<Plus<Times<LineTally<MapIntroWord, LightParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<MapIntroRow>>.self
@@ -5637,6 +5929,12 @@ public enum LightArt: GrownDiagram {
         Fixed<Plus<U16, U8>, SpanHosted<FringeRow>>.self
         Air<U8>.self
         Fixed<Plus<Times<LineTally<SlitsFactParaWord, LightParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<SlitsFactParaRow>>.self
+        Air<U8>.self
+        Fixed<LineTall, SpanHosted<LiveIntroRow>>.self
+        Air<U4>.self
+        Fixed<Plus<U32, U8>, SpanHosted<LiveFringeRow>>.self
+        Air<U4>.self
+        Fixed<LineTall, SpanHosted<LiveFringeBRow>>.self
         Air<U4>.self
         Fixed<LineTall, SpanHosted<SlitBreakRow>>.self
         Air<Plus<U16, U8>>.self
@@ -7981,6 +8279,7 @@ const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "
     "AlphaLevel", "BetaLevel", "PaschenLevel", "Horizontal", "Vertical",
     "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
     "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
+    "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
     "DocumentKit", "VerificationIsIdentification", "Organization"]);
 let localNames = new Set();
 
@@ -7999,6 +8298,7 @@ const fixedNames = new Set([
     "AlphaLevel", "BetaLevel", "PaschenLevel", "Horizontal", "Vertical",
     "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
     "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
+    "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
     "SpanLabel", "SpanLink", "SoftShadow", "DisplayS", "Never", "Spanning",
     // the modules an import names
     "DocumentKit", "VerificationIsIdentification", "Organization",
@@ -8438,7 +8738,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 113;
+const contentRevision = 114;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);

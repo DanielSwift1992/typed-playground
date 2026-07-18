@@ -221,14 +221,16 @@ function resolveHead(env, node) {
 // ── counts: the unit trees a canvas and an Air measure by ──
 
 const canonicalShares = new Map([
-    ["HAlphaGlow", [7, 2, 0]], ["HBetaGlow", [2, 7, 18]],
-    ["PaschenGlow", [0, 0, 0]], ["NeonYellowGlow", [17, 16, 0]],
-    ["NeonRedGlow", [9, 4, 0]], ["SodiumDGlow", [18, 15, 0]],
+    // the line weights (Spectrum.swift at ff6c51d): each reads the CIE 1931
+    // 2-degree table at its wavelength, rounded as the nearest lattice pair
+    // that preserves chromaticity; sodium's blind row is measured, not assumed
+    ["HAlphaGlow", [8, 3, 0]], ["HBetaGlow", [2, 6, 19]],
+    ["PaschenGlow", [0, 0, 0]], ["NeonYellowGlow", [31, 26, 0]],
+    ["NeonRedGlow", [13, 5, 0]], ["SodiumDGlow", [33, 25, 0]],
     ["SodiumIRGlow", [0, 0, 0]],
-    // the stated displays (Spectrum.swift at 1029e02): every primary is the
-    // column of its standard's published matrix — IEC 61966-2-1, SMPTE EG
-    // 432-1, ITU-R BT.2020 — rounded once onto the lattice, a thirty-second
-    // per rung. No invented number survives.
+    // the stated displays: every primary is the column of its standard's
+    // published matrix — IEC 61966-2-1, SMPTE EG 432-1, ITU-R BT.2020 —
+    // rounded once onto the lattice, a thirty-second per rung.
     ["SRGBRedPrimary", [13, 7, 1]], ["SRGBGreenPrimary", [11, 23, 4]],
     ["SRGBBluePrimary", [6, 2, 30]], ["P3RedPrimary", [16, 7, 0]],
     ["P3GreenPrimary", [9, 22, 1]], ["P3BluePrimary", [6, 3, 33]],
@@ -243,13 +245,20 @@ function countOf(env, rawNode) {
         return 0;
     }
     // a canonical weight's axis is a stated magnitude of the kit: the settled
-    // reading of its composed rungs (Spectrum.swift, CanonicalWeights)
+    // reading of its composed rungs (Spectrum.swift, CanonicalWeights). The
+    // owner may itself be an alias or a dotted chain (a world's gas slot):
+    // it settles to a name first, the way every axis walk settles its owner
     if (rawNode.head.includes(".")) {
-        const dot = rawNode.head.indexOf(".");
-        const owner = rawNode.head.slice(0, dot);
-        const axis = rawNode.head.slice(dot + 1);
-        if (canonicalShares.has(owner) && shareIndex.has(axis)) {
-            return canonicalShares.get(owner)[shareIndex.get(axis)];
+        const lastDot = rawNode.head.lastIndexOf(".");
+        const ownerSpelled = rawNode.head.slice(0, lastDot);
+        const axis = rawNode.head.slice(lastDot + 1);
+        if (shareIndex.has(axis)) {
+            const owner = canonicalShares.has(ownerSpelled)
+                ? ownerSpelled
+                : resolveHead(env, { head: ownerSpelled, args: [] }).head;
+            if (canonicalShares.has(owner)) {
+                return canonicalShares.get(owner)[shareIndex.get(axis)];
+            }
         }
     }
     const node = resolveHead(env, rawNode);
@@ -329,26 +338,10 @@ function textOf(env, rawNode) {
     // is one felt ratio, so felt distance is a difference of rungs. The walks
     // are the kit's own, mirrored as their eight marks.
     if (node.head === "PerceptualRung" && node.args.length === 1) {
-        const walks = new Map([
-            ["HAlphaGlow.LongShare", "11100000"], ["HAlphaGlow.MiddleShare", "00000000"],
-            ["HAlphaGlow.ShortShare", "00000000"],
-            ["HBetaGlow.LongShare", "00000000"], ["HBetaGlow.MiddleShare", "10100000"],
-            ["HBetaGlow.ShortShare", "11100000"],
-            ["PaschenGlow.LongShare", "00000000"], ["PaschenGlow.MiddleShare", "00000000"],
-            ["PaschenGlow.ShortShare", "00000000"],
-            ["NeonYellowGlow.LongShare", "11100000"], ["NeonYellowGlow.MiddleShare", "10100000"],
-            ["NeonYellowGlow.ShortShare", "00000000"],
-            ["NeonRedGlow.LongShare", "11100000"], ["NeonRedGlow.MiddleShare", "00100000"],
-            ["NeonRedGlow.ShortShare", "00000000"],
-            ["SodiumDGlow.LongShare", "11100000"], ["SodiumDGlow.MiddleShare", "10010000"],
-            ["SodiumDGlow.ShortShare", "00000000"],
-            ["SodiumIRGlow.LongShare", "00000000"], ["SodiumIRGlow.MiddleShare", "00000000"],
-            ["SodiumIRGlow.ShortShare", "00000000"],
-        ]);
-        const marks = walks.get(node.args[0].head);
-        if (marks === undefined) {
-            complain(env, "`" + node.args[0].head
-                + "` names no stated walk of the kit");
+        const marks = textOf(env, node.args[0]);
+        if (typeof marks !== "string" || marks.length !== 8) {
+            complain(env, "a band settles in eight cuts, not "
+                + (typeof marks === "string" ? marks.length : 0));
             return "0";
         }
         const lit = marks.indexOf("1");
@@ -481,6 +474,17 @@ function spanningOf(env, rawNode) {
             return () => "";
         }
         return spanningOf(env, node.args[2]);
+    }
+    // a magnitude's parity, read at the edge (EdgeEven / EdgeOdd): the count
+    // splits into pairs or it does not, and the face follows the split — a
+    // fringe is a living reader of its gap, no certificate to go stale
+    if (node.head === "EdgeEven" && node.args.length === 2) {
+        if (countOf(env, node.args[0]) % 2 !== 0) return () => "";
+        return spanningOf(env, node.args[1]);
+    }
+    if (node.head === "EdgeOdd" && node.args.length === 2) {
+        if (countOf(env, node.args[0]) % 2 !== 1) return () => "";
+        return spanningOf(env, node.args[1]);
     }
     if (node.head === "SpanNothing") return () => "";
     const declaration = env.declarations.get(node.head);
@@ -821,4 +825,4 @@ function renderAll(declarations, order, literals, topAliases) {
     return { canvases, errors: env.errors, reads: env.reads };
 }
 
-if (typeof module !== "undefined") { module.exports = { renderAll, parseType }; }
+if (typeof module !== "undefined") { module.exports = { renderAll, parseType, canonicalShares, seedCount }; }

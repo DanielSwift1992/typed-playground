@@ -75,7 +75,7 @@ for (const name of ["cross", "rank", "site"]) {
 // glued into this page's fragment; goldens/dynamics-draw.svg is the byte
 // output of `swift run DynamicsDemo draw` at that commit. The ported renderer
 // must reproduce it byte for byte.
-const { renderAll } = require("./renderer.js");
+const { renderAll, canonicalShares, seedCount } = require("./renderer.js");
 const gameKit = {
     seeds: new Set(["SpanNothing", "SurfaceCard", "SurfaceTrack", "TextPrimary",
         "TextSecondary", "AccentRole", "ActionRole", "LineRole", "Muted", "Ink",
@@ -205,9 +205,9 @@ const lightJudged = judge("Light.swift", lightSource, pageKit);
 const lightArt = renderAll(lightJudged.parsed.declarations, lightJudged.parsed.order,
     lightJudged.parsed.literals, lightJudged.parsed.topAliases);
 const lightSvg = lightArt.canvases.length > 0 ? lightArt.canvases[0].svg : "";
-const fullRed = (lightSvg.match(/color\(xyz-d65 0\.218 0\.062 0\.000\)/g) || []).length;
-const fullCyan = (lightSvg.match(/color\(xyz-d65 0\.062 0\.218 0\.562\)/g) || []).length;
-const halfMix = (lightSvg.match(/color\(xyz-d65 0\.109 0\.031 0\.000\)/g) || []).length;
+const fullRed = (lightSvg.match(/color\(xyz-d65 0\.250 0\.093 0\.000\)/g) || []).length;
+const fullCyan = (lightSvg.match(/color\(xyz-d65 0\.062 0\.187 0\.593\)/g) || []).length;
+const halfMix = (lightSvg.match(/color\(xyz-d65 0\.125 0\.046 0\.000\)/g) || []).length;
 if (fullRed === 7 && fullCyan === 2 && halfMix === 4) {
     passed += 1;
 } else {
@@ -219,19 +219,20 @@ if (fullRed === 7 && fullCyan === 2 && halfMix === 4) {
 // ── the two-slit scene: the fringe strip pours parity, and a gap made even
 // under a dark certificate refuses with the equivalence voice ──
 total += 1;
-const brightFringe = (lightSvg.match(/color\(xyz-d65 0\.054 0\.015 0\.000\)/g) || []).length;
+const brightFringe = (lightSvg.match(/color\(xyz-d65 0\.062 0\.023 0\.000\)/g) || []).length;
 const blackPour = (lightSvg.match(/color\(xyz-d65 0\.000 0\.000 0\.000\)/g) || []).length;
-if (brightFringe === 4 && blackPour === 9) {
+if (brightFringe === 4 && blackPour === 10) {
     passed += 1;
 } else {
     failures.push("fringes: want 4 bright-node pours (3 stripes and the map's "
-        + "own cell) and 9 black pours, got " + brightFringe + " / " + blackPour);
+        + "own cell) and 10 black pours (the live stripe starts on an odd "
+        + "gap), got " + brightFringe + " / " + blackPour);
 }
 // ── the other gases: a gas is its list of lines, and the door mixes any ──
 total += 1;
-const hydrogenFull = (lightSvg.match(/color\(xyz-d65 0\.281 0\.281 0\.562\)/g) || []).length;
-const neonFull = (lightSvg.match(/color\(xyz-d65 0\.812 0\.625 0\.000\)/g) || []).length;
-const sodiumFull = (lightSvg.match(/color\(xyz-d65 0\.562 0\.468 0\.000\)/g) || []).length;
+const hydrogenFull = (lightSvg.match(/color\(xyz-d65 0\.312 0\.281 0\.593\)/g) || []).length;
+const neonFull = (lightSvg.match(/color\(xyz-d65 1\.375 0\.968 0\.000\)/g) || []).length;
+const sodiumFull = (lightSvg.match(/color\(xyz-d65 1\.031 0\.781 0\.000\)/g) || []).length;
 if (hydrogenFull === 2 && neonFull === 1 && sodiumFull === 1) {
     passed += 1;
 } else {
@@ -255,6 +256,43 @@ if (slitLie === lightSource) {
         failures.push("slit-lie: want 1 OddGap equivalence refusal, got "
             + parity.length + " of " + slitVerdict.refusals.length);
     }
+}
+
+// ── the golden plate: the theory's VectorDemo prints every waiting form,
+// and the port must read the same values (goldens/vector-plate.txt) ──
+total += 1;
+const plate = fs.readFileSync(path.join(__dirname, "goldens", "vector-plate.txt"), "utf8");
+const plateErrors = [];
+let plateChecked = 0;
+for (const m of plate.matchAll(/^golden: (Rung\d)\.count = (\d+)$/gm)) {
+    plateChecked += 1;
+    if (seedCount.get(m[1]) !== Number(m[2])) plateErrors.push(m[1]);
+}
+for (const m of plate.matchAll(/^golden: (\w+) = [\w-]+ X=(\d+) Y=(\d+) Z=(\d+)$/gm)) {
+    plateChecked += 1;
+    const shares = canonicalShares.get(m[1]);
+    if (!shares || shares[0] !== +m[2] || shares[1] !== +m[3] || shares[2] !== +m[4]) {
+        plateErrors.push(m[1]);
+    }
+}
+const doorLine = plate.match(/^golden: XYZWrite\(full h-alpha\) = (.*)$/m);
+if (doorLine && lightSvg.includes(doorLine[1])) plateChecked += 1;
+else plateErrors.push("XYZWrite door");
+const walkLine = plate.match(/^golden: PerceptualRung\(HBetaZ walk (\d{8})\) = (\d)$/m);
+if (walkLine) {
+    plateChecked += 1;
+    const lit = walkLine[1].indexOf("1");
+    if ((lit < 0 ? "0" : String(8 - lit)) !== walkLine[2]) plateErrors.push("PerceptualRung");
+} else plateErrors.push("PerceptualRung line");
+if (plate.includes('data-vi-rules="PlateSet<PlateOn>"')
+    && plate.includes('data-vi-rules="PlateSet"')
+    && lightSvg.includes('data-vi-rules="SetAlpha<Rung1>"')) plateChecked += 1;
+else plateErrors.push("RuleKey cut");
+if (plateErrors.length === 0 && plateChecked >= 28) {
+    passed += 1;
+} else {
+    failures.push("plate: " + plateChecked + " checks, drift in "
+        + (plateErrors.join(", ") || "count"));
 }
 
 console.log("self-test: " + passed + "/" + total

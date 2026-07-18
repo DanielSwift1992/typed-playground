@@ -1,0 +1,41 @@
+golden: Rung0.count = 0
+golden: Rung1.count = 1
+golden: Rung2.count = 2
+golden: Rung3.count = 3
+golden: Rung4.count = 4
+golden: Rung5.count = 5
+golden: Rung6.count = 6
+golden: Rung7.count = 7
+golden: Rung8.count = 8
+golden: HAlphaGlow = h-alpha X=8 Y=3 Z=0
+golden: HBetaGlow = h-beta X=2 Y=6 Z=19
+golden: PaschenGlow = paschen-alpha X=0 Y=0 Z=0
+golden: NeonYellowGlow = neon-585 X=31 Y=26 Z=0
+golden: NeonRedGlow = neon-640 X=13 Y=5 Z=0
+golden: SodiumDGlow = sodium-589 X=33 Y=25 Z=0
+golden: SodiumIRGlow = sodium-819 X=0 Y=0 Z=0
+golden: SRGBRedPrimary = srgb-red X=13 Y=7 Z=1
+golden: SRGBGreenPrimary = srgb-green X=11 Y=23 Z=4
+golden: SRGBBluePrimary = srgb-blue X=6 Y=2 Z=30
+golden: P3RedPrimary = p3-red X=16 Y=7 Z=0
+golden: P3GreenPrimary = p3-green X=9 Y=22 Z=1
+golden: P3BluePrimary = p3-blue X=6 Y=3 Z=33
+golden: Rec2020RedPrimary = rec2020-red X=20 Y=8 Z=0
+golden: Rec2020GreenPrimary = rec2020-green X=5 Y=22 Z=1
+golden: Rec2020BluePrimary = rec2020-blue X=5 Y=2 Z=34
+golden: PouredCoordinate(Rung8*HAlphaX + Rung0*HBetaX + Rung0*PaschenX).count = 64
+golden: XYZWrite(full h-alpha) = color(xyz-d65 0.250 0.093 0.000)
+golden: PerceptualRung(Undimmed) = 8
+golden: PerceptualRung(Quenched) = 0
+golden: PerceptualRung(HBetaZ walk 00010011) = 5
+golden: EdgeSame(equal) = <text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+golden: EdgeSame(unequal) = 
+golden: EdgeAtLeast(holds) = <text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+golden: EdgeAtLeast(short) = 
+golden: EdgeEven(Rung4) = <text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+golden: EdgeOdd(Rung4) = 
+golden: EdgeOdd(Rung5) = <text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+golden: RuleKey(bare generic) = <g class="vi-rule" data-vi-rules="PlateRule" data-vi-slot="PlateSlot" cursor="pointer">
+golden: RuleKey(Exactly instance) = <g class="vi-rule" data-vi-rules="PlateSet<PlateOn>" data-vi-slot="PlateSlot" cursor="pointer">
+golden: RuleKey(bare would cut it) = <g class="vi-rule" data-vi-rules="PlateSet" data-vi-slot="PlateSlot" cursor="pointer">
+golden plate: 40 lines, sealed by this build
