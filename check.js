@@ -216,6 +216,47 @@ if (fullRed === 7 && fullCyan === 2 && halfMix === 4) {
         + " / " + fullCyan + " / " + halfMix);
 }
 
+// ── the two-slit scene: the fringe strip pours parity, and a gap made even
+// under a dark certificate refuses with the equivalence voice ──
+total += 1;
+const brightFringe = (lightSvg.match(/color\(xyz-d65 0\.054 0\.015 0\.000\)/g) || []).length;
+const blackPour = (lightSvg.match(/color\(xyz-d65 0\.000 0\.000 0\.000\)/g) || []).length;
+if (brightFringe === 4 && blackPour === 9) {
+    passed += 1;
+} else {
+    failures.push("fringes: want 4 bright-node pours (3 stripes and the map's "
+        + "own cell) and 9 black pours, got " + brightFringe + " / " + blackPour);
+}
+// ── the other gases: a gas is its list of lines, and the door mixes any ──
+total += 1;
+const hydrogenFull = (lightSvg.match(/color\(xyz-d65 0\.281 0\.281 0\.562\)/g) || []).length;
+const neonFull = (lightSvg.match(/color\(xyz-d65 0\.812 0\.625 0\.000\)/g) || []).length;
+const sodiumFull = (lightSvg.match(/color\(xyz-d65 0\.562 0\.468 0\.000\)/g) || []).length;
+if (hydrogenFull === 2 && neonFull === 1 && sodiumFull === 1) {
+    passed += 1;
+} else {
+    failures.push("gases: want hydrogen-full twice (the patch and the map's "
+        + "far corner), neon and sodium once each, got " + hydrogenFull
+        + " / " + neonFull + " / " + sodiumFull);
+}
+
+total += 1;
+const slitAnchor = "    public typealias Gap = Plus<Lit1, Twice<Never>>";
+const slitLie = lightSource.replace(slitAnchor, "    public typealias Gap = Twice<Lit1>");
+if (slitLie === lightSource) {
+    failures.push("slit-lie: the anchor is not in lightFile");
+} else {
+    const slitVerdict = judge("Light.swift", slitLie, pageKit);
+    const parity = slitVerdict.refusals.filter((refusal) =>
+        refusal.premise.includes("OddGap") && refusal.premise.includes("be equivalent"));
+    if (parity.length === 1) {
+        passed += 1;
+    } else {
+        failures.push("slit-lie: want 1 OddGap equivalence refusal, got "
+            + parity.length + " of " + slitVerdict.refusals.length);
+    }
+}
+
 console.log("self-test: " + passed + "/" + total
     + " vs the reference judge, the draw, and every world");
 for (const line of failures) console.error("  " + line);
