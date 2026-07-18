@@ -369,7 +369,8 @@ if (typeof judge === "undefined" || typeof renderAll === "undefined"
     banner.style.display = "block";
     banner.textContent = "a script did not load: the page needs its seven files"
         + " (index.html, judge.js, lint.js, renderer.js, press.js,"
-        + " codemirror.js, codemirror.css) in one folder";
+        + " codemirror.js, codemirror.css) in one folder. On the live site"
+        + " this is a fresh deploy mid-flight: a hard reload mends it.";
     // nothing below can run without the engines: stop here so no stray error
     // overwrites the one banner that names the cause
     throw new Error("the engine files did not load");
