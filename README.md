@@ -32,6 +32,11 @@ checkout: the page needs its seven files (`index.html`, `judge.js`, `lint.js`,
   rewrites exactly one `typealias` line (`press.js`, a line-for-line port of the
   theory's applier), a mismatch changes nothing, and a key whose rules match twice
   refuses by name.
+- **Light** (its own tab): a hydrogen lamp written as code. The picker mixes the
+  lamp's three spectral lines one click per level, every colour on the canvas is
+  computed from the file and printed as `color(xyz-d65 …)` for the screen to map,
+  and the judge proves metamerism, crossed polarizers, and two-slit fringes as
+  type equivalences.
 - **Code · Table** (under the preview): the same file read as rows, one row per
   declaration, one column per axis. Nothing is stored: a click on a name opens its
   line, a touch on a state slot offers the rules that can rewrite it.
