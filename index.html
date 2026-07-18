@@ -317,7 +317,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 114</span>
+  <span style="float: right; color: var(--muted);">rev 115</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -2799,9 +2799,13 @@ public enum SodiumIRName: Close {}
 extension SodiumIRName {
     public static var typeName: String { "infrared 819 nm" }
 }
-public enum NoThirdName: Close {}
-extension NoThirdName {
-    public static var typeName: String { "no third line" }
+public enum NoSecondName: Close {}
+extension NoSecondName {
+    public static var typeName: String { "no second line" }
+}
+public enum NoInfraredName: Close {}
+extension NoInfraredName {
+    public static var typeName: String { "no infrared line" }
 }
 public enum GasNoteWord: Close {}
 extension GasNoteWord {
@@ -3055,15 +3059,15 @@ public enum NeonGas: Close {
     public typealias IRWeight = PaschenGlow
     public typealias AlphaName = NeonYellowName
     public typealias BetaName = NeonRedName
-    public typealias IRName = NoThirdName
+    public typealias IRName = NoInfraredName
 }
 public enum SodiumGas: Close {
     public typealias AlphaWeight = SodiumDGlow
-    public typealias BetaWeight = SodiumIRGlow
-    public typealias IRWeight = PaschenGlow
+    public typealias BetaWeight = PaschenGlow
+    public typealias IRWeight = SodiumIRGlow
     public typealias AlphaName = SodiumDName
-    public typealias BetaName = SodiumIRName
-    public typealias IRName = NoThirdName
+    public typealias BetaName = NoSecondName
+    public typealias IRName = SodiumIRName
 }
 typealias Gas = HydrogenGas
 public enum GasSlot: Close {}
@@ -8738,7 +8742,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 114;
+const contentRevision = 115;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
