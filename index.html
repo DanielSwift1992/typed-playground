@@ -317,7 +317,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 116</span>
+  <span style="float: right; color: var(--muted);">rev 124</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -336,10 +336,10 @@ window.addEventListener("error", (event) => {
 });
 </script>
 <script src="codemirror.js"></script>
-<script src="judge.js?v=10"></script>
+<script src="judge.js?v=11"></script>
 <script src="lint.js?v=4"></script>
 <script src="press.js?v=3"></script>
-<script src="renderer.js?v=10"></script>
+<script src="renderer.js?v=11"></script>
 <script>
 "use strict";
 
@@ -419,7 +419,7 @@ extension BasicsTitle {
 }
 public enum BasicsPurpose: Close {}
 extension BasicsPurpose {
-    public static var typeName: String { "This tab shows the drawing side: a picture here is claims, not drawing code." }
+    public static var typeName: String { "On this tab, a picture is claims, not drawing code." }
 }
 public enum StepOneWord: Close {}
 extension StepOneWord {
@@ -948,7 +948,7 @@ extension OrgWhyTwo {
 }
 public enum OrgWhyThree: Close {}
 extension OrgWhyThree {
-    public static var typeName: String { "Hire one more writes a fifth person into the file, and every number follows." }
+    public static var typeName: String { "Press Hire one more: a fifth person is written into the file, and every number follows." }
 }
 public enum OrgWhyFour: Close {}
 extension OrgWhyFour {
@@ -1448,7 +1448,7 @@ function makeBigCompany(count) {
         '"Every number below is read out of the file on every edit: nothing is stored beside it."',
         '"A compiler computes what each line means from the other lines. Here that takes 199 seconds."');
     view = mustReplace(view,
-        '"Hire one more writes a fifth person into the file, and every number follows."',
+        '"Press Hire one more: a fifth person is written into the file, and every number follows."',
         '"The judge computes nothing: every fact is written in full, and a check is one read."');
     view = mustReplace(view,
         '"Plant a lie writes one false line: the judge refuses the file and names the line."',
@@ -1583,7 +1583,7 @@ extension CurveMoral {
 }
 public enum CurveNoteOne: Close {}
 extension CurveNoteOne {
-    public static var typeName: String { "A bar's width is its seconds. N counts people, built on the At scale tab." }
+    public static var typeName: String { "A bar's width is its seconds. N is the number of people, built on the At scale tab." }
 }
 public enum CurveNoteTwo: Close {}
 extension CurveNoteTwo {
@@ -2460,7 +2460,7 @@ public enum SwiftParaRow: HFlow {
 }
 public enum PageBuildParaWord: Close {}
 extension PageBuildParaWord {
-    public static var typeName: String { "This page keeps only build time: everything you write is a declaration, and a declaration is checked and drawn, never stepped through." }
+    public static var typeName: String { "This page is build time only: everything you write is a declaration, and a declaration is checked and drawn, never stepped through." }
 }
 public enum PageBuildParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -2605,7 +2605,7 @@ extension MixHeadWord {
 }
 public enum MixIntroWord: Close {}
 extension MixIntroWord {
-    public static var typeName: String { "The keys set each line\u2019s brightness, 0 to 8. The square shows the computed colour of your mix." }
+    public static var typeName: String { "The keys set each line\u2019s brightness, 0 to 8. The square is the computed colour of your mix." }
 }
 public enum MixNoteWord: Close {}
 extension MixNoteWord {
@@ -2621,7 +2621,7 @@ extension MapHeadWord {
 }
 public enum MapIntroWord: Close {}
 extension MapIntroWord {
-    public static var typeName: String { "Right raises the red line, down raises the blue-green. The ring marks your mix." }
+    public static var typeName: String { "Right raises the red line, down raises the blue-green. The ring stands on your mix." }
 }
 public enum MapIRWord: Close {}
 extension MapIRWord {
@@ -2721,7 +2721,7 @@ extension ThreeCapWord {
 }
 public enum LampRowWord: Close {}
 extension LampRowWord {
-    public static var typeName: String { "the lamp sends" }
+    public static var typeName: String { "from the lamp" }
 }
 public enum CrossedOutWord: Close {}
 extension CrossedOutWord {
@@ -5243,7 +5243,7 @@ public enum WallBreakRow: HFlow {
 public typealias LightParaWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
 public enum HookParaWord: Close {}
 extension HookParaWord {
-    public static var typeName: String { "On a screen, a colour is three numbers: how much red, green, and blue to light. A picker, a palette, a photo editor: every colour tool edits those three numbers. The numbers are not the start. The start is light from a lamp. The eye reads the light and reduces it to three numbers, and everything else about the light is lost at that step. This page works one step earlier. The light itself is described in code on the left, and the colour is computed from it at the end, by the same reduction the eye does. The step matters: two paints can match under a shop lamp and split in daylight. The reason is in the light, and the three numbers no longer carry it. You can edit any number in the code. Every picture below is computed from it, and the judge re-checks it as you type." }
+    public static var typeName: String { "On a screen, a colour is three numbers: how much red, green, and blue to light. A picker, a palette, a photo editor: every colour tool edits those three numbers. The numbers are not the start. The start is light from a lamp. The eye reads the light and reduces it to three numbers, and everything else about the light is lost at that step. This page is one step earlier. The light itself is described in code on the left, and the colour is computed from it at the end, by the same reduction the eye does. The step matters: two paints can match under a shop lamp and split in daylight. The reason is in the light, and the three numbers no longer carry it. You can edit any number in the code. Every picture below is computed from it, and the judge re-checks it as you type." }
 }
 public enum HookParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -5265,7 +5265,7 @@ public enum HookParaRow: HFlow {
 }
 public enum SetupParaWord: Close {}
 extension SetupParaWord {
-    public static var typeName: String { "The lamp burns hydrogen, the simplest atom there is. Sunlight through a glass prism spreads into a rainbow. The lamp\u2019s light through the same prism makes no rainbow: only a few thin stripes of colour appear. Those stripes are called lines. Hydrogen\u2019s light is three lines: a red one, a blue-green one, and an infrared one that eyes cannot see but TV remotes use." }
+    public static var typeName: String { "The lamp burns hydrogen, the simplest atom there is. Sunlight through a glass prism spreads into a rainbow. The lamp\u2019s light through the same prism makes no rainbow: only a few thin stripes of colour appear. Those stripes are called lines. Hydrogen\u2019s light is three lines: a red one, a blue-green one, and an infrared one that eyes cannot see: the light of TV remotes." }
 }
 public enum SetupParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -5287,7 +5287,7 @@ public enum SetupParaRow: HFlow {
 }
 public enum GasesParaWord: Close {}
 extension GasesParaWord {
-    public static var typeName: String { "The three lines come from the atom itself: hydrogen can send only these three. Other gases send other lines, and their colours follow: the three squares below are hydrogen, neon, and sodium at full, each computed from its own list." }
+    public static var typeName: String { "The three lines come from the atom itself: hydrogen can emit only these three. Other gases have other lines, and their colours follow: the three squares below are hydrogen, neon, and sodium at full, each computed from its own list." }
 }
 public enum GasesParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -5397,7 +5397,7 @@ public enum BeamsFactParaRow: HFlow {
 }
 public enum WallParaWord: Close {}
 extension WallParaWord {
-    public static var typeName: String { "A matte wall shows only the total of the light on it. A room lit from the east and the same room lit from the west look the same on the wall. A mirror shows the two sides apart." }
+    public static var typeName: String { "A matte wall reflects only the total of the light on it. A room lit from the east and the same room lit from the west look the same on the wall. A mirror shows the two sides apart." }
 }
 public enum WallParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -5441,7 +5441,7 @@ public enum WallFactParaRow: HFlow {
 }
 public enum FiltersParaWord: Close {}
 extension FiltersParaWord {
-    public static var typeName: String { "Light is a wave, and a wave vibrates in a direction. A polarizing filter passes only the light that vibrates in its direction, so two crossed filters pass nothing: try it with two pairs of sunglasses. A third filter between them at 45 degrees brings light back." }
+    public static var typeName: String { "Light is a wave, and a wave vibrates in a direction. A polarizing filter passes only the light that vibrates in its direction, so two crossed filters pass nothing: try it with two pairs of sunglasses. A third filter between them at 45 degrees, and the light comes back." }
 }
 public enum FiltersParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -5551,7 +5551,7 @@ public enum ScreenParaRow: HFlow {
 }
 public enum PairsParaWord: Close {}
 extension PairsParaWord {
-    public static var typeName: String { "A screen too narrow for the difference shows a pair as one colour. The first pair splits on most screens. The second needs a very wide one." }
+    public static var typeName: String { "On a screen too narrow for the difference, a pair is one colour. The first pair splits on most screens. The second needs a very wide one." }
 }
 public enum PairsParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -5595,7 +5595,7 @@ public enum LoneParaRow: HFlow {
 }
 public enum RGParaWord: Close {}
 extension RGParaWord {
-    public static var typeName: String { "A screen\u2019s limit can itself be written as a rule. This code describes a red-green screen: yellow fits it, red and green lit and blue dark, and the judge holds the claim. A pure blue does not fit: instead of clipping it, the judge refuses it and names the blue channel." }
+    public static var typeName: String { "A screen\u2019s limit can itself be written as a rule. A red-green screen is written in this code: yellow fits it, red and green lit and blue dark, and the judge holds the claim. A pure blue does not fit: instead of clipping it, the judge refuses it and names the blue channel." }
 }
 public enum RGParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -5968,6 +5968,1084 @@ public enum LightArt: GrownDiagram {
 
 `;
 
+
+const atomFile = `import VerificationIsIdentification
+import DocumentKit
+
+// The atom, taught from the ladder up: why hydrogen's lamp is stripes, where
+// each line comes from, and why the 2s floor traps its electron. The electron
+// is one rewritable line; every jump is a key; every allowed jump carries a
+// judged certificate of the selection rule.
+
+// ── the display strings ──
+
+public enum AtomTitle: Close {}
+extension AtomTitle {
+    public static var typeName: String { "The atom" }
+}
+public enum AtomHookWord: Close {}
+extension AtomHookWord {
+    public static var typeName: String { "The lamp on the Light tab is hydrogen, and its light is three lines. The reason is the ladder below. Inside the atom one electron stands on floors, the way a foot stands on a ladder: on a rung, never between rungs. The ladder is written in code on the left, and the electron on it is one rewritable line." }
+}
+public enum AtomJumpWord: Close {}
+extension AtomJumpWord {
+    public static var typeName: String { "A jump down releases the height difference as one flash of light, and the size of the jump sets the colour. The ladder has a fixed list of jumps, so the atom has a fixed list of colours: that is why the lamp is thin stripes and not a rainbow." }
+}
+public enum LadderCapWord: Close {}
+extension LadderCapWord {
+    public static var typeName: String { "the ladder" }
+}
+public enum ShapeSWord: Close {}
+extension ShapeSWord {
+    public static var typeName: String { "s" }
+}
+public enum ShapePWord: Close {}
+extension ShapePWord {
+    public static var typeName: String { "p" }
+}
+public enum PressJumpWord: Close {}
+extension PressJumpWord {
+    public static var typeName: String { "Press a jump: the electron drops and its line flashes in the window." }
+}
+public enum FrameLegendWord: Close {}
+extension FrameLegendWord {
+    public static var typeName: String { "Keys with a blue frame are the jumps open from this floor." }
+}
+public enum KeyBetaWord: Close {}
+extension KeyBetaWord {
+    public static var typeName: String { "486 nm" }
+}
+public enum KeyPaschenWord: Close {}
+extension KeyPaschenWord {
+    public static var typeName: String { "infrared" }
+}
+public enum KeyBalmerWord: Close {}
+extension KeyBalmerWord {
+    public static var typeName: String { "656 nm" }
+}
+public enum KeyLymanWord: Close {}
+extension KeyLymanWord {
+    public static var typeName: String { "ultraviolet" }
+}
+public enum KeyRechargeWord: Close {}
+extension KeyRechargeWord {
+    public static var typeName: String { "recharge" }
+}
+public enum WindowCapAtomWord: Close {}
+extension WindowCapAtomWord {
+    public static var typeName: String { "the flashes" }
+}
+public enum Cap486Word: Close {}
+extension Cap486Word {
+    public static var typeName: String { "486 nm" }
+}
+public enum Cap656Word: Close {}
+extension Cap656Word {
+    public static var typeName: String { "656 nm" }
+}
+public enum UVZoneWord: Close {}
+extension UVZoneWord {
+    public static var typeName: String { "ultraviolet" }
+}
+public enum IRZoneWord: Close {}
+extension IRZoneWord {
+    public static var typeName: String { "infrared" }
+}
+public enum AtomReachWord: Close {}
+extension AtomReachWord {
+    public static var typeName: String { "The tallest jumps land left of the window, in the ultraviolet: light the eye does not read. The short hop from the fourth floor to the third lands right of it, in the infrared. The lamp’s infrared line is exactly that hop." }
+}
+public enum AtomShapeWord: Close {}
+extension AtomShapeWord {
+    public static var typeName: String { "Every floor has a shape, and its portrait is drawn on the shelf: two lobes for each step of L, around RadialNodes rings. The shell is not stated in the code: it is read, one more than L plus the rings, so a wrong shell cannot even be written. An allowed jump changes the lobes by exactly one pair, and each certificate carries that rule as a where clause the judge re-checks." }
+}
+public enum RoadsHead: Close {}
+extension RoadsHead {
+    public static var typeName: String { "Two roads down" }
+}
+public enum RoadsParaWord: Close {}
+extension RoadsParaWord {
+    public static var typeName: String { "From the fourth floor to the second there are two roads: one jump, the 486 flash, or the infrared hop and then the 656 flash. Both roads span the same floors, and the same energy: level energies telescope, whatever the path. The judge holds the floor sum as a written claim: one plus one is two." }
+}
+public enum RoadOneWord: Close {}
+extension RoadOneWord {
+    public static var typeName: String { "one jump" }
+}
+public enum RoadTwoWord: Close {}
+extension RoadTwoWord {
+    public static var typeName: String { "two jumps" }
+}
+public enum FloorsOneWord: Close {}
+extension FloorsOneWord {
+    public static var typeName: String { "floors" }
+}
+public enum RoadsBreakWord: Close {}
+extension RoadsBreakWord {
+    public static var typeName: String { "Break it: set Drop in BetaJump to Rung3. The judge refuses the road sum." }
+}
+public enum AtomTrapWord: Close {}
+extension AtomTrapWord {
+    public static var typeName: String { "2s and the ground floor are both round: zero lobes on either shelf. A jump must change the lobes by one pair, and round to round has no door, so there is no key. An electron that lands on 2s is stuck, and the real one stays there about a tenth of a second, a hundred million times longer than on any other floor. Even from there the real atom escapes in the end: two flashes at once, whose energies sum to the one fall, and no single stripe in the window belongs to that pair. On this page, recharge is the way out." }
+}
+public enum AtomBreakWord: Close {}
+extension AtomBreakWord {
+    public static var typeName: String { "Break it: write typealias Trap = Lowers<Orbital2s, Orbital1s> on a free line. The judge refuses the certificate: the shapes differ by zero." }
+}
+public enum LawHead: Close {}
+extension LawHead {
+    public static var typeName: String { "Rewrite the law" }
+}
+public enum LawParaWord: Close {}
+extension LawParaWord {
+    public static var typeName: String { "The selection rule is not built into the page: it is the where line on Lowers and Raises in the code. Change Succ<T.L> to T.L there, and a different rule holds: a jump may not change the shape at all. The judge then refuses three of the four certificates, each by name, on the next keystroke. Rewriting a law of nature and checking every consequence is a research programme. Here it is one edit: the consequences are not re-derived, they are looked up." }
+}
+public enum AtomFinalWord: Close {}
+extension AtomFinalWord {
+    public static var typeName: String { "In a real lamp billions of electrons stand on every floor at once, and every allowed jump flashes at once: all three lines burn together. That is the lamp of the Light tab, and neon\u2019s ladder is different, so its lines land elsewhere: the gas keys of the picker are a choice of ladder. The ladder, the shapes, and one rule are a page of code. The alphabet of light is written by matter." }
+}
+public enum AtomAlt: Close {}
+extension AtomAlt {
+    public static var typeName: String { "The atom: a ladder of floors, one electron, and the rule that writes hydrogen’s lines." }
+}
+
+// ── the physics: shapes, orbitals, the selection rule, the certificates ──
+
+public typealias EllS = Never
+public typealias EllP = Succ<Never>
+public enum DipoleAllowed: Close {}
+// an orbital states its rings, never its shell: the shell is a reading,
+// one more than the lobes\u2019 step plus the rings, so a wrong shell
+// cannot be written (Hydrogen.swift at 205f63d)
+public typealias ShellHeight<O> = Plus<Succ<O.L>, O.RadialNodes>
+public enum Orbital1s: Close {
+    public typealias L = EllS
+    public typealias RadialNodes = Rung0
+}
+public enum Orbital2s: Close {
+    public typealias L = EllS
+    public typealias RadialNodes = Rung1
+}
+public enum Orbital2p: Close {
+    public typealias L = EllP
+    public typealias RadialNodes = Rung0
+}
+public enum Orbital3s: Close {
+    public typealias L = EllS
+    public typealias RadialNodes = Rung2
+}
+public enum Orbital4p: Close {
+    public typealias L = EllP
+    public typealias RadialNodes = Rung2
+}
+public enum Lowers<F, T>: Close {}
+extension Lowers: DipoleAllowed where F.L == Succ<T.L> {}
+public enum Raises<F, T>: Close {}
+extension Raises: DipoleAllowed where T.L == Succ<F.L> {}
+public typealias HydrogenColour<A, B, C> = XYZWrite<PouredCoordinate<A, HAlphaGlow.XShare, B, HBetaGlow.XShare, C, PaschenGlow.XShare>, PouredCoordinate<A, HAlphaGlow.YShare, B, HBetaGlow.YShare, C, PaschenGlow.YShare>, PouredCoordinate<A, HAlphaGlow.ZShare, B, HBetaGlow.ZShare, C, PaschenGlow.ZShare>>
+public typealias BetaFact = Lowers<Orbital4p, Orbital2s>
+public typealias PaschenFact = Lowers<Orbital4p, Orbital3s>
+public typealias BalmerFact = Raises<Orbital3s, Orbital2p>
+public typealias LymanFact = Lowers<Orbital2p, Orbital1s>
+
+// ── the electron: one rewritable line, five stations, keys as written jumps ──
+
+public enum Charged: Close {
+    public typealias Seat = Orbital4p
+    public typealias Flash = Rung0
+}
+public enum Trapped: Close {
+    public typealias Seat = Orbital2s
+    public typealias Flash = Rung2
+}
+public enum OnThird: Close {
+    public typealias Seat = Orbital3s
+    public typealias Flash = Rung3
+}
+public enum OnSecond: Close {
+    public typealias Seat = Orbital2p
+    public typealias Flash = Rung1
+}
+public enum Ground: Close {
+    public typealias Seat = Orbital1s
+    public typealias Flash = Rung4
+}
+typealias Electron = Charged
+public enum ElectronSlot: Close {}
+public enum DropBeta: SlotRule {
+    public typealias Slot = ElectronSlot
+    public typealias From = Charged
+    public typealias Into = Trapped
+}
+public enum DropPaschen: SlotRule {
+    public typealias Slot = ElectronSlot
+    public typealias From = Charged
+    public typealias Into = OnThird
+}
+public enum DropBalmer: SlotRule {
+    public typealias Slot = ElectronSlot
+    public typealias From = OnThird
+    public typealias Into = OnSecond
+}
+public enum DropLyman: SlotRule {
+    public typealias Slot = ElectronSlot
+    public typealias From = OnSecond
+    public typealias Into = Ground
+}
+// the jumps as stated scene pieces, each with its floor drop: two roads
+// from the fourth floor to the second span the same floors, and the judge
+// holds the sum as a written claim
+public enum BetaJump: Close {
+    public typealias Drop = Rung2
+}
+public enum PaschenJump: Close {
+    public typealias Drop = Rung1
+}
+public enum BalmerJump: Close {
+    public typealias Drop = Rung1
+}
+public enum SameDrop: Close {}
+public enum RoadPair<X, Y>: Close {}
+extension RoadPair: SameDrop where X == Y {}
+public typealias TwoRoadsFact = RoadPair<Plus<PaschenJump.Drop, BalmerJump.Drop>, BetaJump.Drop>
+public enum RechargeFromTrap: SlotRule {
+    public typealias Slot = ElectronSlot
+    public typealias From = Trapped
+    public typealias Into = Charged
+}
+public enum RechargeFromThird: SlotRule {
+    public typealias Slot = ElectronSlot
+    public typealias From = OnThird
+    public typealias Into = Charged
+}
+public enum RechargeFromSecond: SlotRule {
+    public typealias Slot = ElectronSlot
+    public typealias From = OnSecond
+    public typealias Into = Charged
+}
+public enum RechargeFromGround: SlotRule {
+    public typealias Slot = ElectronSlot
+    public typealias From = Ground
+    public typealias Into = Charged
+}
+
+// ── the geometry ──
+
+public typealias AtomParaWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
+public typealias LineTallA = Plus<U16, U4>
+public enum AtomTitleLabel: SpanLabel {
+    public typealias Y = Under<U8, TitleT>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TitleT
+    public typealias Weight = WeightBold
+    public typealias Content = AtomTitle
+}
+public enum AtomTitleRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<AtomTitleLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomBlackWindow: SpanTrackOutlined {
+    public typealias H = Tally<U32>
+    public typealias Radius = Tally<U2>
+    public typealias Fill = Ink
+    public typealias Stroke = LineRole
+}
+public enum AtomGrayField: SpanTrackOutlined {
+    public typealias H = Tally<U32>
+    public typealias Radius = Tally<U2>
+    public typealias Fill = SurfaceTrack
+    public typealias Stroke = LineRole
+}
+public enum ShelfFace: SpanTrackOutlined {
+    public typealias H = Tally<Plus<U16, U8>>
+    public typealias Radius = Tally<U4>
+    public typealias Fill = SurfaceTrack
+    public typealias Stroke = LineRole
+}
+// ── the portraits: an orbital\u2019s shape drawn from its own two axes,
+// two lobes per step of L around RadialNodes rings. Muted ink, the shelf
+// behind showing through as the rings. ──
+public enum PMutedR10: SpanDot {
+    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias R = Tally<Plus<U8, U2>>
+    public typealias Fill = Muted
+}
+public enum PTrackR8: SpanDot {
+    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias R = Tally<U8>
+    public typealias Fill = SurfaceTrack
+}
+public enum PMutedR6: SpanDot {
+    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias R = Tally<Plus<U4, U2>>
+    public typealias Fill = Muted
+}
+public enum PTrackR4: SpanDot {
+    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias R = Tally<U4>
+    public typealias Fill = SurfaceTrack
+}
+public enum PMutedR2: SpanDot {
+    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias R = Tally<U2>
+    public typealias Fill = Muted
+}
+public enum PLobe: SpanDot {
+    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias R = Tally<Plus<U4, U1>>
+    public typealias Fill = Muted
+}
+public typealias CoreNoRing = PMutedR6
+public typealias CoreOneRing = Layered<PMutedR10, Layered<PTrackR8, PMutedR6>>
+public typealias CoreTwoRings = Layered<PMutedR10, Layered<PTrackR8, Layered<PMutedR6, Layered<PTrackR4, PMutedR2>>>>
+public enum Icon1sRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U16, U4>, CoreNoRing>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum Icon2sRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U16, U4>, CoreOneRing>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum Icon3sRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U16, U4>, CoreTwoRings>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum Icon2pRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U8, U4>, PLobe>.self
+        Air<U4>.self
+        Air<Plus<U8, U4>>.self
+        Air<U4>.self
+        Fixed<Plus<U8, U4>, PLobe>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum Icon4pRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U8, U4>, PLobe>.self
+        Air<U4>.self
+        Fixed<Plus<U16, U4>, CoreTwoRings>.self
+        Air<U4>.self
+        Fixed<Plus<U8, U4>, PLobe>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum ElectronDot: SpanDot {
+    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias R = Tally<Plus<U4, U2>>
+    public typealias Fill = Ink
+}
+public enum FloorFourLabel: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<ShellHeight<Orbital4p>>
+}
+public enum FloorThreeLabel: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<ShellHeight<Orbital3s>>
+}
+public enum FloorTwoLabel: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<ShellHeight<Orbital2s>>
+}
+public enum FloorOneLabel: SpanLabel {
+    public typealias Y = Under<U4, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Tally<ShellHeight<Orbital1s>>
+}
+public enum ColSLabel: SpanLabelMid {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = ShapeSWord
+}
+public enum ColPLabel: SpanLabelMid {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = ShapePWord
+}
+public enum ColHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Air<U16>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, ColSLabel>.self
+        Air<U16>.self
+        Fixed<Plus<U64, U16>, ColPLabel>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FloorFourRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<U16, FloorFourLabel>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, SpanNothing>.self
+        Air<U16>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon4pRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung4, EdgeSame<Electron.Seat.L, Rung1, ElectronDot>>>>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FloorThreeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<U16, FloorThreeLabel>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon3sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung3, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Air<U16>.self
+        Fixed<Plus<U64, U16>, SpanNothing>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FloorTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<U16, FloorTwoLabel>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon2sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Air<U16>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon2pRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung1, ElectronDot>>>>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FloorOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<U16, FloorOneLabel>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon1sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung1, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Air<U16>.self
+        Fixed<Plus<U64, U16>, SpanNothing>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomKeyTrack: SpanTrackOutlined {
+    public typealias H = Tally<TrackHeight>
+    public typealias Radius = R10
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = LineRole
+}
+public enum KeyBetaLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = KeyBetaWord
+}
+public enum KeyPaschenLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = KeyPaschenWord
+}
+public enum KeyBalmerLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = KeyBalmerWord
+}
+public enum KeyLymanLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = KeyLymanWord
+}
+public enum KeyRechargeLabel: SpanLabelMid {
+    public typealias Y = CenteredBaseline<TrackHeight, TextXS>
+    public typealias FillColor = ActionRole
+    public typealias Size = TextXS
+    public typealias Weight = WeightBold
+    public typealias Content = KeyRechargeWord
+}
+public enum ReadyFrame: SpanTrackOutlined {
+    public typealias H = Tally<TrackHeight>
+    public typealias Radius = R10
+    public typealias Fill = SurfaceCard
+    public typealias Stroke = ActionRole
+}
+public typealias KeyBeta = Layered<AtomKeyTrack, Layered<EdgeSame<Electron.Flash, Rung0, ReadyFrame>, KeyBetaLabel>>
+public typealias KeyPaschen = Layered<AtomKeyTrack, Layered<EdgeSame<Electron.Flash, Rung0, ReadyFrame>, KeyPaschenLabel>>
+public typealias KeyBalmer = Layered<AtomKeyTrack, Layered<EdgeSame<Electron.Flash, Rung3, ReadyFrame>, KeyBalmerLabel>>
+public typealias KeyLyman = Layered<AtomKeyTrack, Layered<EdgeSame<Electron.Flash, Rung1, ReadyFrame>, KeyLymanLabel>>
+public typealias KeyRecharge = Layered<AtomKeyTrack, Layered<EdgeAtLeast<Electron.Flash, Rung1, ReadyFrame>, KeyRechargeLabel>>
+public enum JumpKeysRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U64, U8>, RuleKey<DropBeta, KeyBeta>>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, RuleKey<DropPaschen, KeyPaschen>>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U8>, RuleKey<DropBalmer, KeyBalmer>>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U16>, RuleKey<DropLyman, KeyLyman>>.self
+        Air<U8>.self
+        Fixed<Plus<U64, U8>, RuleKey<Chord<RechargeFromTrap, Chord<RechargeFromThird, Chord<RechargeFromSecond, RechargeFromGround>>>, KeyRecharge>>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum WindowCapAtomLabel: SpanLabel {
+    public typealias Y = Under<U8, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = WindowCapAtomWord
+}
+public enum FlashWindowRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U64, U16>, WindowCapAtomLabel>.self
+        Fixed<Plus<U64, U8>, AtomGrayField>.self
+        Air<U4>.self
+        Fixed<Plus<U128, U64>, AtomBlackWindow>.self
+        Air<U4>.self
+        Fixed<Plus<U64, U8>, AtomGrayField>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TraceAlpha: SpanTrack {
+    public typealias H = Tally<U32>
+    public typealias Radius = Tally<Never>
+    public typealias Fill = HydrogenColour<Rung1, Never, Never>
+}
+public enum FlashAlpha: SpanTrack {
+    public typealias H = Tally<U32>
+    public typealias Radius = Tally<Never>
+    public typealias Fill = HydrogenColour<Rung8, Never, Never>
+}
+public enum TraceBeta: SpanTrack {
+    public typealias H = Tally<U32>
+    public typealias Radius = Tally<Never>
+    public typealias Fill = HydrogenColour<Never, Rung1, Never>
+}
+public enum FlashBeta: SpanTrack {
+    public typealias H = Tally<U32>
+    public typealias Radius = Tally<Never>
+    public typealias Fill = HydrogenColour<Never, Rung8, Never>
+}
+public enum ZoneTraceMark: SpanTrack {
+    public typealias H = Tally<U32>
+    public typealias Radius = Tally<Never>
+    public typealias Fill = TextSecondary
+}
+public enum ZoneFlashMark: SpanTrack {
+    public typealias H = Tally<U32>
+    public typealias Radius = Tally<Never>
+    public typealias Fill = Ink
+}
+public enum FlashLinesRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Air<Plus<U64, U16>>.self
+        Air<U32>.self
+        Fixed<U4, Layered<ZoneTraceMark, EdgeSame<Electron.Flash, Rung4, ZoneFlashMark>>>.self
+        Air<Plus<U32, U8>>.self
+        Air<Plus<U32, U16>>.self
+        Fixed<U4, Layered<TraceBeta, EdgeSame<Electron.Flash, Rung2, FlashBeta>>>.self
+        Air<Plus<U64, U8>>.self
+        Fixed<U4, Layered<TraceAlpha, EdgeSame<Electron.Flash, Rung1, FlashAlpha>>>.self
+        Air<Plus<U64, Plus<U32, U8>>>.self
+        Fixed<U4, Layered<ZoneTraceMark, EdgeSame<Electron.Flash, Rung3, ZoneFlashMark>>>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum Cap486Label: SpanLabelMid {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Cap486Word
+}
+public enum Cap656Label: SpanLabelMid {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = Cap656Word
+}
+public enum UVZoneLabel: SpanLabelMid {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = UVZoneWord
+}
+public enum IRZoneLabel: SpanLabelMid {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = IRZoneWord
+}
+public enum ZoneCapsRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Air<Plus<U64, U16>>.self
+        Fixed<Plus<U64, U8>, UVZoneLabel>.self
+        Air<U4>.self
+        Air<U8>.self
+        Fixed<U64, Cap486Label>.self
+        Air<U16>.self
+        Fixed<U64, Cap656Label>.self
+        Air<Plus<U32, U8>>.self
+        Air<U4>.self
+        Fixed<Plus<U64, U8>, IRZoneLabel>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomHookText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = AtomHookWord
+}
+public enum AtomHookRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, AtomHookText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomJumpText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = AtomJumpWord
+}
+public enum AtomJumpRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, AtomJumpText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomReachText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = AtomReachWord
+}
+public enum AtomReachRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, AtomReachText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomShapeText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = AtomShapeWord
+}
+public enum AtomShapeRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, AtomShapeText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomTrapText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = AtomTrapWord
+}
+public enum AtomTrapRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, AtomTrapText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomBreakText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = AtomBreakWord
+}
+public enum AtomBreakRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, AtomBreakText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomFinalText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = AtomFinalWord
+}
+public enum AtomFinalRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, AtomFinalText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FrameLegendLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FrameLegendWord
+}
+public enum FrameLegendRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<FrameLegendLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum PressJumpLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = PressJumpWord
+}
+public enum PressJumpRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<PressJumpLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum FlashBand: Group {
+    @StructureBuilder
+    public static var body: some Structure {
+        FlashWindowRow.self
+        FlashLinesRow.self
+    }
+}
+public enum RoadsHeadLabel: SpanLabel {
+    public typealias Y = Under<U4, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = RoadsHead
+}
+public enum RoadsHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<RoadsHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum RoadsParaText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = RoadsParaWord
+}
+public enum RoadsParaRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, RoadsParaText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum RoadBar: SpanTrack {
+    public typealias H = Tally<U16>
+    public typealias Radius = Tally<U2>
+    public typealias Fill = AccentRole
+}
+public enum RoadOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = RoadOneWord
+}
+public enum RoadTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = RoadTwoWord
+}
+public enum RoadOneCount: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<BetaJump.Drop>
+}
+public enum RoadTwoCount: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightBold
+    public typealias Content = Tally<Plus<PaschenJump.Drop, BalmerJump.Drop>>
+}
+public enum FloorsOneLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FloorsOneWord
+}
+public enum FloorsTwoLabel: SpanLabel {
+    public typealias Y = Under<U2, TextXS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextXS
+    public typealias Weight = WeightRegular
+    public typealias Content = FloorsOneWord
+}
+public enum RoadOneRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U64, U8>, RoadOneLabel>.self
+        Air<U8>.self
+        Fixed<Times<U16, BetaJump.Drop>, RoadBar>.self
+        Air<U8>.self
+        Fixed<U16, RoadOneCount>.self
+        Air<U4>.self
+        Fixed<Plus<U32, U8>, FloorsOneLabel>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum RoadTwoRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U64, U8>, RoadTwoLabel>.self
+        Air<U8>.self
+        Fixed<Times<U16, PaschenJump.Drop>, RoadBar>.self
+        Air<U2>.self
+        Fixed<Times<U16, BalmerJump.Drop>, RoadBar>.self
+        Air<U8>.self
+        Fixed<U16, RoadTwoCount>.self
+        Air<U4>.self
+        Fixed<Plus<U32, U8>, FloorsTwoLabel>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum RoadsBreakLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = RoadsBreakWord
+}
+public enum RoadsBreakRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<RoadsBreakLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LawHeadLabel: SpanLabel {
+    public typealias Y = Under<U4, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = LawHead
+}
+public enum LawHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<LawHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum LawParaText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = LawParaWord
+}
+public enum LawParaRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, LawParaText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum AtomArt: GrownDiagram {
+    public typealias Across = U512
+    public typealias AriaLabel = AtomAlt
+    @StructureBuilder
+    public static var body: some Structure & DividesY {
+        Air<EdgeMargin>.self
+        Fixed<Plus<U32, U8>, SpanHosted<AtomTitleRow>>.self
+        Fixed<Plus<Times<LineTally<AtomHookWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomHookRow>>.self
+        Air<U8>.self
+        Fixed<Plus<Times<LineTally<AtomJumpWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomJumpRow>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<LineTallA, SpanHosted<ColHeadRow>>.self
+        Air<U2>.self
+        Fixed<Plus<U16, U8>, SpanHosted<FloorFourRow>>.self
+        Air<U4>.self
+        Fixed<Plus<U16, U8>, SpanHosted<FloorThreeRow>>.self
+        Air<U4>.self
+        Fixed<Plus<U16, U8>, SpanHosted<FloorTwoRow>>.self
+        Air<U4>.self
+        Fixed<Plus<U16, U8>, SpanHosted<FloorOneRow>>.self
+        Air<U8>.self
+        Fixed<LineTallA, SpanHosted<PressJumpRow>>.self
+        Air<U4>.self
+        Fixed<Plus<U32, U8>, SpanHosted<JumpKeysRow>>.self
+        Air<U2>.self
+        Fixed<LineTallA, SpanHosted<FrameLegendRow>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<U32, SpanHosted<FlashBand>>.self
+        Air<U2>.self
+        Fixed<LineTallA, SpanHosted<ZoneCapsRow>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<Plus<Times<LineTally<AtomReachWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomReachRow>>.self
+        Air<U8>.self
+        Fixed<Plus<Times<LineTally<AtomShapeWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomShapeRow>>.self
+        Air<U8>.self
+        Fixed<Plus<Times<LineTally<AtomTrapWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomTrapRow>>.self
+        Air<U4>.self
+        Fixed<Plus<Times<LineTally<AtomBreakWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomBreakRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<Plus<U16, U8>, SpanHosted<RoadsHeadRow>>.self
+        Fixed<Plus<Times<LineTally<RoadsParaWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<RoadsParaRow>>.self
+        Air<U8>.self
+        Fixed<Plus<U16, U4>, SpanHosted<RoadOneRow>>.self
+        Air<U4>.self
+        Fixed<Plus<U16, U4>, SpanHosted<RoadTwoRow>>.self
+        Air<U8>.self
+        Fixed<LineTallA, SpanHosted<RoadsBreakRow>>.self
+        Air<Plus<U16, U8>>.self
+        Fixed<Plus<U16, U8>, SpanHosted<LawHeadRow>>.self
+        Fixed<Plus<Times<LineTally<LawParaWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<LawParaRow>>.self
+        Air<Plus<U8, U4>>.self
+        Fixed<Plus<Times<LineTally<AtomFinalWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomFinalRow>>.self
+        Air<EdgeMargin>.self
+    }
+}
+`;
 
 const rulesFile = `import VerificationIsIdentification
 import DocumentKit
@@ -7366,7 +8444,7 @@ extension WorldTitle {
 }
 public enum WorldSub: Close {}
 extension WorldSub {
-    public static var typeName: String { "This tab shows dynamics as data: a button is a rewrite rule in the file." }
+    public static var typeName: String { "On this tab a button is a rewrite rule in the file: dynamics as data." }
 }
 public enum WorldSubTwo: Close {}
 extension WorldSubTwo {
@@ -8014,7 +9092,7 @@ extension SheetTitle {
 }
 public enum SheetSub: Close {}
 extension SheetSub {
-    public static var typeName: String { "This tab shows free text: it lives in one quoted literal the judge reads." }
+    public static var typeName: String { "On this tab the free text is one quoted literal, and the judge reads it." }
 }
 public enum SheetSubTwo: Close {}
 extension SheetSubTwo {
@@ -8232,6 +9310,8 @@ const tabs = [
       caption: "every key on the canvas is a rule declared in the file: a press rewrites one typealias line" },
     { id: "light", title: "Light", file: "Light.swift", text: lightFile,
       caption: "the lamp is code: edit a number and every colour is recomputed" },
+    { id: "atom", title: "The atom", file: "Atom.swift", text: atomFile,
+      caption: "the ladder is code: every allowed jump pours its own line" },
     { id: "rules", title: "Rules", file: "Rules.swift", text: rulesFile,
       caption: "how to write here: the two moves, the five forms, the law" },
     { id: "faq", title: "FAQ", file: "FAQ.swift", text: faqFile,
@@ -8284,6 +9364,7 @@ const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "
     "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
     "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
     "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
+    "L", "RadialNodes", "Seat", "Flash", "Drop",
     "DocumentKit", "VerificationIsIdentification", "Organization"]);
 let localNames = new Set();
 
@@ -8303,6 +9384,7 @@ const fixedNames = new Set([
     "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
     "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
     "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
+    "L", "RadialNodes", "Seat", "Flash", "Drop",
     "SpanLabel", "SpanLink", "SoftShadow", "DisplayS", "Never", "Spanning",
     // the modules an import names
     "DocumentKit", "VerificationIsIdentification", "Organization",
@@ -8742,7 +9824,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 116;
+const contentRevision = 124;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);

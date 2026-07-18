@@ -125,6 +125,7 @@ const worlds = [
     ["typewriterFile", "Typewriter.swift"],
     ["worldFile", "World.swift"],
     ["lightFile", "Light.swift"],
+    ["atomFile", "Atom.swift"],
     ["rulesFile", "Rules.swift"],
     ["faqFile", "FAQ.swift"],
 ];
@@ -294,6 +295,42 @@ if (plateErrors.length === 0 && plateChecked >= 28) {
 } else {
     failures.push("plate: " + plateChecked + " checks, drift in "
         + (plateErrors.join(", ") || "count"));
+}
+
+// ── the atom: the forbidden jump refuses in the compiler's voice, and the
+// two visible lines leave their faint traces poured by the door ──
+total += 1;
+const atomSource = literal("atomFile", "`", "\n`;");
+const trapLie = atomSource.replace("public typealias LymanFact = Lowers<Orbital2p, Orbital1s>",
+    "public typealias LymanFact = Lowers<Orbital2p, Orbital1s>\npublic typealias Trap = Lowers<Orbital2s, Orbital1s>");
+if (trapLie === atomSource) {
+    failures.push("atom-trap: the anchor is not in atomFile");
+} else {
+    const trapVerdict = judge("Atom.swift", trapLie, pageKit);
+    const trapRefusals = trapVerdict.refusals.filter((refusal) =>
+        refusal.premise.includes("Lowers<Orbital2s, Orbital1s>")
+        && refusal.premise.includes("be equivalent"));
+    const atomJudged = judge("Atom.swift", atomSource, pageKit);
+    const atomArt = renderAll(atomJudged.parsed.declarations, atomJudged.parsed.order,
+        atomJudged.parsed.literals, atomJudged.parsed.topAliases);
+    const atomSvg = atomArt.canvases.length > 0 ? atomArt.canvases[0].svg : "";
+    const alphaTrace = (atomSvg.match(/color\(xyz-d65 0\.031 0\.011 0\.000\)/g) || []).length;
+    const betaTrace = (atomSvg.match(/color\(xyz-d65 0\.007 0\.023 0\.074\)/g) || []).length;
+    const roadLie = atomSource.replace("public enum BetaJump: Close {\n    public typealias Drop = Rung2",
+        "public enum BetaJump: Close {\n    public typealias Drop = Rung3");
+    const roadVerdict = judge("Atom.swift", roadLie, pageKit);
+    const roadRefusals = roadVerdict.refusals.filter((refusal) =>
+        refusal.premise.includes("RoadPair") && refusal.premise.includes("be equivalent"));
+    if (trapRefusals.length === 1 && roadRefusals.length === 1
+        && alphaTrace === 1 && betaTrace === 1
+        && (atomArt.errors || []).length === 0) {
+        passed += 1;
+    } else {
+        failures.push("atom: want 1 trap equivalence, 1 road equivalence, 1 alpha "
+            + "trace, 1 beta trace, 0 draw errors, got " + trapRefusals.length
+            + " / " + roadRefusals.length + " / " + alphaTrace + " / " + betaTrace
+            + " / " + (atomArt.errors || []).length);
+    }
 }
 
 console.log("self-test: " + passed + "/" + total

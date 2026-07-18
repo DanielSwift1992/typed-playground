@@ -672,6 +672,20 @@ function normalizeTerm(term, declarations, topAliases, depth) {
     if (head === "Twice" && args.length === 1) {
         return "Plus<" + args[0] + ", " + args[0] + ">";
     }
+    // the kit's stated rungs unfold to their own compositions
+    // (Spectrum.swift, Rung0..Rung8), so a sum of rungs and a rung of the
+    // same count settle to one spelling
+    const kitRungs = new Map([
+        ["Rung0", "Never"], ["Rung1", "Unit"], ["Rung2", "Twice<Unit>"],
+        ["Rung3", "Plus<Twice<Unit>, Unit>"], ["Rung4", "Twice<Twice<Unit>>"],
+        ["Rung5", "Plus<Twice<Twice<Unit>>, Unit>"],
+        ["Rung6", "Twice<Plus<Twice<Unit>, Unit>>"],
+        ["Rung7", "Plus<Twice<Twice<Unit>>, Plus<Twice<Unit>, Unit>>"],
+        ["Rung8", "Twice<Twice<Twice<Unit>>>"],
+    ]);
+    if (kitRungs.has(head) && args.length === 0) {
+        return normalizeTerm(kitRungs.get(head), declarations, topAliases, depth + 1);
+    }
     return args.length > 0 ? head + "<" + args.join(", ") + ">" : head;
 }
 

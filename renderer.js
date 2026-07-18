@@ -108,6 +108,13 @@ function parseType(source) {
     return { head, args };
 }
 
+// a node spelled back to its source form, for re-queuing a walked chain
+function spellNode(node) {
+    return node.args.length > 0
+        ? node.head + "<" + node.args.map(spellNode).join(", ") + ">"
+        : node.head;
+}
+
 // ── the fraction arithmetic, ported from the Frac readings ──
 
 function px(fraction) {
@@ -181,9 +188,15 @@ function resolveHead(env, node) {
             const dot = cursor.head.indexOf(".",
                 angleAt >= 0 ? angleAt + angleSpanText(cursor.head, angleAt) - 1 : 0);
             if (dot < 0) return cursor;
+            // the chain is walked segment by segment, the way the reference
+            // judge walks it: one axis per step, the remainder re-queued
+            const tail = cursor.head.slice(dot + 1);
+            const nextDot = tail.indexOf(".");
+            const axisName = nextDot < 0 ? tail : tail.slice(0, nextDot);
+            const rest = nextDot < 0 ? "" : tail.slice(nextDot + 1);
             const base = resolveHead(env, parseType(cursor.head.slice(0, dot)));
             const owner = env.declarations.get(base.head);
-            const slot = owner ? owner.aliases.get(cursor.head.slice(dot + 1)) : null;
+            const slot = owner ? owner.aliases.get(axisName) : null;
             if (slot) {
                 let target = parseType(slot.target);
                 // the owner may stand as a generic instance: its arguments bind
@@ -196,7 +209,9 @@ function resolveHead(env, node) {
                     });
                     target = substitute(target, bindings);
                 }
-                cursor = target;
+                cursor = rest === ""
+                    ? target
+                    : parseType(spellNode(target) + "." + rest);
                 continue;
             }
             complain(env, "`" + cursor.head + "` reads no declared axis");
