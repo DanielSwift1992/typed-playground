@@ -317,7 +317,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 132</span>
+  <span style="float: right; color: var(--muted);">rev 133</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -1702,10 +1702,6 @@ public enum TryTwoWord: Close {}
 extension TryTwoWord {
     public static var typeName: String { "Break it here: type func or var on any line. It is refused: types only." }
 }
-public enum TryThreeWord: Close {}
-extension TryThreeWord {
-    public static var typeName: String { "Rules and the FAQ are the last two tabs, and they are files too." }
-}
 public enum IntroAlt: Close {}
 extension IntroAlt {
     public static var typeName: String { "The page's own manual: what it is, the measured curve, what to try." }
@@ -2084,13 +2080,6 @@ public enum TryTwoLabel: SpanLabel {
     public typealias Weight = WeightRegular
     public typealias Content = TryTwoWord
 }
-public enum TryThreeLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
-    public typealias FillColor = TextPrimary
-    public typealias Size = TextS
-    public typealias Weight = WeightRegular
-    public typealias Content = TryThreeWord
-}
 
 // ── the rows ──
 
@@ -2404,15 +2393,6 @@ public enum TryTwoRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
-public enum TryThreeRow: HFlow {
-    public typealias Given = U512
-    @StructureBuilder
-    public static var body: some Structure & Divides {
-        Air<EdgeMargin>.self
-        Flexible<TryThreeLabel>.self
-        Air<EdgeMargin>.self
-    }
-}
 
 public typealias IntroParaWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
 public enum IntroThesisParaWord: Close {}
@@ -2525,6 +2505,186 @@ public enum TryLieParaRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
+public enum TabsHead: Close {}
+extension TabsHead {
+    public static var typeName: String { "The tabs" }
+}
+public enum TabOrgWord: Close {}
+extension TabOrgWord {
+    public static var typeName: String { "The organization: four people as types, with keys to hire and to plant a lie." }
+}
+public enum TabScaleWord: Close {}
+extension TabScaleWord {
+    public static var typeName: String { "At scale: the same company at 12,800 people, judged in 0.2 seconds per edit." }
+}
+public enum TabBasicsWord: Close {}
+extension TabBasicsWord {
+    public static var typeName: String { "Basics: the layout itself, in four steps." }
+}
+public enum TabWriterWord: Close {}
+extension TabWriterWord {
+    public static var typeName: String { "A typewriter: free text as one quoted literal." }
+}
+public enum TabButtonsWord: Close {}
+extension TabButtonsWord {
+    public static var typeName: String { "Buttons: a lamp and a passcode pad, and every key is a rewrite rule." }
+}
+public enum TabLightWord: Close {}
+extension TabLightWord {
+    public static var typeName: String { "Light: a lamp as code. You mix its lines, and the page computes the colour." }
+}
+public enum TabAtomWord: Close {}
+extension TabAtomWord {
+    public static var typeName: String { "The atom: the reason behind the lamp. One electron on a ladder of floors." }
+}
+public enum TabRulesWord: Close {}
+extension TabRulesWord {
+    public static var typeName: String { "Rules and FAQ: the grammar and six answers, and both are files too." }
+}
+public enum TabsHeadLabel: SpanLabel {
+    public typealias Y = Under<U4, TextM>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextM
+    public typealias Weight = WeightBold
+    public typealias Content = TabsHead
+}
+public enum TabsHeadRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabsHeadLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TabOrgLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TabOrgWord
+}
+public enum TabOrgRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabOrgLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TabScaleLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TabScaleWord
+}
+public enum TabScaleRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabScaleLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TabBasicsLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TabBasicsWord
+}
+public enum TabBasicsRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabBasicsLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TabWriterLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TabWriterWord
+}
+public enum TabWriterRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabWriterLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TabButtonsLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TabButtonsWord
+}
+public enum TabButtonsRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabButtonsLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TabLightLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TabLightWord
+}
+public enum TabLightRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabLightLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TabAtomLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TabAtomWord
+}
+public enum TabAtomRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabAtomLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
+public enum TabRulesLabel: SpanLabel {
+    public typealias Y = Under<U2, TextS>
+    public typealias FillColor = TextSecondary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = TabRulesWord
+}
+public enum TabRulesRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Flexible<TabRulesLabel>.self
+        Air<EdgeMargin>.self
+    }
+}
 public enum IntroArt: GrownDiagram {
     public typealias Across = U512
     public typealias AriaLabel = IntroAlt
@@ -2578,9 +2738,18 @@ public enum IntroArt: GrownDiagram {
         Fixed<Plus<Times<LineTally<ReadingsMoralParaWord, IntroParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, ReadingsMoralParaRow>>>.self
         Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, ReadingsBreakRow>>>.self
         Air<Plus<U16, U8>>.self
+        Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabsHeadRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabOrgRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabScaleRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabBasicsRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabWriterRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabButtonsRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabLightRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabAtomRow>>>.self
+        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabRulesRow>>>.self
+        Air<Plus<U16, U8>>.self
         Fixed<Plus<Times<LineTally<TryLieParaWord, IntroParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TryLieParaRow>>>.self
         Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TryTwoRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TryThreeRow>>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9825,7 +9994,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 132;
+const contentRevision = 133;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
