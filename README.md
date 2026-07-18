@@ -1,15 +1,22 @@
 # The playground
 
-Swift types on the left, the page drawn from them on the right. Every tab is one Swift
-file in a stated subset of the language: the file declares types and nothing that
-runs. A checker called the judge reads the file into one dictionary and answers
-every claim by a single lookup, so the judge names a broken claim by its line as you
-type. A renderer reads the same dictionary and draws every declared canvas. The
-page is static, with no build, no server, and no network. The one vendored
-library is CodeMirror 5 (MIT), the editor pane. Everything else is hand-written:
-`judge.js` is a line-for-line port of the Swift judge from the theory's
-repository, `renderer.js` is a mirror of its span engine, `press.js` of its
-rule applier, and `lint.js` of rule 0 of its linter.
+This is zero-runtime programming, applied to everything on one page: layout, a
+company of 12,800 people, the physics of light, a hydrogen atom. Every domain is
+Swift types and nothing executes: one checker, the judge, reads a file into a
+dictionary and answers every claim by a single lookup. The check is linear in
+the file where compilation grows near N^1.3: the company that `swift build`
+proves in 199 seconds is re-checked here in 0.2, on every keystroke, and a
+broken claim in any domain is a line number. All of it is checkable right here:
+a static page, seven files, no server, no build.
+
+Swift types on the left, the page drawn from them on the right: every tab is
+one Swift file in a stated subset of the language, the judge names a broken
+claim by its line as you type, and a renderer draws every declared canvas from
+the same dictionary. The one vendored library is CodeMirror 5 (MIT), the editor
+pane. Everything else is hand-written: `judge.js` is a line-for-line port of
+the Swift judge from the theory's repository, `renderer.js` is a mirror of its
+span engine, `press.js` of its rule applier, and `lint.js` of rule 0 of its
+linter.
 
 Live: <https://danielswift1992.github.io/typed-playground/>, or open
 `index.html` from a checkout. The page is seven files in one folder:
