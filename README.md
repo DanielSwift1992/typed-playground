@@ -22,7 +22,7 @@ Live: <https://danielswift1992.github.io/typed-playground/>, or open
 
 The first tab, Read me, is the page's own manual, drawn from a Swift file like
 every other tab: the thesis, the measured curve of `swift build` against the
-judge, and what to try. The organization tab holds a company as types. Hire one
+judge, and what to try. The organization tab is a company as types. Hire one
 more adds a typed employee and the counted cards follow. Plant a lie flips one
 declaration deep in the file, and the judge refuses it by line and by name. At
 scale generates the same company for 12,800 people, about 136,000 lines, and the
@@ -46,9 +46,9 @@ The atom tab is the reason behind the lamp: one electron on a ladder of floors,
 written as one rewritable line. Every key is a written jump, each allowed jump
 flashes its own line in a window under the ladder, and the selection rule is a
 judged `where` requirement on every certificate. The jump from 2s to the ground
-floor cannot move the shape by one, so it has no key and no certificate: the
-electron that lands there is stuck, the way the real one waits a tenth of a
-second.
+floor cannot change the lobes by one pair, so it has no key and no certificate:
+the electron that lands there is stuck, the way the real one is stuck for a
+tenth of a second.
 
 Under the preview a Code · Table switch reads the same file as rows, one row per
 declaration and one column per axis. Nothing is stored, so the table cannot
@@ -69,7 +69,7 @@ on every load. In CI, `node check.js` replays nineteen checks: the four
 verdicts, every world of the page judged, lawed, and drawn clean, the renderer's
 byte golden against `swift run DynamicsDemo draw`, refusal vectors for the
 conditional `where` grammar, and the theory's forty-line golden plate, which the
-port must read value for value. `node check-kit.js` holds all seventy-one ported
+port must read value for value. `node check-kit.js` checks all seventy-one ported
 kit names against the theory's sources at a pinned commit, fifty-seven of them
 sealed by goldens.
 
