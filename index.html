@@ -317,7 +317,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 135</span>
+  <span style="float: right; color: var(--muted);">rev 136</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -6203,7 +6203,7 @@ extension PressJumpWord {
 }
 public enum FrameLegendWord: Close {}
 extension FrameLegendWord {
-    public static var typeName: String { "Keys with a blue frame are the jumps open from this floor." }
+    public static var typeName: String { "Framed keys are the open jumps, and framed shelves are their landings." }
 }
 public enum KeyBetaWord: Close {}
 extension KeyBetaWord {
@@ -6454,6 +6454,24 @@ public enum AtomGrayField: SpanTrackOutlined {
     public typealias Fill = SurfaceTrack
     public typealias Stroke = LineRole
 }
+public enum Target486Frame: SpanTrackOutlined {
+    public typealias H = Tally<Plus<U16, U8>>
+    public typealias Radius = Tally<U4>
+    public typealias Fill = SurfaceTrack
+    public typealias Stroke = HydrogenColour<Never, Rung8, Never>
+}
+public enum Target656Frame: SpanTrackOutlined {
+    public typealias H = Tally<Plus<U16, U8>>
+    public typealias Radius = Tally<U4>
+    public typealias Fill = SurfaceTrack
+    public typealias Stroke = HydrogenColour<Rung8, Never, Never>
+}
+public enum TargetOpenFrame: SpanTrackOutlined {
+    public typealias H = Tally<Plus<U16, U8>>
+    public typealias Radius = Tally<U4>
+    public typealias Fill = SurfaceTrack
+    public typealias Stroke = ActionRole
+}
 public enum ShelfFace: SpanTrackOutlined {
     public typealias H = Tally<Plus<U16, U8>>
     public typealias Radius = Tally<U4>
@@ -6619,7 +6637,7 @@ public enum FloorFourRow: HFlow {
         Air<U8>.self
         Fixed<Plus<U64, U16>, SpanNothing>.self
         Air<U16>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon4pRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung4, EdgeSame<Electron.Seat.L, Rung1, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeAtLeast<Electron.Flash, Rung1, TargetOpenFrame>>, SpanHosted<Icon4pRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung4, EdgeSame<Electron.Seat.L, Rung1, ElectronDot>>>>.self
         Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
@@ -6631,7 +6649,7 @@ public enum FloorThreeRow: HFlow {
         Air<EdgeMargin>.self
         Fixed<U16, FloorThreeLabel>.self
         Air<U8>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon3sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung3, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeSame<Electron.Flash, Rung0, TargetOpenFrame>>, SpanHosted<Icon3sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung3, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
         Air<U16>.self
         Fixed<Plus<U64, U16>, SpanNothing>.self
         Flexible<SpanNothing>.self
@@ -6645,9 +6663,9 @@ public enum FloorTwoRow: HFlow {
         Air<EdgeMargin>.self
         Fixed<U16, FloorTwoLabel>.self
         Air<U8>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon2sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeSame<Electron.Flash, Rung0, Target486Frame>>, SpanHosted<Icon2sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
         Air<U16>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon2pRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung1, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeSame<Electron.Flash, Rung3, Target656Frame>>, SpanHosted<Icon2pRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung1, ElectronDot>>>>.self
         Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
@@ -6659,7 +6677,7 @@ public enum FloorOneRow: HFlow {
         Air<EdgeMargin>.self
         Fixed<U16, FloorOneLabel>.self
         Air<U8>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<ShelfFace, SpanHosted<Icon1sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung1, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeSame<Electron.Flash, Rung1, TargetOpenFrame>>, SpanHosted<Icon1sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung1, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
         Air<U16>.self
         Fixed<Plus<U64, U16>, SpanNothing>.self
         Flexible<SpanNothing>.self
@@ -10018,7 +10036,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 135;
+const contentRevision = 136;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
