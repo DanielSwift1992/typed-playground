@@ -208,12 +208,13 @@ const lightSvg = lightArt.canvases.length > 0 ? lightArt.canvases[0].svg : "";
 const fullRed = (lightSvg.match(/color\(xyz-d65 0\.250 0\.093 0\.000\)/g) || []).length;
 const fullCyan = (lightSvg.match(/color\(xyz-d65 0\.062 0\.187 0\.593\)/g) || []).length;
 const halfMix = (lightSvg.match(/color\(xyz-d65 0\.125 0\.046 0\.000\)/g) || []).length;
-if (fullRed === 7 && fullCyan === 2 && halfMix === 4) {
+const centreMix = (lightSvg.match(/color\(xyz-d65 0\.156 0\.140 0\.296\)/g) || []).length;
+if (fullRed === 7 && fullCyan === 2 && halfMix === 2 && centreMix === 3) {
     passed += 1;
 } else {
-    failures.push("xyz door: want 7 full reds (patches, glows, the ladder's "
-        + "pure-line tile), 2 full cyans, 4 half-ladder mixes, got " + fullRed
-        + " / " + fullCyan + " / " + halfMix);
+    failures.push("xyz door: want 7 full reds, 2 full cyans, 2 half-alpha "
+        + "pours, 3 centre mixes (the picker starts mid-map), got " + fullRed
+        + " / " + fullCyan + " / " + halfMix + " / " + centreMix);
 }
 
 // ── the two-slit scene: the fringe strip pours parity, and a gap made even
@@ -221,12 +222,12 @@ if (fullRed === 7 && fullCyan === 2 && halfMix === 4) {
 total += 1;
 const brightFringe = (lightSvg.match(/color\(xyz-d65 0\.062 0\.023 0\.000\)/g) || []).length;
 const blackPour = (lightSvg.match(/color\(xyz-d65 0\.000 0\.000 0\.000\)/g) || []).length;
-if (brightFringe === 4 && blackPour === 10) {
+if (brightFringe === 4 && blackPour === 9) {
     passed += 1;
 } else {
     failures.push("fringes: want 4 bright-node pours (3 stripes and the map's "
-        + "own cell) and 10 black pours (the live stripe starts on an odd "
-        + "gap), got " + brightFringe + " / " + blackPour);
+        + "own cell) and 9 black pours (the live stripe starts on an odd gap, "
+        + "the beta pour starts lit), got " + brightFringe + " / " + blackPour);
 }
 // ── the other gases: a gas is its list of lines, and the door mixes any ──
 total += 1;
