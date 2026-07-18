@@ -39,6 +39,9 @@ const seedCount = new Map([
     ["U64", 64], ["U128", 128], ["U256", 256], ["U512", 512],
     ["EdgeMargin", 16], ["Breath", 16], ["HairBreath", 8],
     ["WideSurface", 960], ["FilmStripTall", 150], ["Never", 0],
+    ["Unit", 1],
+    ["Rung0", 0], ["Rung1", 1], ["Rung2", 2], ["Rung3", 3], ["Rung4", 4],
+    ["Rung5", 5], ["Rung6", 6], ["Rung7", 7], ["Rung8", 8],
     ["TrackHeight", 32], ["DotSlot", 12], ["KeySide", 80], ["PanelWide", 440],
 ]);
 
@@ -68,6 +71,19 @@ const countsAsOne = new Set(["VerifiedView", "VerifiedInDepartment", "VerifiedAt
     "VerifiedAtWorkplace"]);
 
 // ── type expressions: `Name` or `Name<A, B<C>>`, the grammar entries already use ──
+
+// the length of the angle run opening at `from`, matching close included
+function angleSpanText(text, from) {
+    let depth = 0;
+    for (let index = from; index < text.length; index += 1) {
+        if (text[index] === "<") depth += 1;
+        if (text[index] === ">") {
+            depth -= 1;
+            if (depth === 0) return index - from + 1;
+        }
+    }
+    return text.length - from;
+}
 
 function parseType(source) {
     const text = source.trim();
@@ -134,6 +150,20 @@ function recordRead(env, name) {
 
 function substitute(node, bindings) {
     if (node.args.length === 0 && bindings.has(node.head)) return bindings.get(node.head);
+    // a dotted head whose owner is a bound parameter reads the axis of the
+    // binding: `P.Vertical` under P = LampH is `LampH.Vertical`
+    if (node.head.includes(".")) {
+        const dot = node.head.indexOf(".");
+        const owner = node.head.slice(0, dot);
+        if (bindings.has(owner)) {
+            const bound = bindings.get(owner);
+            const spelled = bound.args.length > 0
+                ? bound.head + "<" + bound.args.map(nodeString).join(", ") + ">"
+                : bound.head;
+            return { head: spelled + node.head.slice(dot),
+                args: node.args.map((argument) => substitute(argument, bindings)) };
+        }
+    }
     return { head: node.head,
         args: node.args.map((argument) => substitute(argument, bindings)) };
 }
@@ -147,12 +177,26 @@ function resolveHead(env, node) {
         // a dotted head reads an axis off a resolved owner: `LampMode.Ink` is the
         // Ink alias of whatever term LampMode stands for
         if (!alias && cursor.head.includes(".")) {
-            const dot = cursor.head.indexOf(".");
-            const base = resolveHead(env, { head: cursor.head.slice(0, dot), args: [] });
+            const angleAt = cursor.head.indexOf("<");
+            const dot = cursor.head.indexOf(".",
+                angleAt >= 0 ? angleAt + angleSpanText(cursor.head, angleAt) - 1 : 0);
+            if (dot < 0) return cursor;
+            const base = resolveHead(env, parseType(cursor.head.slice(0, dot)));
             const owner = env.declarations.get(base.head);
             const slot = owner ? owner.aliases.get(cursor.head.slice(dot + 1)) : null;
             if (slot) {
-                cursor = parseType(slot.target);
+                let target = parseType(slot.target);
+                // the owner may stand as a generic instance: its arguments bind
+                // the declaration's parameters inside the axis being read
+                if (owner.params && owner.params.length > 0
+                    && base.args.length === owner.params.length) {
+                    const bindings = new Map();
+                    owner.params.forEach((parameter, index) => {
+                        bindings.set(parameter, base.args[index]);
+                    });
+                    target = substitute(target, bindings);
+                }
+                cursor = target;
                 continue;
             }
             complain(env, "`" + cursor.head + "` reads no declared axis");
@@ -176,12 +220,46 @@ function resolveHead(env, node) {
 
 // ── counts: the unit trees a canvas and an Air measure by ──
 
+const canonicalShares = new Map([
+    ["HAlphaGlow", [7, 2, 0]], ["HBetaGlow", [2, 7, 18]],
+    ["PaschenGlow", [0, 0, 0]], ["NeonYellowGlow", [17, 16, 0]],
+    ["NeonRedGlow", [9, 4, 0]], ["SodiumDGlow", [18, 15, 0]],
+    ["SodiumIRGlow", [0, 0, 0]],
+    // the stated displays (Spectrum.swift at 1029e02): every primary is the
+    // column of its standard's published matrix — IEC 61966-2-1, SMPTE EG
+    // 432-1, ITU-R BT.2020 — rounded once onto the lattice, a thirty-second
+    // per rung. No invented number survives.
+    ["SRGBRedPrimary", [13, 7, 1]], ["SRGBGreenPrimary", [11, 23, 4]],
+    ["SRGBBluePrimary", [6, 2, 30]], ["P3RedPrimary", [16, 7, 0]],
+    ["P3GreenPrimary", [9, 22, 1]], ["P3BluePrimary", [6, 3, 33]],
+    ["Rec2020RedPrimary", [20, 8, 0]], ["Rec2020GreenPrimary", [5, 22, 1]],
+    ["Rec2020BluePrimary", [5, 2, 34]],
+]);
+const shareIndex = new Map([["XShare", 0], ["YShare", 1], ["ZShare", 2]]);
+
 function countOf(env, rawNode) {
     if (!rawNode) {
         complain(env, "a count is missing where a member expects one");
         return 0;
     }
+    // a canonical weight's axis is a stated magnitude of the kit: the settled
+    // reading of its composed rungs (Spectrum.swift, CanonicalWeights)
+    if (rawNode.head.includes(".")) {
+        const dot = rawNode.head.indexOf(".");
+        const owner = rawNode.head.slice(0, dot);
+        const axis = rawNode.head.slice(dot + 1);
+        if (canonicalShares.has(owner) && shareIndex.has(axis)) {
+            return canonicalShares.get(owner)[shareIndex.get(axis)];
+        }
+    }
     const node = resolveHead(env, rawNode);
+    // one canonical coordinate of a pour, unfolded to its own definition:
+    // Plus<Times<A, ShareA>, Plus<Times<B, ShareB>, Times<C, ShareC>>>
+    if (node.head === "PouredCoordinate" && node.args.length === 6) {
+        return countOf(env, node.args[0]) * countOf(env, node.args[1])
+            + countOf(env, node.args[2]) * countOf(env, node.args[3])
+            + countOf(env, node.args[4]) * countOf(env, node.args[5]);
+    }
     if (seedCount.has(node.head)) return seedCount.get(node.head);
     if (countsAsOne.has(node.head)) return 1;
     if (node.head === "Plus") return countOf(env, node.args[0]) + countOf(env, node.args[1]);
@@ -191,6 +269,8 @@ function countOf(env, rawNode) {
     // the counter's constructor counts itself: one more than what it wraps
     // (Tick.count = Previous.count + 1, the floor Never counts 0)
     if (node.head === "Tick") return 1 + countOf(env, node.args[0]);
+    // the numeral ladder's step counts the same way (Numeral.swift: Succ)
+    if (node.head === "Succ") return 1 + countOf(env, node.args[0]);
     // the wrapped line tally, mirrored from Vector.swift: how many lines a
     // literal earns under the same greedy measure the wrapped labels draw
     // with, over a stated dictionary width. A band's height is then a type:
@@ -244,6 +324,52 @@ function textOf(env, rawNode) {
     }
     const node = resolveHead(env, rawNode);
     if (node.head === "Tally") return String(countOf(env, node.args[0]));
+    // the perceptual rung of a band (Spectrum.swift, PerceptualRung): the
+    // position of the highest lit door, zero for a quenched band — a halving
+    // is one felt ratio, so felt distance is a difference of rungs. The walks
+    // are the kit's own, mirrored as their eight marks.
+    if (node.head === "PerceptualRung" && node.args.length === 1) {
+        const walks = new Map([
+            ["HAlphaGlow.LongShare", "11100000"], ["HAlphaGlow.MiddleShare", "00000000"],
+            ["HAlphaGlow.ShortShare", "00000000"],
+            ["HBetaGlow.LongShare", "00000000"], ["HBetaGlow.MiddleShare", "10100000"],
+            ["HBetaGlow.ShortShare", "11100000"],
+            ["PaschenGlow.LongShare", "00000000"], ["PaschenGlow.MiddleShare", "00000000"],
+            ["PaschenGlow.ShortShare", "00000000"],
+            ["NeonYellowGlow.LongShare", "11100000"], ["NeonYellowGlow.MiddleShare", "10100000"],
+            ["NeonYellowGlow.ShortShare", "00000000"],
+            ["NeonRedGlow.LongShare", "11100000"], ["NeonRedGlow.MiddleShare", "00100000"],
+            ["NeonRedGlow.ShortShare", "00000000"],
+            ["SodiumDGlow.LongShare", "11100000"], ["SodiumDGlow.MiddleShare", "10010000"],
+            ["SodiumDGlow.ShortShare", "00000000"],
+            ["SodiumIRGlow.LongShare", "00000000"], ["SodiumIRGlow.MiddleShare", "00000000"],
+            ["SodiumIRGlow.ShortShare", "00000000"],
+        ]);
+        const marks = walks.get(node.args[0].head);
+        if (marks === undefined) {
+            complain(env, "`" + node.args[0].head
+                + "` names no stated walk of the kit");
+            return "0";
+        }
+        const lit = marks.indexOf("1");
+        return lit < 0 ? "0" : String(8 - lit);
+    }
+    // the chart-neutral edge write (Spectrum.swift, XYZWrite): three
+    // canonical sums printed as the browser's device-independent form,
+    // color(xyz-d65 ...) in 256ths. The canon computes nothing and clamps
+    // nothing: the device maps the value onto whatever it can reach.
+    if (node.head === "XYZWrite" && node.args.length === 3) {
+        const thousandths = (value) => {
+            const scaled = Math.floor(value * 1000 / 256);
+            const whole = Math.floor(scaled / 1000);
+            const rest = scaled % 1000;
+            const padded = rest < 10 ? "00" + rest : rest < 100 ? "0" + rest : String(rest);
+            return whole + "." + padded;
+        };
+        return "color(xyz-d65 " + thousandths(countOf(env, node.args[0]))
+            + " " + thousandths(countOf(env, node.args[1]))
+            + " " + thousandths(countOf(env, node.args[2])) + ")";
+    }
     // the centred baseline of the kit: the zone's middle plus half the font's
     // own capital height (units 2048, cap 1490), ported from CenteredBaseline
     if (node.head === "CenteredBaseline") {
@@ -304,30 +430,57 @@ function spanningOf(env, rawNode) {
     // here, the page's copy of RuleKey's bound.
     if (node.head === "RuleKey") {
         const leaves = [];
+        const spellWhole = (term) => term.args.length === 0 ? term.head
+            : term.head + "<" + term.args.map(spellWhole).join(",") + ">";
         const gather = (term) => {
             const settled = resolveHead(env, term);
+            // an Exactly leaf is spelled whole, spaces shed: the press supplies
+            // the atom and the atom travels with the press (Dynamics, Exactly)
+            if (settled.head === "Exactly" && settled.args.length === 1) {
+                leaves.push({ spelled: spellWhole(settled.args[0]),
+                    bare: settled.args[0].head });
+                return;
+            }
             if (settled.head === "Chord" && settled.args.length === 2) {
                 gather(settled.args[0]);
                 gather(settled.args[1]);
             } else {
-                leaves.push(settled.head);
+                // any other leaf is named bare, its placeholder tail dropped
+                leaves.push({ spelled: settled.head, bare: settled.head });
             }
         };
         gather(node.args[0]);
         let slot = null;
         for (const leaf of leaves) {
-            const declared = env.declarations.get(leaf);
+            const declared = env.declarations.get(leaf.bare);
             if (!declared) {
-                complain(env, "RuleKey names `" + leaf
+                complain(env, "RuleKey names `" + leaf.bare
                     + "`, and the file declares no such rule");
                 return () => "";
             }
             slot = slot ?? declared.aliases.get("Slot");
         }
         const face = spanningOf(env, node.args[1]);
-        return (x, w) => '<g class="vi-rule" data-vi-rules="' + leaves.join(" ")
+        return (x, w) => '<g class="vi-rule" data-vi-rules="' + leaves.map((leaf) => leaf.spelled).join(" ")
             + '" data-vi-slot="' + (slot ? slot.target : "") + '" cursor="pointer">\n'
             + face(x, w) + "</g>\n";
+    }
+    // equality of two magnitudes, read at the edge (Vector.swift, EdgeSame):
+    // when the counts agree the face renders, when they differ nothing does;
+    // a conjunction of equalities is the nesting of this form in itself
+    if (node.head === "EdgeSame" && node.args.length === 3) {
+        if (countOf(env, node.args[0]) !== countOf(env, node.args[1])) {
+            return () => "";
+        }
+        return spanningOf(env, node.args[2]);
+    }
+    // the order of two magnitudes, read at the same edge (EdgeAtLeast): when
+    // the first count reaches the second the face renders; short of it, nothing
+    if (node.head === "EdgeAtLeast" && node.args.length === 3) {
+        if (countOf(env, node.args[0]) < countOf(env, node.args[1])) {
+            return () => "";
+        }
+        return spanningOf(env, node.args[2]);
     }
     if (node.head === "SpanNothing") return () => "";
     const declaration = env.declarations.get(node.head);

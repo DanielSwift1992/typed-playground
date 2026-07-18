@@ -64,6 +64,27 @@ function angleSpan(text, from) {
     return text.length - from;
 }
 
+// comma pieces at angle depth zero: `A<X, Y>, B` splits into two, not three
+function splitTopLevel(text) {
+    const pieces = [];
+    let depth = 0;
+    let start = 0;
+    for (let index = 0; index < text.length; index += 1) {
+        if (text[index] === "<") depth += 1;
+        if (text[index] === ">") depth -= 1;
+        if (text[index] === "," && depth === 0) {
+            pieces.push(text.slice(start, index));
+            start = index + 1;
+        }
+    }
+    pieces.push(text.slice(start));
+    return pieces.map((piece) => piece.trim()).filter((piece) => piece !== "");
+}
+
+function substituteWord(text, word, replacement) {
+    return text.replace(new RegExp("\\b" + word + "\\b", "g"), replacement);
+}
+
 // ── pass 1: the dictionary ──
 
 function parse(file, text, declarations, order, refusals, extras) {
@@ -180,6 +201,31 @@ function parse(file, text, declarations, order, refusals, extras) {
                         }
                     }
                 }
+            }
+            continue;
+        }
+        // a conditional conformance: `extension F: P where A == B {}` gates the
+        // form by equivalence. The gate is grammar, not domain: both sides are
+        // normalized through the dictionary and compared at every use site.
+        if (extras && (line.startsWith("extension ") || line.startsWith("public extension "))
+            && line.includes(" where ") && /\{\s*\}$/.test(line)) {
+            const head = line.replace("public extension ", "").replace("extension ", "")
+                .replace(/\s*\{\s*\}$/, "").trim();
+            const whereAt = head.indexOf(" where ");
+            const beforeWhere = head.slice(0, whereAt);
+            const colon = beforeWhere.indexOf(":");
+            const owner = (colon >= 0 ? beforeWhere.slice(0, colon) : beforeWhere).trim();
+            const conditions = [];
+            for (const piece of splitTopLevel(head.slice(whereAt + 7))) {
+                const equals = piece.indexOf("==");
+                if (equals < 0) continue;
+                conditions.push({ left: piece.slice(0, equals).trim(),
+                    right: piece.slice(equals + 2).trim() });
+            }
+            const standing = declarations.get(owner);
+            if (standing && conditions.length > 0) {
+                if (!standing.whereGates) standing.whereGates = [];
+                standing.whereGates.push({ conditions, line: number });
             }
             continue;
         }
@@ -566,6 +612,121 @@ function check(file, declarations, order, values, refusals, extras, vocabulary) 
     return premises;
 }
 
+// ── conditional conformances: normalize both sides, compare at every use ──
+
+// a term settles to its normal form: top aliases unfold (generic ones by
+// substitution), a dotted head reads the owner's axis, arguments settle first
+function normalizeTerm(term, declarations, topAliases, depth) {
+    if (depth > 64) return term.trim();
+    term = term.trim();
+    const angle = term.indexOf("<");
+    let head = angle >= 0 ? term.slice(0, angle).trim() : term;
+    let args = [];
+    if (angle >= 0) {
+        const inner = term.slice(angle + 1, term.lastIndexOf(">"));
+        args = splitTopLevel(inner)
+            .map((piece) => normalizeTerm(piece, declarations, topAliases, depth + 1));
+    }
+    if (head.includes(".")) {
+        const dot = head.indexOf(".", head.includes("<") ? angleSpan(head, head.indexOf("<")) + head.indexOf("<") - 1 : 0);
+        const ownerSpelled = dot >= 0 ? head.slice(0, dot) : head;
+        const axes = dot >= 0 ? head.slice(dot + 1).split(".") : [];
+        let current = normalizeTerm(ownerSpelled, declarations, topAliases, depth + 1);
+        for (const axisName of axes) {
+            // the owner may be a generic instance: read the bare declaration's
+            // axis and substitute the instance arguments into it
+            const ownerAngle = current.indexOf("<");
+            const ownerHead = ownerAngle >= 0 ? current.slice(0, ownerAngle).trim() : current;
+            const ownerArgs = ownerAngle >= 0
+                ? splitTopLevel(current.slice(ownerAngle + 1, current.lastIndexOf(">")))
+                : [];
+            const owner = declarations.get(ownerHead);
+            const axis = owner && owner.aliases.get(axisName);
+            if (!axis) return term;
+            let target = axis.target;
+            (owner.params || []).forEach((parameter, index) => {
+                if (index < ownerArgs.length) {
+                    target = substituteWord(target, parameter, ownerArgs[index]);
+                }
+            });
+            current = normalizeTerm(target, declarations, topAliases, depth + 1);
+        }
+        return args.length > 0 ? current + "<" + args.join(", ") + ">" : current;
+    }
+    const top = topAliases ? topAliases.get(head) : null;
+    if (top) {
+        const params = top.params || [];
+        if (params.length === 0 && args.length === 0) {
+            return normalizeTerm(top.target, declarations, topAliases, depth + 1);
+        }
+        if (params.length > 0 && params.length === args.length) {
+            let body = top.target;
+            params.forEach((parameter, index) => {
+                body = substituteWord(body, parameter, args[index]);
+            });
+            return normalizeTerm(body, declarations, topAliases, depth + 1);
+        }
+    }
+    // the kit's own structural alias: `Twice<S> = Plus<S, S>` (Primitive.swift),
+    // unfolded here so a stated pair and its shorthand settle to one spelling
+    if (head === "Twice" && args.length === 1) {
+        return "Plus<" + args[0] + ", " + args[0] + ">";
+    }
+    return args.length > 0 ? head + "<" + args.join(", ") + ">" : head;
+}
+
+// every gated head found in a term is checked where it stands: substitution
+// of the use's arguments into the stated equivalences, then one comparison
+function checkWhereGates(file, declarations, topAliases, refusals) {
+    let checked = 0;
+    const gated = new Map();
+    for (const declaration of declarations.values()) {
+        if (declaration.whereGates) gated.set(declaration.name, declaration);
+    }
+    if (gated.size === 0) return 0;
+
+    function walkTerm(term, line) {
+        term = term.trim();
+        const angle = term.indexOf("<");
+        const head = angle >= 0 ? term.slice(0, angle).trim() : term;
+        const args = angle >= 0
+            ? splitTopLevel(term.slice(angle + 1, term.lastIndexOf(">")))
+            : [];
+        for (const argument of args) walkTerm(argument, line);
+        const owner = gated.get(head);
+        if (!owner || args.length !== (owner.params || []).length) return;
+        for (const gate of owner.whereGates) {
+            for (const condition of gate.conditions) {
+                checked += 1;
+                let left = condition.left;
+                let right = condition.right;
+                (owner.params || []).forEach((parameter, index) => {
+                    left = substituteWord(left, parameter, args[index]);
+                    right = substituteWord(right, parameter, args[index]);
+                });
+                const leftNormal = normalizeTerm(left, declarations, topAliases, 0);
+                const rightNormal = normalizeTerm(right, declarations, topAliases, 0);
+                if (leftNormal !== rightNormal) {
+                    refusals.push({ file, line,
+                        premise: "`" + term + "` requires the types `" + leftNormal
+                            + "` and `" + rightNormal + "` be equivalent" });
+                }
+            }
+        }
+    }
+
+    for (const [key, alias] of topAliases || []) {
+        if ((alias.params || []).length > 0) continue;
+        walkTerm(alias.target, alias.line);
+    }
+    for (const declaration of declarations.values()) {
+        for (const [key, alias] of declaration.aliases) {
+            walkTerm(alias.target, alias.line);
+        }
+    }
+    return checked;
+}
+
 // ── one full judgment ──
 
 function judge(file, text, vocabulary) {
@@ -577,7 +738,8 @@ function judge(file, text, vocabulary) {
     const values = { settled: new Map(), refused: new Map(), lookups: 0,
         readers: new Map(), gateTouches: new Map() };
     parse(file, text, declarations, order, refusals, vocabulary ? extras : null);
-    const premises = check(file, declarations, order, values, refusals, extras, vocabulary);
+    let premises = check(file, declarations, order, values, refusals, extras, vocabulary);
+    premises += checkWhereGates(file, declarations, extras.topAliases, refusals);
     const milliseconds = performance.now() - started;
     return { declarations: order.length, lookups: values.lookups, premises,
         milliseconds, refusals,

@@ -13,7 +13,7 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-const KIT_PIN = "7954eed";
+const KIT_PIN = "1029e02";
 const THEORY = process.env.THEORY_PATH
     || path.join(process.env.HOME || "", "Projects/verification-is-identification");
 
@@ -30,7 +30,16 @@ const SUPPORTED = [
     "FrozenReveal",
     // readings
     "Tally", "Halfway", "Under", "CanvasSize", "CenteredBaseline", "TermText",
-    "LineTally", "Plus", "Times", "Twice", "Half", "Tick",
+    "LineTally", "Plus", "Times", "Twice", "Half", "Tick", "Succ",
+    "XYZWrite", "PouredCoordinate", "CanonicalWeights",
+    "HAlphaGlow", "HBetaGlow", "PaschenGlow",
+    "NeonYellowGlow", "NeonRedGlow",
+    "SodiumDGlow", "SodiumIRGlow", "Exactly", "EdgeSame", "PerceptualRung",
+    "Rung0", "Rung1", "Rung2", "Rung3", "Rung4", "Rung5", "Rung6", "Rung7",
+    "Rung8", "EdgeAtLeast",
+    "SRGBRedPrimary", "SRGBGreenPrimary", "SRGBBluePrimary",
+    "P3RedPrimary", "P3GreenPrimary", "P3BluePrimary",
+    "Rec2020RedPrimary", "Rec2020GreenPrimary", "Rec2020BluePrimary",
     // the dynamics medium
     "SlotRule", "Chord",
 ];
@@ -71,6 +80,39 @@ const GOLDENS = {
     Twice: "pending: no native demo prints this branch yet",
     Half: "pending: no native demo prints this branch yet",
     Tick: "goldens/dynamics-draw.svg",
+    Succ: "pending: no native demo prints this branch yet",
+    XYZWrite: "pending: no native demo prints this branch yet",
+    PouredCoordinate: "pending: no native demo prints this branch yet",
+    CanonicalWeights: "pending: no native demo prints this branch yet",
+    Rung0: "pending: no native demo prints this branch yet",
+    Rung1: "pending: no native demo prints this branch yet",
+    Rung2: "pending: no native demo prints this branch yet",
+    Rung3: "pending: no native demo prints this branch yet",
+    Rung4: "pending: no native demo prints this branch yet",
+    Rung5: "pending: no native demo prints this branch yet",
+    Rung6: "pending: no native demo prints this branch yet",
+    Rung7: "pending: no native demo prints this branch yet",
+    Rung8: "pending: no native demo prints this branch yet",
+    EdgeAtLeast: "pending: no native demo prints this branch yet",
+    SRGBRedPrimary: "pending: no native demo prints this branch yet",
+    SRGBGreenPrimary: "pending: no native demo prints this branch yet",
+    SRGBBluePrimary: "pending: no native demo prints this branch yet",
+    P3RedPrimary: "pending: no native demo prints this branch yet",
+    P3GreenPrimary: "pending: no native demo prints this branch yet",
+    P3BluePrimary: "pending: no native demo prints this branch yet",
+    Rec2020RedPrimary: "pending: no native demo prints this branch yet",
+    Rec2020GreenPrimary: "pending: no native demo prints this branch yet",
+    Rec2020BluePrimary: "pending: no native demo prints this branch yet",
+    NeonYellowGlow: "pending: no native demo prints this branch yet",
+    NeonRedGlow: "pending: no native demo prints this branch yet",
+    SodiumDGlow: "pending: no native demo prints this branch yet",
+    SodiumIRGlow: "pending: no native demo prints this branch yet",
+    Exactly: "pending: no native demo prints this branch yet",
+    EdgeSame: "pending: no native demo prints this branch yet",
+    PerceptualRung: "pending: no native demo prints this branch yet",
+    HAlphaGlow: "pending: no native demo prints this branch yet",
+    HBetaGlow: "pending: no native demo prints this branch yet",
+    PaschenGlow: "pending: no native demo prints this branch yet",
     SlotRule: "goldens/dynamics-draw.svg",
     Chord: "goldens/dynamics-draw.svg",
 };

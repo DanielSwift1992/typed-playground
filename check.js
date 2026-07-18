@@ -124,6 +124,7 @@ const worlds = [
     ["basicsFile", "Basics.swift"],
     ["typewriterFile", "Typewriter.swift"],
     ["worldFile", "World.swift"],
+    ["lightFile", "Light.swift"],
     ["rulesFile", "Rules.swift"],
     ["faqFile", "FAQ.swift"],
 ];
@@ -174,6 +175,45 @@ for (const [literalName, file] of worlds) {
             + worldArt.errors.slice(0, 2).join(" | ")
             + (dangling.length ? ", dangling " + dangling.slice(0, 3).join("; ") : ""));
     }
+}
+
+// ── the where-grammar's own refusal: a broken halving must name both sides.
+// The lie flips the diagonal's Vertical level; the two quarter facts stand on
+// it, and each must refuse with the compiler's equivalence voice.
+total += 1;
+const lightSource = literal("lightFile", "`", "\n`;");
+const lightAnchor = "    public typealias Vertical = Twice<Lit1>\n}";
+const lightLie = lightSource.replace(lightAnchor,
+    "    public typealias Vertical = Lit1\n}");
+if (lightLie === lightSource) {
+    failures.push("light-lie: the anchor is not in lightFile");
+} else {
+    const lieVerdict = judge("Light.swift", lightLie, pageKit);
+    const equivalence = lieVerdict.refusals.filter((refusal) =>
+        refusal.premise.includes("be equivalent"));
+    if (equivalence.length === 2) {
+        passed += 1;
+    } else {
+        failures.push("light-lie: want 2 equivalence refusals, got "
+            + equivalence.length + " of " + lieVerdict.refusals.length);
+    }
+}
+
+// ── the additive door: the twins mix to one colour by construction ──
+total += 1;
+const lightJudged = judge("Light.swift", lightSource, pageKit);
+const lightArt = renderAll(lightJudged.parsed.declarations, lightJudged.parsed.order,
+    lightJudged.parsed.literals, lightJudged.parsed.topAliases);
+const lightSvg = lightArt.canvases.length > 0 ? lightArt.canvases[0].svg : "";
+const fullRed = (lightSvg.match(/color\(xyz-d65 0\.218 0\.062 0\.000\)/g) || []).length;
+const fullCyan = (lightSvg.match(/color\(xyz-d65 0\.062 0\.218 0\.562\)/g) || []).length;
+const halfMix = (lightSvg.match(/color\(xyz-d65 0\.109 0\.031 0\.000\)/g) || []).length;
+if (fullRed === 7 && fullCyan === 2 && halfMix === 4) {
+    passed += 1;
+} else {
+    failures.push("xyz door: want 7 full reds (patches, glows, the ladder's "
+        + "pure-line tile), 2 full cyans, 4 half-ladder mixes, got " + fullRed
+        + " / " + fullCyan + " / " + halfMix);
 }
 
 console.log("self-test: " + passed + "/" + total
