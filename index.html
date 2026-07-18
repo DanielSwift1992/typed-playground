@@ -317,7 +317,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 136</span>
+  <span style="float: right; color: var(--muted);">rev 138</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -6203,7 +6203,7 @@ extension PressJumpWord {
 }
 public enum FrameLegendWord: Close {}
 extension FrameLegendWord {
-    public static var typeName: String { "Framed keys are the open jumps, and framed shelves are their landings." }
+    public static var typeName: String { "Framed keys are the open jumps, and a lit portrait is a landing." }
 }
 public enum KeyBetaWord: Close {}
 extension KeyBetaWord {
@@ -6454,26 +6454,14 @@ public enum AtomGrayField: SpanTrackOutlined {
     public typealias Fill = SurfaceTrack
     public typealias Stroke = LineRole
 }
-public enum Target486Frame: SpanTrackOutlined {
-    public typealias H = Tally<Plus<U16, U8>>
+public enum CurrentShelf: SpanTrackOutlined {
+    public typealias H = Tally<U32>
     public typealias Radius = Tally<U4>
-    public typealias Fill = SurfaceTrack
-    public typealias Stroke = HydrogenColour<Never, Rung8, Never>
-}
-public enum Target656Frame: SpanTrackOutlined {
-    public typealias H = Tally<Plus<U16, U8>>
-    public typealias Radius = Tally<U4>
-    public typealias Fill = SurfaceTrack
-    public typealias Stroke = HydrogenColour<Rung8, Never, Never>
-}
-public enum TargetOpenFrame: SpanTrackOutlined {
-    public typealias H = Tally<Plus<U16, U8>>
-    public typealias Radius = Tally<U4>
-    public typealias Fill = SurfaceTrack
-    public typealias Stroke = ActionRole
+    public typealias Fill = LineRole
+    public typealias Stroke = LineRole
 }
 public enum ShelfFace: SpanTrackOutlined {
-    public typealias H = Tally<Plus<U16, U8>>
+    public typealias H = Tally<U32>
     public typealias Radius = Tally<U4>
     public typealias Fill = SurfaceTrack
     public typealias Stroke = LineRole
@@ -6482,38 +6470,129 @@ public enum ShelfFace: SpanTrackOutlined {
 // two lobes per step of L around RadialNodes rings. Muted ink, the shelf
 // behind showing through as the rings. ──
 public enum PMutedR10: SpanDot {
-    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias CY = Halfway<U32, Never>
     public typealias R = Tally<Plus<U8, U2>>
     public typealias Fill = Muted
 }
 public enum PTrackR8: SpanDot {
-    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias CY = Halfway<U32, Never>
     public typealias R = Tally<U8>
     public typealias Fill = SurfaceTrack
 }
 public enum PMutedR6: SpanDot {
-    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias CY = Halfway<U32, Never>
     public typealias R = Tally<Plus<U4, U2>>
     public typealias Fill = Muted
 }
 public enum PTrackR4: SpanDot {
-    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias CY = Halfway<U32, Never>
     public typealias R = Tally<U4>
     public typealias Fill = SurfaceTrack
 }
 public enum PMutedR2: SpanDot {
-    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias CY = Halfway<U32, Never>
     public typealias R = Tally<U2>
     public typealias Fill = Muted
 }
+public enum PInkR10: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<Plus<U8, U2>>
+    public typealias Fill = Ink
+}
+public enum PInkR6: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<Plus<U4, U2>>
+    public typealias Fill = Ink
+}
+public enum PInkR2: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<U2>
+    public typealias Fill = Ink
+}
+public enum PInkLobe: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<Plus<U4, U1>>
+    public typealias Fill = Ink
+}
+public enum PCyanR10: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<Plus<U8, U2>>
+    public typealias Fill = HydrogenColour<Never, Rung8, Never>
+}
+public enum PCyanR6: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<Plus<U4, U2>>
+    public typealias Fill = HydrogenColour<Never, Rung8, Never>
+}
+public enum PRedLobe: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<Plus<U4, U1>>
+    public typealias Fill = HydrogenColour<Rung8, Never, Never>
+}
 public enum PLobe: SpanDot {
-    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias CY = Halfway<U32, Never>
     public typealias R = Tally<Plus<U4, U1>>
     public typealias Fill = Muted
 }
 public typealias CoreNoRing = PMutedR6
 public typealias CoreOneRing = Layered<PMutedR10, Layered<PTrackR8, PMutedR6>>
 public typealias CoreTwoRings = Layered<PMutedR10, Layered<PTrackR8, Layered<PMutedR6, Layered<PTrackR4, PMutedR2>>>>
+public typealias InkOneRing = Layered<PInkR10, Layered<PTrackR8, PInkR6>>
+public typealias CyanOneRing = Layered<PCyanR10, Layered<PTrackR8, PCyanR6>>
+public typealias InkTwoRings = Layered<PInkR10, Layered<PTrackR8, Layered<PInkR6, Layered<PTrackR4, PInkR2>>>>
+public enum Icon1sTargetRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U16, U4>, PInkR6>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum Icon2sTargetRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U16, U4>, CyanOneRing>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum Icon3sTargetRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U16, U4>, InkTwoRings>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum Icon2pTargetRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U8, U4>, PRedLobe>.self
+        Air<U4>.self
+        Air<Plus<U8, U4>>.self
+        Air<U4>.self
+        Fixed<Plus<U8, U4>, PRedLobe>.self
+        Flexible<SpanNothing>.self
+    }
+}
+public enum Icon4pTargetRow: HFlow {
+    public typealias Given = Plus<U64, U16>
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Flexible<SpanNothing>.self
+        Fixed<Plus<U8, U4>, PInkLobe>.self
+        Air<U4>.self
+        Fixed<Plus<U16, U4>, InkTwoRings>.self
+        Air<U4>.self
+        Fixed<Plus<U8, U4>, PInkLobe>.self
+        Flexible<SpanNothing>.self
+    }
+}
 public enum Icon1sRow: HFlow {
     public typealias Given = Plus<U64, U16>
     @StructureBuilder
@@ -6568,9 +6647,19 @@ public enum Icon4pRow: HFlow {
     }
 }
 public enum ElectronDot: SpanDot {
-    public typealias CY = Halfway<Plus<U16, U8>, Never>
+    public typealias CY = Halfway<U32, Never>
     public typealias R = Tally<Plus<U4, U2>>
     public typealias Fill = Ink
+}
+public enum ElectronDotRed: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<Plus<U4, U2>>
+    public typealias Fill = HydrogenColour<Rung8, Never, Never>
+}
+public enum ElectronDotCyan: SpanDot {
+    public typealias CY = Halfway<U32, Never>
+    public typealias R = Tally<Plus<U4, U2>>
+    public typealias Fill = HydrogenColour<Never, Rung8, Never>
 }
 public enum FloorFourLabel: SpanLabel {
     public typealias Y = Under<U4, TextXS>
@@ -6637,7 +6726,7 @@ public enum FloorFourRow: HFlow {
         Air<U8>.self
         Fixed<Plus<U64, U16>, SpanNothing>.self
         Air<U16>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeAtLeast<Electron.Flash, Rung1, TargetOpenFrame>>, SpanHosted<Icon4pRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung4, EdgeSame<Electron.Seat.L, Rung1, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<Layered<ShelfFace, EdgeSame<ShellHeight<Electron.Seat>, Rung4, EdgeSame<Electron.Seat.L, Rung1, CurrentShelf>>>, SpanHosted<Icon4pRow>>, EdgeAtLeast<Electron.Flash, Rung1, SpanHosted<Icon4pTargetRow>>>, EdgeSame<ShellHeight<Electron.Seat>, Rung4, EdgeSame<Electron.Seat.L, Rung1, Layered<ElectronDot, Layered<EdgeSame<Electron.Flash, Rung1, ElectronDotRed>, EdgeSame<Electron.Flash, Rung2, ElectronDotCyan>>>>>>>.self
         Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
@@ -6649,7 +6738,7 @@ public enum FloorThreeRow: HFlow {
         Air<EdgeMargin>.self
         Fixed<U16, FloorThreeLabel>.self
         Air<U8>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeSame<Electron.Flash, Rung0, TargetOpenFrame>>, SpanHosted<Icon3sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung3, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<Layered<ShelfFace, EdgeSame<ShellHeight<Electron.Seat>, Rung3, EdgeSame<Electron.Seat.L, Rung0, CurrentShelf>>>, SpanHosted<Icon3sRow>>, EdgeSame<Electron.Flash, Rung0, SpanHosted<Icon3sTargetRow>>>, EdgeSame<ShellHeight<Electron.Seat>, Rung3, EdgeSame<Electron.Seat.L, Rung0, Layered<ElectronDot, Layered<EdgeSame<Electron.Flash, Rung1, ElectronDotRed>, EdgeSame<Electron.Flash, Rung2, ElectronDotCyan>>>>>>>.self
         Air<U16>.self
         Fixed<Plus<U64, U16>, SpanNothing>.self
         Flexible<SpanNothing>.self
@@ -6663,9 +6752,9 @@ public enum FloorTwoRow: HFlow {
         Air<EdgeMargin>.self
         Fixed<U16, FloorTwoLabel>.self
         Air<U8>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeSame<Electron.Flash, Rung0, Target486Frame>>, SpanHosted<Icon2sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<Layered<ShelfFace, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung0, CurrentShelf>>>, SpanHosted<Icon2sRow>>, EdgeSame<Electron.Flash, Rung0, SpanHosted<Icon2sTargetRow>>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung0, Layered<ElectronDot, Layered<EdgeSame<Electron.Flash, Rung1, ElectronDotRed>, EdgeSame<Electron.Flash, Rung2, ElectronDotCyan>>>>>>>.self
         Air<U16>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeSame<Electron.Flash, Rung3, Target656Frame>>, SpanHosted<Icon2pRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung1, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<Layered<ShelfFace, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung1, CurrentShelf>>>, SpanHosted<Icon2pRow>>, EdgeSame<Electron.Flash, Rung3, SpanHosted<Icon2pTargetRow>>>, EdgeSame<ShellHeight<Electron.Seat>, Rung2, EdgeSame<Electron.Seat.L, Rung1, Layered<ElectronDot, Layered<EdgeSame<Electron.Flash, Rung1, ElectronDotRed>, EdgeSame<Electron.Flash, Rung2, ElectronDotCyan>>>>>>>.self
         Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
@@ -6677,7 +6766,7 @@ public enum FloorOneRow: HFlow {
         Air<EdgeMargin>.self
         Fixed<U16, FloorOneLabel>.self
         Air<U8>.self
-        Fixed<Plus<U64, U16>, Layered<Layered<Layered<ShelfFace, EdgeSame<Electron.Flash, Rung1, TargetOpenFrame>>, SpanHosted<Icon1sRow>>, EdgeSame<ShellHeight<Electron.Seat>, Rung1, EdgeSame<Electron.Seat.L, Rung0, ElectronDot>>>>.self
+        Fixed<Plus<U64, U16>, Layered<Layered<Layered<Layered<ShelfFace, EdgeSame<ShellHeight<Electron.Seat>, Rung1, EdgeSame<Electron.Seat.L, Rung0, CurrentShelf>>>, SpanHosted<Icon1sRow>>, EdgeSame<Electron.Flash, Rung1, SpanHosted<Icon1sTargetRow>>>, EdgeSame<ShellHeight<Electron.Seat>, Rung1, EdgeSame<Electron.Seat.L, Rung0, Layered<ElectronDot, Layered<EdgeSame<Electron.Flash, Rung1, ElectronDotRed>, EdgeSame<Electron.Flash, Rung2, ElectronDotCyan>>>>>>>.self
         Air<U16>.self
         Fixed<Plus<U64, U16>, SpanNothing>.self
         Flexible<SpanNothing>.self
@@ -7215,13 +7304,13 @@ public enum AtomArt: GrownDiagram {
         Air<Plus<U8, U4>>.self
         Fixed<LineTallA, SpanHosted<ColHeadRow>>.self
         Air<U2>.self
-        Fixed<Plus<U16, U8>, SpanHosted<FloorFourRow>>.self
-        Air<U4>.self
-        Fixed<Plus<U16, U8>, SpanHosted<FloorThreeRow>>.self
-        Air<U4>.self
-        Fixed<Plus<U16, U8>, SpanHosted<FloorTwoRow>>.self
-        Air<U4>.self
-        Fixed<Plus<U16, U8>, SpanHosted<FloorOneRow>>.self
+        Fixed<U32, SpanHosted<FloorFourRow>>.self
+        Air<U8>.self
+        Fixed<U32, SpanHosted<FloorThreeRow>>.self
+        Air<U8>.self
+        Fixed<U32, SpanHosted<FloorTwoRow>>.self
+        Air<U8>.self
+        Fixed<U32, SpanHosted<FloorOneRow>>.self
         Air<U8>.self
         Fixed<LineTallA, SpanHosted<PressJumpRow>>.self
         Air<U4>.self
@@ -10036,7 +10125,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 136;
+const contentRevision = 138;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
