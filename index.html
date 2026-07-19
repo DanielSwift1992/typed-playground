@@ -322,7 +322,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 145</span>
+  <span style="float: right; color: var(--muted);">rev 147</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -341,7 +341,7 @@ window.addEventListener("error", (event) => {
 });
 </script>
 <script src="codemirror.js"></script>
-<script src="judge.js?v=11"></script>
+<script src="judge.js?v=12"></script>
 <script src="lint.js?v=4"></script>
 <script src="press.js?v=3"></script>
 <script src="renderer.js?v=11"></script>
@@ -5441,7 +5441,7 @@ public enum HookParaRow: HFlow {
 }
 public enum SetupParaWord: Close {}
 extension SetupParaWord {
-    public static var typeName: String { "The lamp is glowing hydrogen, the simplest atom there is. Sunlight through a glass prism is a rainbow. The lamp\u2019s light through the same prism is no rainbow: only a few thin stripes of colour. Those stripes are called lines. Hydrogen\u2019s light is three lines: a red one, a blue-green one, and an infrared one that eyes cannot see: the light of TV remotes." }
+    public static var typeName: String { "The lamp is glowing hydrogen, the simplest atom there is. Sunlight through a glass prism is a rainbow. The lamp\u2019s light through the same prism is no rainbow: only a few thin stripes of colour. Those stripes are called lines. Three of hydrogen\u2019s lines are written in this file: a red one, a blue-green one, and an infrared one that eyes cannot see: the light of TV remotes." }
 }
 public enum SetupParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -5639,7 +5639,7 @@ public enum FiltersParaRow: HFlow {
 }
 public enum QuarterParaWord: Close {}
 extension QuarterParaWord {
-    public static var typeName: String { "The 2 on the screen is not measured: half of a half is in the code, and the judge checks it. A simulator would get 1.9999 and round. Here the 2 is exact. None of this fits in a colour: its three numbers are three brightnesses." }
+    public static var typeName: String { "The 2 on the screen is not measured: half of a half is in the code, and the judge checks it. A typical simulator would get 1.9999 and round. Here the 2 is exact. None of this fits in a colour: its three numbers are three brightnesses." }
 }
 public enum QuarterParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -6161,7 +6161,7 @@ extension AtomTitle {
 }
 public enum AtomHookWord: Close {}
 extension AtomHookWord {
-    public static var typeName: String { "The lamp on the Light tab is hydrogen, the simplest atom there is, and its light is three stripes of colour. The reason is the ladder below. Inside the atom one electron is always on some floor, the way a foot on a ladder is always on some rung, never between. The ladder is in the code on the left, and the electron on it is one rewritable line." }
+    public static var typeName: String { "The lamp on the Light tab is hydrogen, the simplest atom there is, and three stripes of its light are written there. The reason is the ladder below. Inside the atom one electron is always on some floor, the way a foot on a ladder is always on some rung, never between. The ladder is in the code on the left, and the electron on it is one rewritable line." }
 }
 public enum AtomJumpWord: Close {}
 extension AtomJumpWord {
@@ -6229,7 +6229,7 @@ extension IRZoneWord {
 }
 public enum AtomReachWord: Close {}
 extension AtomReachWord {
-    public static var typeName: String { "The light of the tallest jumps is left of the window, in the ultraviolet: a fourth kind of flash, beyond the eye and beyond the lamp’s three stripes. The light of the short hop, fourth floor to third, is right of it, in the infrared. The lamp’s infrared line is exactly that hop." }
+    public static var typeName: String { "The light of the tallest jumps is left of the window, in the ultraviolet, at 121 nm: a fourth kind of flash, beyond the eye and beyond the lamp’s three stripes. The light of the short hop, fourth floor to third, is right of it, in the infrared. The lamp’s infrared line is exactly that hop." }
 }
 public enum AtomShapeWord: Close {}
 extension AtomShapeWord {
@@ -6241,7 +6241,7 @@ extension RoadsHead {
 }
 public enum RoadsParaWord: Close {}
 extension RoadsParaWord {
-    public static var typeName: String { "From the fourth floor to the second there are two roads: one jump, the 486 flash, or the infrared hop and then the 656 flash. The two roads are the same drop in floors, and the same in energy: the drops add up the same, whatever the path. The floor sum is a written claim, one plus one is two, and the judge checks it on every keystroke." }
+    public static var typeName: String { "From the fourth floor to the second there are two roads: one jump, the 486 flash, or the infrared hop and then the 656 flash. The two roads are the same drop in floors, and the floor sum is a written claim: one plus one is two, and the judge checks it on every keystroke. The two roads are one drop in energy as well, and the sizes are written: the depth of a floor is 144 divided by its number squared, the two small drops are 7 and 20, the one jump is 27. The judge folds every sum to the numbers themselves: 7 plus 20 is 27, judged as arithmetic." }
 }
 public enum RoadOneWord: Close {}
 extension RoadOneWord {
@@ -6257,7 +6257,7 @@ extension FloorsOneWord {
 }
 public enum RoadsBreakWord: Close {}
 extension RoadsBreakWord {
-    public static var typeName: String { "Break it: set Drop in BetaJump to Rung3. The judge refuses the road sum." }
+    public static var typeName: String { "Break it: change the 20 of BalmerAlphaDrop to 21: two sums refuse by number." }
 }
 public enum AtomTrapWord: Close {}
 extension AtomTrapWord {
@@ -6273,11 +6273,11 @@ extension LawHead {
 }
 public enum LawParaWord: Close {}
 extension LawParaWord {
-    public static var typeName: String { "The selection rule is not built into the page: it is the where line on Lowers and Raises in the code. Change Succ<T.L> to T.L there, and the rule is different: no change of shape at all. The judge then refuses three of the four certificates, each by name, on the next keystroke. Rewriting a law of nature and checking every consequence is a research programme. Here it is one edit: no consequence is re-derived, the judge looks each one up." }
+    public static var typeName: String { "The selection rule is not built into the page: it is the where line on Lowers and Raises in the code. Change Succ<T.L> to T.L there, and the rule is different: no change of shape at all. The judge then refuses three of the four certificates, each by name, on the next keystroke. Rewriting a law of nature and checking every consequence is a research programme. Here it is one edit: no consequence is re-derived: the judge looks up each written one." }
 }
 public enum AtomFinalWord: Close {}
 extension AtomFinalWord {
-    public static var typeName: String { "In a real lamp billions of electrons are on every floor at once, and every allowed jump is a flash: all three lines, together, at once. That is the lamp of the Light tab, and neon\u2019s ladder is different, so its lines are at 585 and 640. The gas keys of the picker are a choice of ladder. The ladder, the shapes, and one rule are a page of code. The alphabet of light is written by matter." }
+    public static var typeName: String { "In a real lamp billions of electrons are on every floor at once, and every allowed jump is a flash: all of hydrogen\u2019s lines, together, at once. The lamp of the Light tab is three of them, and neon\u2019s ladder is different, so its lines are at 585 and 640. The gas keys of the picker are a choice of ladder. The ladder, the shapes, and one rule are a page of code. The alphabet of light is written by matter." }
 }
 public enum AtomAlt: Close {}
 extension AtomAlt {
@@ -6383,6 +6383,52 @@ public enum SameDrop: Close {}
 public enum RoadPair<X, Y>: Close {}
 extension RoadPair: SameDrop where X == Y {}
 public typealias TwoRoadsFact = RoadPair<Plus<PaschenJump.Drop, BalmerJump.Drop>, BetaJump.Drop>
+
+// \u2500\u2500 the Rydberg lattice: the law is four numbers, the rest is judged \u2500\u2500
+// The depth of a floor is 144 divided by its number squared: 144, 36, 16, 9.
+// Every jump is an integer drop between two depths: 7, 20, 27, 108. Each sum
+// below is judged with the counting canon: any spelling of a number folds to
+// the number itself, so a lie in one number is an addressed refusal. The
+// numerals are spelled once, over Unit and Twice.
+public typealias U1 = Unit
+public typealias U2 = Twice<U1>
+public typealias U4 = Twice<U2>
+public typealias U8 = Twice<U4>
+public typealias U16 = Twice<U8>
+public typealias U32 = Twice<U16>
+public typealias U64 = Twice<U32>
+public typealias U128 = Twice<U64>
+
+// the recording: one depth per floor
+public typealias FloorOneDepth = Plus<U128, U16>
+public typealias FloorTwoDepth = Plus<U32, U4>
+public typealias FloorThreeDepth = U16
+public typealias FloorFourDepth = Plus<U8, U1>
+
+// the consequences: each jump's energy, held to the depths below it
+public typealias PaschenAlphaDrop = Plus<U4, Plus<U2, U1>>
+public typealias BalmerAlphaDrop = Plus<U16, U4>
+public typealias BalmerBetaDrop = Plus<U16, Plus<U8, Plus<U2, U1>>>
+public typealias LymanAlphaDrop = Plus<U64, Plus<U32, Plus<U8, U4>>>
+
+// a whole that must be the sum of its two parts, judged as arithmetic
+public enum EnergyClosed: Close {}
+public enum EnergySum<Whole, Left, Right>: Close {}
+extension EnergySum: EnergyClosed where Whole == Plus<Left, Right> {}
+
+// the stitches: every drop against its two floors, and the two roads one drop
+public typealias ThirdFloorStitch = EnergySum<FloorThreeDepth, FloorFourDepth, PaschenAlphaDrop>
+public typealias SecondFloorStitch = EnergySum<FloorTwoDepth, FloorThreeDepth, BalmerAlphaDrop>
+public typealias GroundFloorStitch = EnergySum<FloorOneDepth, FloorTwoDepth, LymanAlphaDrop>
+public typealias TwoRoadsOneDrop = EnergySum<BalmerBetaDrop, PaschenAlphaDrop, BalmerAlphaDrop>
+
+// the compile tier: the ladder spelling and the recorded depth name one
+// number, and the nominal compiler proves this witness itself
+public typealias FloorThreeByLadder = Plus<FloorFourDepth, PaschenAlphaDrop>
+public enum LadderStitched: Close {}
+public enum LadderStep<A, B>: Close {}
+extension LadderStep: LadderStitched where A == B {}
+public typealias ThirdFloorByLadder = LadderStep<FloorThreeByLadder, Plus<FloorFourDepth, PaschenAlphaDrop>>
 public enum RechargeFromTrap: SlotRule {
     public typealias Slot = ElectronSlot
     public typealias From = Trapped
@@ -10107,7 +10153,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 145;
+const contentRevision = 147;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);

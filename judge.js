@@ -689,6 +689,73 @@ function normalizeTerm(term, declarations, topAliases, depth) {
     return args.length > 0 ? head + "<" + args.join(", ") + ">" : head;
 }
 
+// ── the counting canon: two spellings of one number are one term ──
+// A mirror of the reference judge's arithmetic pass (WhereJudge.swift): after
+// the structural canon, a Plus tree is flattened to its leaves, the counted
+// leaves fold into one numeral (Unit is one, Never is nothing), a Times of two
+// numerals is their product, and the symbolic leaves are sorted, so 7 + 20 and
+// 27 settle to the same term. The pass knows two counts, one and nothing: a
+// world that wants judged arithmetic spells its own numerals as file aliases
+// over Unit and Twice, and the structural canon unfolds them like any alias.
+
+function parseCanonTree(text) {
+    text = text.trim();
+    const angle = text.indexOf("<");
+    if (angle < 0) return { head: text, args: [] };
+    const head = text.slice(0, angle).trim();
+    const inner = text.slice(angle + 1, text.lastIndexOf(">"));
+    return { head, args: splitTopLevel(inner).map(parseCanonTree) };
+}
+
+function serializeCanonTree(node) {
+    if (node.args.length === 0) return node.head;
+    return node.head + "<" + node.args.map(serializeCanonTree).join(", ") + ">";
+}
+
+function countedLeaf(node) {
+    if (node.args.length > 0) return null;
+    if (node.head === "Unit") return 1;
+    if (node.head === "Never") return 0;
+    if (node.head.startsWith("#")) return parseInt(node.head.slice(1), 10);
+    return null;
+}
+
+function arithmeticFold(node) {
+    const folded = { head: node.head, args: node.args.map(arithmeticFold) };
+    const whole = countedLeaf(folded);
+    if (whole !== null) return { head: "#" + whole, args: [] };
+    if (folded.head === "Times" && folded.args.length === 2) {
+        const left = countedLeaf(folded.args[0]);
+        const right = countedLeaf(folded.args[1]);
+        if (left !== null && right !== null) return { head: "#" + (left * right), args: [] };
+    }
+    if (folded.head !== "Plus" || folded.args.length !== 2) return folded;
+    const leaves = [];
+    let count = 0;
+    const pile = [...folded.args];
+    while (pile.length > 0) {
+        const piece = pile.pop();
+        if (piece.head === "Plus" && piece.args.length === 2) {
+            pile.push(...piece.args);
+            continue;
+        }
+        const n = countedLeaf(piece);
+        if (n !== null) count += n; else leaves.push(piece);
+    }
+    leaves.sort((a, b) => serializeCanonTree(a) < serializeCanonTree(b) ? -1 : 1);
+    if (leaves.length === 0) return { head: "#" + count, args: [] };
+    if (count > 0) leaves.push({ head: "#" + count, args: [] });
+    let result = leaves.pop();
+    while (leaves.length > 0) {
+        result = { head: "Plus", args: [leaves.pop(), result] };
+    }
+    return result;
+}
+
+function arithmeticCanon(text) {
+    return serializeCanonTree(arithmeticFold(parseCanonTree(text)));
+}
+
 // every gated head found in a term is checked where it stands: substitution
 // of the use's arguments into the stated equivalences, then one comparison
 function checkWhereGates(file, declarations, topAliases, refusals) {
@@ -718,12 +785,18 @@ function checkWhereGates(file, declarations, topAliases, refusals) {
                     left = substituteWord(left, parameter, args[index]);
                     right = substituteWord(right, parameter, args[index]);
                 });
-                const leftNormal = normalizeTerm(left, declarations, topAliases, 0);
-                const rightNormal = normalizeTerm(right, declarations, topAliases, 0);
-                if (leftNormal !== rightNormal) {
+                const leftCanon = arithmeticCanon(
+                    normalizeTerm(left, declarations, topAliases, 0));
+                const rightCanon = arithmeticCanon(
+                    normalizeTerm(right, declarations, topAliases, 0));
+                if (leftCanon !== rightCanon) {
+                    const spell = (written, canon) => canon === written
+                        ? "`" + written + "`"
+                        : "`" + written + "` (aka `" + canon + "`)";
                     refusals.push({ file, line,
-                        premise: "`" + term + "` requires the types `" + leftNormal
-                            + "` and `" + rightNormal + "` be equivalent" });
+                        premise: "`" + term + "` requires the types "
+                            + spell(left, leftCanon) + " and "
+                            + spell(right, rightCanon) + " be equivalent" });
                 }
             }
         }

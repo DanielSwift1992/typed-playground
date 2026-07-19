@@ -10,9 +10,9 @@ broken claim in any domain is a line number. All of it is checkable right here:
 a static page, seven files, no server, no build.
 
 Swift types on the left, the page drawn from them on the right: every tab is
-one Swift file in a stated subset of the language, the judge names a broken
-claim by its line as you type, and a renderer draws every declared canvas from
-the same dictionary. The one vendored library is CodeMirror 5 (MIT), the editor
+one Swift file in a stated subset of the language, `swift build` compiles it,
+the judge names a broken claim by its line as you type, and a renderer draws
+every declared canvas from the same dictionary. The one vendored library is CodeMirror 5 (MIT), the editor
 pane. Everything else is hand-written: `judge.js` is a line-for-line port of
 the Swift judge from the theory's repository, `renderer.js` is a mirror of its
 span engine, `press.js` of its rule applier, and `lint.js` of rule 0 of its
@@ -52,7 +52,9 @@ crossed polarizers, and two-slit fringes as type equivalences.
 The atom tab is the reason behind the lamp: one electron on a ladder of floors,
 written as one rewritable line. Every key is a written jump, each allowed jump
 is a flash of its own line in a window under the ladder, and the selection rule is a
-judged `where` requirement on every certificate. The jump from 2s to the ground
+judged `where` requirement on every certificate. The energy is recorded as one
+number per floor, 144 over the floor squared, and every jump is judged against
+the depths as arithmetic: 7 plus 20 is 27 across the two roads down. The jump from 2s to the ground
 floor cannot change the lobes by one pair, so it has no key and no certificate:
 the electron there is stuck, the way the real one is stuck for a
 tenth of a second.
@@ -72,11 +74,12 @@ the drawings.
 ## The checks
 
 The badge in the corner re-runs four recorded verdicts against the ported judge
-on every load. In CI, `node check.js` replays twenty-one checks: the four
+on every load. In CI, `node check.js` replays twenty-two checks: the four
 verdicts, every world of the page judged, lawed, and drawn clean, the renderer's
 byte golden against `swift run DynamicsDemo draw`, refusal vectors for the
-conditional `where` grammar, and the theory's forty-line golden plate, which the
-port must read value for value. `node check-kit.js` checks all seventy-one ported
+conditional `where` grammar and the counting canon on the atom's Rydberg
+lattice, and the theory's forty-line golden plate, which the port must read
+value for value. `node check-kit.js` checks all seventy-one ported
 kit names against the theory's sources at a pinned commit, fifty-seven of them
 sealed by goldens.
 

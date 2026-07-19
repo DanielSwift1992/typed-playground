@@ -333,6 +333,34 @@ if (trapLie === atomSource) {
     }
 }
 
+// ── the counting canon: the Rydberg lattice holds, and a lie in one number
+// refuses twice, each refusal naming both numbers (the reference judge's
+// arithmetic pass, 8172b07, mirrored) ──
+total += 1;
+const latticeSource = literal("atomFile", "`", "\n`;");
+const energyLie = latticeSource.replace("public typealias BalmerAlphaDrop = Plus<U16, U4>",
+    "public typealias BalmerAlphaDrop = Plus<U16, Plus<U4, U1>>");
+if (energyLie === latticeSource) {
+    failures.push("lattice: the BalmerAlphaDrop anchor is not in atomFile");
+} else {
+    const latticeClean = judge("Atom.swift", latticeSource, pageKit).refusals.filter(
+        (refusal) => refusal.premise.includes("EnergySum"));
+    const lieRefusals = judge("Atom.swift", energyLie, pageKit).refusals.filter(
+        (refusal) => refusal.premise.includes("be equivalent")
+            && refusal.premise.includes("aka"));
+    const stitchNamed = lieRefusals.some((refusal) =>
+        refusal.premise.includes("`#36`") && refusal.premise.includes("`#37`"));
+    const roadsNamed = lieRefusals.some((refusal) =>
+        refusal.premise.includes("`#27`") && refusal.premise.includes("`#28`"));
+    if (latticeClean.length === 0 && lieRefusals.length === 2 && stitchNamed && roadsNamed) {
+        passed += 1;
+    } else {
+        failures.push("lattice: want 0 clean, 2 lie refusals naming #36/#37 and #27/#28, got "
+            + latticeClean.length + " / " + lieRefusals.length + " / "
+            + stitchNamed + " / " + roadsNamed);
+    }
+}
+
 console.log("self-test: " + passed + "/" + total
     + " vs the reference judge, the draw, and every world");
 for (const line of failures) console.error("  " + line);
