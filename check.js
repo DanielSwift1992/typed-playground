@@ -118,6 +118,7 @@ const pageKit = {
     bareSeeds: new Set(kitVocabulary.bareSeeds),
 };
 const { lint } = require("./lint.js");
+const { pageGuards } = require("./guards.js");
 const worlds = [
     ["introFile", "ReadMe.swift"],
     ["organizationFile", "Organization.swift"],
@@ -136,12 +137,11 @@ for (const [literalName, file] of worlds) {
     const worldLaw = lint(file, worldSource);
     const worldArt = renderAll(worldJudged.parsed.declarations, worldJudged.parsed.order,
         worldJudged.parsed.literals, worldJudged.parsed.topAliases);
-    // a dangling name in any declaration slot is a dead limb the renderer
-    // never reaches but a reader still sees: the vector refuses it by name
-    const known = new Set([...pageKit.seeds, ...pageKit.generics,
-        ...worldJudged.parsed.declarations.keys(),
-        ...worldJudged.parsed.topAliases.keys(),
-        ...worldJudged.parsed.literals.keys(),
+    // the names that come from outside the world: the kit's own and the engine's.
+    // The page calls this set fixedNames, and the guards read it the same way —
+    // a world's own declarations are looked up in the parse, never here, so an
+    // orphan extension cannot find itself in its own typeName literal.
+    const outside = new Set([...pageKit.seeds, ...pageKit.generics,
         "Close", "Open", "Never", "Given", "Structure", "Divides", "DividesY",
         "HFlow", "GrownDiagram", "SpanLabel", "SpanLabelMid", "SpanLabelEnd",
         "SpanLabelMidWrapped", "SpanLabelWrapped", "SpanTrack",
@@ -151,6 +151,12 @@ for (const [literalName, file] of worlds) {
         "Manager", "Finance", "Engineering", "Sales", "People", "OnSite",
         "Hybrid", "Remote", "FinanceShare", "EngineeringShare", "SalesShare",
         "PeopleShare"]);
+    // a dangling name in any declaration slot is a dead limb the renderer
+    // never reaches but a reader still sees: the vector refuses it by name
+    const known = new Set([...outside,
+        ...worldJudged.parsed.declarations.keys(),
+        ...worldJudged.parsed.topAliases.keys(),
+        ...worldJudged.parsed.literals.keys()]);
     const dangling = [];
     for (const declaration of worldJudged.parsed.declarations.values()) {
         for (const parameter of declaration.params || []) known.add(parameter);
@@ -165,17 +171,57 @@ for (const [literalName, file] of worlds) {
             }
         }
     }
+    // the page's own four guards, over the same world: an import the package
+    // never names, a body without its builder, an orphan extension, a top alias
+    // naming nothing. They drew cards in the browser and nothing else saw them
+    // until a refactor left one standing for six commits.
+    const guarded = pageGuards(worldJudged.parsed, worldSource.split("\n"), outside);
     if (worldJudged.refusals.length === 0 && worldLaw.length === 0
         && worldArt.errors.length === 0 && worldArt.canvases.length > 0
-        && dangling.length === 0) {
+        && dangling.length === 0 && guarded.length === 0) {
         passed += 1;
     } else {
         failures.push(file + ": refusals " + worldJudged.refusals.length
             + " (" + (worldJudged.refusals[0]?.premise || "").slice(0, 50)
             + "), law " + worldLaw.length + ", renderer "
             + worldArt.errors.slice(0, 2).join(" | ")
-            + (dangling.length ? ", dangling " + dangling.slice(0, 3).join("; ") : ""));
+            + (dangling.length ? ", dangling " + dangling.slice(0, 3).join("; ") : "")
+            + (guarded.length ? ", the page " + guarded.slice(0, 3)
+                .map((o) => o.line + ": " + o.premise).join("; ") : ""));
     }
+}
+
+// ── the guards must still object: a guard that objects to nothing is a green
+// vector for a broken page. Four lies, one per guard, planted in a clean world,
+// and each must be named on its own line. The orphan extension is the pointed
+// one: the port registers an extension's own typeName under the name in
+// question, so a guard reading the literals would let the orphan find itself.
+total += 1;
+{
+    const clean = literal("basicsFile", "`", "\n`;");
+    const outside = new Set([...pageKit.seeds, ...pageKit.generics,
+        "Close", "Open", "Never", "Given", "Structure", "Divides", "DividesY", "HFlow"]);
+    const lies = [
+        ["an illegal import", "import Foundation\n" + clean, "the imports are fixed"],
+        ["an orphan extension", clean
+            + "\nextension NoSuchOwner {\n    public static var typeName: String { \"x\" }\n}\n",
+            "an extension names `NoSuchOwner`"],
+        ["a top alias naming nothing", clean + "\npublic typealias Probe = NoSuchName\n",
+            "`Probe` names `NoSuchName`"],
+        ["a body without its builder", clean
+            + "\npublic enum ProbeRow: HFlow {\n    public typealias Given = U512\n"
+            + "    public static var body: some Structure & Divides {\n        Air<U2>.self\n    }\n}\n",
+            "states no @StructureBuilder"],
+    ];
+    const missed = [];
+    for (const [name, source, wanted] of lies) {
+        const parsed = judge("Basics.swift", source, pageKit).parsed;
+        const said = pageGuards(parsed, source.split("\n"), outside)
+            .filter((objection) => objection.premise.includes(wanted));
+        if (said.length !== 1) missed.push(name + " → " + said.length + " objections");
+    }
+    if (missed.length === 0) passed += 1;
+    else failures.push("the guards: " + missed.join(", "));
 }
 
 // ── the where-grammar's own refusal: a broken halving must name both sides.

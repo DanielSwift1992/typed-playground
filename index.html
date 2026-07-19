@@ -344,6 +344,7 @@ window.addEventListener("error", (event) => {
 <script src="judge.js?v=15"></script>
 <script src="lint.js?v=4"></script>
 <script src="press.js?v=5"></script>
+<script src="guards.js?v=1"></script>
 <script src="renderer.js?v=12"></script>
 <script>
 "use strict";
@@ -368,12 +369,12 @@ const storage = (() => {
 
 if (typeof judge === "undefined" || typeof renderAll === "undefined"
     || typeof lint === "undefined" || typeof press === "undefined"
-    || typeof CodeMirror === "undefined") {
+    || typeof pageGuards === "undefined" || typeof CodeMirror === "undefined") {
     window.scriptsMissing = true;
     const banner = document.getElementById("crash");
     banner.style.display = "block";
-    banner.textContent = "a script did not load: the page needs its seven files"
-        + " (index.html, judge.js, lint.js, renderer.js, press.js,"
+    banner.textContent = "a script did not load: the page needs its eight files"
+        + " (index.html, judge.js, lint.js, renderer.js, press.js, guards.js,"
         + " codemirror.js, codemirror.css) in one folder. On the live site"
         + " this is a fresh deploy mid-flight: a hard reload mends it.";
     // nothing below can run without the engines: stop here so no stray error
@@ -10541,61 +10542,11 @@ function render() {
             shownLine: refineRefusalLine(refusal.premise, refusal.line, allLines),
             premise: refusal.premise });
     }
-    // the three modules a downloaded world may name: the theory, the drawing kit,
-    // and the domain the company tabs are written against. Each world is a target
-    // of the package beside this page, so what the guard admits is what
-    // `swift build` reads.
-    const fixedImports = ["import VerificationIsIdentification", "import DocumentKit",
-        "import Organization"];
-    allLines.forEach((line, index) => {
-        const trimmed = line.trim();
-        if (trimmed.startsWith("import ") && !fixedImports.includes(trimmed)) {
-            findings.push({ source: "the page", kind: "judge", counts: true,
-                shownLine: index + 1,
-                premise: "the imports are fixed: only VerificationIsIdentification, DocumentKit,"
-                    + " and Organization are legal here" });
-        }
-        if (/^(public\s+)?static var body: some Structure/.test(trimmed)) {
-            const above = index > 0 ? allLines[index - 1].trim() : "";
-            if (above !== "@StructureBuilder") {
-                findings.push({ source: "the page", kind: "judge", counts: true,
-                    shownLine: index + 1,
-                    premise: "a body states no @StructureBuilder on the line above: the builder attribute is required" });
-            }
-        }
-        // an extension stands on a declared name: the judge port reads the extension
-        // either way, but Swift would refuse the orphan, so the page says it first
-        const extended = trimmed.match(/^(?:public\s+)?extension\s+([A-Za-z_]\w*)/);
-        if (extended && !verdict.parsed.declarations.has(extended[1])
-            && !verdict.parsed.topAliases.has(extended[1])
-            && !fixedNames.has(extended[1])) {
-            findings.push({ source: "the page", kind: "judge", counts: true,
-                shownLine: index + 1,
-                premise: "an extension names `" + extended[1]
-                    + "`, and this file declares no `" + extended[1] + "`" });
-        }
-    });
-    // a dangling name inside a top alias is silent to the judge port (the port
-    // reads the alias whole) and unreachable to the renderer when nothing draws
-    // it, so the page looks every word up the way the CI vector does
-    for (const [aliasName, alias] of verdict.parsed.topAliases) {
-        for (const piece of alias.target.split(/[<>,\s]+/)) {
-            const word = piece.split(".")[0];
-            if (word === "" || !/^[A-Z]/.test(word)) continue;
-            const known = verdict.parsed.declarations.has(word)
-                || verdict.parsed.topAliases.has(word)
-                || verdict.parsed.literals.has(word)
-                || kitVocabulary.seeds.has(word)
-                || kitVocabulary.generics.has(word)
-                || fixedNames.has(word)
-                || (alias.params || []).includes(word);
-            if (!known) {
-                findings.push({ source: "the page", kind: "judge", counts: true,
-                    shownLine: alias.line,
-                    premise: "`" + aliasName + "` names `" + word
-                        + "`, and nothing declares it" });
-            }
-        }
+    // the guards live in guards.js, where check.js reads the same four over every
+    // world: what fires here as a card is a red vector there
+    for (const objection of pageGuards(verdict.parsed, allLines, fixedNames)) {
+        findings.push({ source: "the page", kind: "judge", counts: true,
+            shownLine: objection.line, premise: objection.premise });
     }
     for (const error of drawn.errors) {
         findings.push({ source: "the renderer", kind: "judge", counts: true,
