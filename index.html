@@ -322,7 +322,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 150</span>
+  <span style="float: right; color: var(--muted);">rev 151</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -6159,9 +6159,13 @@ public enum AtomTitle: Close {}
 extension AtomTitle {
     public static var typeName: String { "The atom" }
 }
+public enum AtomThesisWord: Close {}
+extension AtomThesisWord {
+    public static var typeName: String { "An atom is the sort of thing you simulate: you run it and watch. Here it is a ladder of floors and one rule for the jumps instead, and the judge checks it by reading, the same as every tab. Change the rule, and the judge re-checks every consequence by line, as you type." }
+}
 public enum AtomHookWord: Close {}
 extension AtomHookWord {
-    public static var typeName: String { "The lamp on the Light tab is hydrogen, the simplest atom there is, and three stripes of its light are written there. The reason is the ladder below. Inside the atom one electron is always on some floor, the way a foot on a ladder is always on some rung, never between. The ladder is in the code on the left, and the electron on it is one rewritable line." }
+    public static var typeName: String { "The lamp on the Light tab is hydrogen, the simplest atom there is. Inside the atom one electron is always on some floor, the way a foot on a ladder is always on some rung, never between. The ladder is in the code on the left, and the electron on it is one rewritable line." }
 }
 public enum AtomJumpWord: Close {}
 extension AtomJumpWord {
@@ -7039,6 +7043,24 @@ public enum ZoneCapsRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
+public enum AtomThesisText: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
+    public typealias FillColor = TextPrimary
+    public typealias Size = TextS
+    public typealias Weight = WeightRegular
+    public typealias Content = AtomThesisWord
+}
+public enum AtomThesisRow: HFlow {
+    public typealias Given = U512
+    @StructureBuilder
+    public static var body: some Structure & Divides {
+        Air<EdgeMargin>.self
+        Fixed<AtomParaWide, AtomThesisText>.self
+        Flexible<SpanNothing>.self
+        Air<EdgeMargin>.self
+    }
+}
 public enum AtomHookText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
     public typealias LinePitch = Tally<Plus<U16, U4>>
@@ -7394,6 +7416,8 @@ public enum AtomArt: GrownDiagram {
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
         Fixed<Plus<U32, U8>, SpanHosted<AtomTitleRow>>.self
+        Fixed<Plus<Times<LineTally<AtomThesisWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomThesisRow>>.self
+        Air<U8>.self
         Fixed<Plus<Times<LineTally<AtomHookWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomHookRow>>.self
         Air<U8>.self
         Fixed<Plus<Times<LineTally<AtomJumpWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<AtomJumpRow>>.self
@@ -9712,7 +9736,7 @@ const tabs = [
     { id: "light", group: "physics", title: "Light", file: "Light.swift", text: lightFile,
       caption: "the lamp is code: edit a number and every colour is recomputed" },
     { id: "atom", group: "physics", title: "The atom", file: "Atom.swift", text: atomFile,
-      caption: "the ladder is code: every allowed jump pours its own line" },
+      caption: "the atom is a few lines, not a simulation: change a law and the judge re-checks every line" },
     { id: "rules", group: "reference", title: "Rules", file: "Rules.swift", text: rulesFile,
       caption: "how to write here: the two moves, the five forms, the law" },
     { id: "faq", group: "reference", title: "FAQ", file: "FAQ.swift", text: faqFile,
@@ -10225,7 +10249,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 150;
+const contentRevision = 151;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
