@@ -686,6 +686,18 @@ function normalizeTerm(term, declarations, topAliases, depth) {
     if (kitRungs.has(head) && args.length === 0) {
         return normalizeTerm(kitRungs.get(head), declarations, topAliases, depth + 1);
     }
+    // the lattice's numerals unfold to their one written definition
+    // (Primitive.swift, the doubling ladder), so a judge counts them without
+    // knowing any number but one and nothing
+    const kitNumerals = new Map([
+        ["U1", "Unit"], ["U2", "Twice<U1>"], ["U4", "Twice<U2>"],
+        ["U8", "Twice<U4>"], ["U16", "Twice<U8>"], ["U32", "Twice<U16>"],
+        ["U64", "Twice<U32>"], ["U128", "Twice<U64>"], ["U256", "Twice<U128>"],
+        ["U512", "Twice<U256>"],
+    ]);
+    if (kitNumerals.has(head) && args.length === 0) {
+        return normalizeTerm(kitNumerals.get(head), declarations, topAliases, depth + 1);
+    }
     return args.length > 0 ? head + "<" + args.join(", ") + ">" : head;
 }
 
@@ -766,14 +778,14 @@ function checkWhereGates(file, declarations, topAliases, refusals) {
     }
     if (gated.size === 0) return 0;
 
-    function walkTerm(term, line) {
+    function walkTerm(term, line, certificate) {
         term = term.trim();
         const angle = term.indexOf("<");
         const head = angle >= 0 ? term.slice(0, angle).trim() : term;
         const args = angle >= 0
             ? splitTopLevel(term.slice(angle + 1, term.lastIndexOf(">")))
             : [];
-        for (const argument of args) walkTerm(argument, line);
+        for (const argument of args) walkTerm(argument, line, certificate);
         const owner = gated.get(head);
         if (!owner || args.length !== (owner.params || []).length) return;
         for (const gate of owner.whereGates) {
@@ -794,7 +806,7 @@ function checkWhereGates(file, declarations, topAliases, refusals) {
                         ? "`" + written + "`"
                         : "`" + written + "` (aka `" + canon + "`)";
                     refusals.push({ file, line,
-                        premise: "`" + term + "` requires the types "
+                        premise: "`" + (certificate || term) + "` requires the types "
                             + spell(left, leftCanon) + " and "
                             + spell(right, rightCanon) + " be equivalent" });
                 }
@@ -804,7 +816,7 @@ function checkWhereGates(file, declarations, topAliases, refusals) {
 
     for (const [key, alias] of topAliases || []) {
         if ((alias.params || []).length > 0) continue;
-        walkTerm(alias.target, alias.line);
+        walkTerm(alias.target, alias.line, key + " = " + alias.target);
     }
     for (const declaration of declarations.values()) {
         for (const [key, alias] of declaration.aliases) {

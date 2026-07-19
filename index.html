@@ -322,7 +322,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 147</span>
+  <span style="float: right; color: var(--muted);">rev 148</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -341,7 +341,7 @@ window.addEventListener("error", (event) => {
 });
 </script>
 <script src="codemirror.js"></script>
-<script src="judge.js?v=12"></script>
+<script src="judge.js?v=13"></script>
 <script src="lint.js?v=4"></script>
 <script src="press.js?v=3"></script>
 <script src="renderer.js?v=11"></script>
@@ -6389,15 +6389,9 @@ public typealias TwoRoadsFact = RoadPair<Plus<PaschenJump.Drop, BalmerJump.Drop>
 // Every jump is an integer drop between two depths: 7, 20, 27, 108. Each sum
 // below is judged with the counting canon: any spelling of a number folds to
 // the number itself, so a lie in one number is an addressed refusal. The
-// numerals are spelled once, over Unit and Twice.
-public typealias U1 = Unit
-public typealias U2 = Twice<U1>
-public typealias U4 = Twice<U2>
-public typealias U8 = Twice<U4>
-public typealias U16 = Twice<U8>
-public typealias U32 = Twice<U16>
-public typealias U64 = Twice<U32>
-public typealias U128 = Twice<U64>
+// numerals are the lattice's own, spelled once at their one home
+// (Primitive.swift, the doubling ladder), and the judge unfolds them
+// from that source.
 
 // the recording: one depth per floor
 public typealias FloorOneDepth = Plus<U128, U16>
@@ -10153,7 +10147,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 147;
+const contentRevision = 148;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
