@@ -322,7 +322,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 153</span>
+  <span style="float: right; color: var(--muted);">rev 154</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -418,6 +418,9 @@ import DocumentKit
 // film. Change any count below: the page redraws it on the keystroke.
 
 // ── the display strings ──
+
+public typealias BasicsParaWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
+
 
 public enum BasicsTitle: Close {}
 extension BasicsTitle {
@@ -529,15 +532,17 @@ public enum TitleLabel: SpanLabel {
     public typealias Weight = WeightBold
     public typealias Content = BasicsTitle
 }
-public enum BasicsPurposeLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum BasicsPurposeLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = BasicsPurpose
 }
-public enum StepOneLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum StepOneLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -550,8 +555,9 @@ public enum GreetingLabel: SpanLabelMid {
     public typealias Weight = WeightBold
     public typealias Content = Greeting
 }
-public enum StepTwoLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum StepTwoLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -578,22 +584,25 @@ public enum ProofsLabel: SpanLabelMid {
     public typealias Weight = WeightRegular
     public typealias Content = ProofsWord
 }
-public enum StepThreeLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum StepThreeLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = StepThreeWord
 }
-public enum StepFourLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum StepFourLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = StepFourWord
 }
-public enum StepFourNoteLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum StepFourNoteLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -620,8 +629,9 @@ public enum ProvedLabel: SpanLabelMid {
     public typealias Weight = WeightBold
     public typealias Content = ProvedWord
 }
-public enum FinalLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum FinalLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
@@ -644,7 +654,8 @@ public enum BasicsPurposeRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<BasicsPurposeLabel>.self
+        Fixed<BasicsParaWide, BasicsPurposeLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -653,7 +664,8 @@ public enum StepOneRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<StepOneLabel>.self
+        Fixed<BasicsParaWide, StepOneLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -671,7 +683,8 @@ public enum StepTwoRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<StepTwoLabel>.self
+        Fixed<BasicsParaWide, StepTwoLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -693,7 +706,8 @@ public enum StepThreeRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<StepThreeLabel>.self
+        Fixed<BasicsParaWide, StepThreeLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -713,7 +727,8 @@ public enum StepFourRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<StepFourLabel>.self
+        Fixed<BasicsParaWide, StepFourLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -722,7 +737,8 @@ public enum StepFourNoteRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<StepFourNoteLabel>.self
+        Fixed<BasicsParaWide, StepFourNoteLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -777,7 +793,8 @@ public enum FinalRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<FinalLabel>.self
+        Fixed<BasicsParaWide, FinalLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -789,26 +806,26 @@ public enum BasicsArt: GrownDiagram {
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
         Fixed<TitleTall, SpanHosted<TitleRow>>.self
-        Fixed<LineTall, SpanHosted<BasicsPurposeRow>>.self
+        Fixed<Times<LineTally<BasicsPurpose, BasicsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<BasicsPurposeRow>>.self
         Air<U8>.self
-        Fixed<LineTall, SpanHosted<StepOneRow>>.self
+        Fixed<Times<LineTally<StepOneWord, BasicsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<StepOneRow>>.self
         Air<U8>.self
         Fixed<BannerTall, SpanHosted<BannerRow>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<LineTall, SpanHosted<StepTwoRow>>.self
+        Fixed<Times<LineTally<StepTwoWord, BasicsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<StepTwoRow>>.self
         Air<U8>.self
         Fixed<CardTall, SpanHosted<CardsRow>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<LineTall, SpanHosted<StepThreeRow>>.self
+        Fixed<Times<LineTally<StepThreeWord, BasicsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<StepThreeRow>>.self
         Air<Plus<U8, U4>>.self
         Fixed<DotsTall, SpanHosted<DotsRow>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<LineTall, SpanHosted<StepFourRow>>.self
-        Fixed<LineTall, SpanHosted<StepFourNoteRow>>.self
+        Fixed<Times<LineTally<StepFourWord, BasicsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<StepFourRow>>.self
+        Fixed<Times<LineTally<StepFourNote, BasicsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<StepFourNoteRow>>.self
         Air<U8>.self
         Fixed<StageTall, SpanHosted<FilmContent>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<LineTall, SpanHosted<FinalRow>>.self
+        Fixed<Times<LineTally<FinalWord, BasicsParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<FinalRow>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -933,12 +950,15 @@ public enum AllAccesses: AccessLedger {
 const organizationFile = `import VerificationIsIdentification
 import DocumentKit
 
+
 // The organization as one page. The company declared at the bottom is the data, the
 // bands above it are the view, and every number on a card is a Tally: a count read
 // off the company itself. Add a person to Company: the page redraws the card.
 // The bands appear on a timed schedule, and the last chip links to the real site.
 
 // ── the display strings: every text on the page is a type carrying typeName ──
+
+public typealias OrganizationParaWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
 
 public enum OrganizationTitle: Close {}
 extension OrganizationTitle {
@@ -1023,8 +1043,9 @@ public enum TitleFace: SpanLabel {
     public typealias Weight = WeightBold
     public typealias Content = OrganizationTitle
 }
-public enum OrgWhyOneLabel: SpanLabel {
-    public typealias Y = Under<U4, TextL>
+public enum OrgWhyOneLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextPrimary
     public typealias Size = TextL
     public typealias Weight = WeightRegular
@@ -1035,12 +1056,14 @@ public enum OrgWhyOneRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<Plus<U32, U16>>.self
-        Flexible<OrgWhyOneLabel>.self
+        Fixed<OrganizationParaWide, OrgWhyOneLabel>.self
+        Flexible<SpanNothing>.self
         Air<Plus<U32, U16>>.self
     }
 }
-public enum OrgWhyTwoLabel: SpanLabel {
-    public typealias Y = Under<U4, TextL>
+public enum OrgWhyTwoLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextL
     public typealias Weight = WeightRegular
@@ -1051,12 +1074,14 @@ public enum OrgWhyTwoRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<Plus<U32, U16>>.self
-        Flexible<OrgWhyTwoLabel>.self
+        Fixed<OrganizationParaWide, OrgWhyTwoLabel>.self
+        Flexible<SpanNothing>.self
         Air<Plus<U32, U16>>.self
     }
 }
-public enum OrgWhyThreeLabel: SpanLabel {
-    public typealias Y = Under<U4, TextL>
+public enum OrgWhyThreeLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextL
     public typealias Weight = WeightRegular
@@ -1067,12 +1092,14 @@ public enum OrgWhyThreeRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<Plus<U32, U16>>.self
-        Flexible<OrgWhyThreeLabel>.self
+        Fixed<OrganizationParaWide, OrgWhyThreeLabel>.self
+        Flexible<SpanNothing>.self
         Air<Plus<U32, U16>>.self
     }
 }
-public enum OrgWhyFourLabel: SpanLabel {
-    public typealias Y = Under<U4, TextL>
+public enum OrgWhyFourLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextL
     public typealias Weight = WeightRegular
@@ -1083,12 +1110,14 @@ public enum OrgWhyFourRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<Plus<U32, U16>>.self
-        Flexible<OrgWhyFourLabel>.self
+        Fixed<OrganizationParaWide, OrgWhyFourLabel>.self
+        Flexible<SpanNothing>.self
         Air<Plus<U32, U16>>.self
     }
 }
-public enum OrgWhyFiveLabel: SpanLabel {
-    public typealias Y = Under<U4, TextL>
+public enum OrgWhyFiveLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextPrimary
     public typealias Size = TextL
     public typealias Weight = WeightRegular
@@ -1099,7 +1128,8 @@ public enum OrgWhyFiveRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<Plus<U32, U16>>.self
-        Flexible<OrgWhyFiveLabel>.self
+        Fixed<OrganizationParaWide, OrgWhyFiveLabel>.self
+        Flexible<SpanNothing>.self
         Air<Plus<U32, U16>>.self
     }
 }
@@ -1252,8 +1282,9 @@ public enum ChipsBand: Group {
 
 // ── the footer ──
 
-public enum FootFace: SpanLabel {
-    public typealias Y = Under<U4, TextXS>
+public enum FootFace: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
@@ -1264,7 +1295,8 @@ public enum FootRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<FootFace>.self
+        Fixed<OrganizationParaWide, FootFace>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -1280,16 +1312,16 @@ public enum OrganizationArt: GrownDiagram {
         Air<EdgeMargin>.self
         Fixed<HeaderTall, SpanHosted<HeaderRow>>.self
         Air<Plus<U8, U4>>.self
-        Fixed<Plus<U16, Plus<U8, U4>>, SpanHosted<OrgWhyOneRow>>.self
-        Fixed<Plus<U16, Plus<U8, U4>>, SpanHosted<OrgWhyTwoRow>>.self
-        Fixed<Plus<U16, Plus<U8, U4>>, SpanHosted<OrgWhyThreeRow>>.self
-        Fixed<Plus<U16, Plus<U8, U4>>, SpanHosted<OrgWhyFourRow>>.self
+        Fixed<Times<LineTally<OrgWhyOne, OrganizationParaWide, TextL>, Plus<U16, U4>>, SpanHosted<OrgWhyOneRow>>.self
+        Fixed<Times<LineTally<OrgWhyTwo, OrganizationParaWide, TextL>, Plus<U16, U4>>, SpanHosted<OrgWhyTwoRow>>.self
+        Fixed<Times<LineTally<OrgWhyThree, OrganizationParaWide, TextL>, Plus<U16, U4>>, SpanHosted<OrgWhyThreeRow>>.self
+        Fixed<Times<LineTally<OrgWhyFour, OrganizationParaWide, TextL>, Plus<U16, U4>>, SpanHosted<OrgWhyFourRow>>.self
         Air<U8>.self
-        Fixed<Plus<U16, Plus<U8, U4>>, SpanHosted<OrgWhyFiveRow>>.self
+        Fixed<Times<LineTally<OrgWhyFive, OrganizationParaWide, TextL>, Plus<U16, U4>>, SpanHosted<OrgWhyFiveRow>>.self
         Air<U16>.self
         Banded<KpiTall, SpanHosted<KpiBand>>.self
         Banded<ChipTall, SpanHosted<ChipsBand>>.self
-        Banded<FootTall, SpanHosted<FootRow>>.self
+        Banded<Times<LineTally<FootWord, OrganizationParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<FootRow>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -7217,8 +7249,9 @@ public enum AtomFinalRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
-public enum FrameLegendLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum FrameLegendLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
@@ -7229,12 +7262,14 @@ public enum FrameLegendRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<FrameLegendLabel>.self
+        Fixed<AtomParaWide, FrameLegendLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
-public enum PressJumpLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum PressJumpLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -7245,7 +7280,8 @@ public enum PressJumpRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<PressJumpLabel>.self
+        Fixed<AtomParaWide, PressJumpLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -7389,8 +7425,9 @@ public enum RoadTwoRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
-public enum RoadsBreakLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum RoadsBreakLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -7401,7 +7438,8 @@ public enum RoadsBreakRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<RoadsBreakLabel>.self
+        Fixed<AtomParaWide, RoadsBreakLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -7462,13 +7500,13 @@ public enum AtomArt: GrownDiagram {
         Air<U8>.self
         Fixed<U32, SpanHosted<FloorOneRow>>.self
         Air<U8>.self
-        Fixed<LineTallA, SpanHosted<PressJumpRow>>.self
+        Fixed<Times<LineTally<PressJumpWord, AtomParaWide, TextS>, Plus<U16, U4>>, SpanHosted<PressJumpRow>>.self
         Air<U4>.self
         Fixed<Plus<U32, U8>, SpanHosted<JumpKeysRow>>.self
         Air<U4>.self
         Fixed<Plus<U32, U8>, SpanHosted<ShineKeysRow>>.self
         Air<U2>.self
-        Fixed<LineTallA, SpanHosted<FrameLegendRow>>.self
+        Fixed<Times<LineTally<FrameLegendWord, AtomParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<FrameLegendRow>>.self
         Air<Plus<U8, U4>>.self
         Fixed<U32, SpanHosted<FlashBand>>.self
         Air<U2>.self
@@ -7491,7 +7529,7 @@ public enum AtomArt: GrownDiagram {
         Air<U4>.self
         Fixed<Plus<U16, U4>, SpanHosted<RoadTwoRow>>.self
         Air<U8>.self
-        Fixed<LineTallA, SpanHosted<RoadsBreakRow>>.self
+        Fixed<Times<LineTally<RoadsBreakWord, AtomParaWide, TextS>, Plus<U16, U4>>, SpanHosted<RoadsBreakRow>>.self
         Air<Plus<U16, U8>>.self
         Fixed<Plus<U16, U8>, SpanHosted<LawHeadRow>>.self
         Fixed<Plus<Times<LineTally<LawParaWord, AtomParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<LawParaRow>>.self
@@ -9097,8 +9135,9 @@ public enum PlusOneLabel: SpanLabelMid {
     public typealias Content = PlusOneWord
 }
 public typealias PlusOneKey = Layered<KeyTrack, PlusOneLabel>
-public enum CountLessonLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum CountLessonLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -9173,64 +9212,73 @@ public enum WorldTitleLabel: SpanLabel {
     public typealias Weight = WeightBold
     public typealias Content = WorldTitle
 }
-public enum WorldSubLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum WorldSubLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = WorldSub
 }
-public enum WorldSubTwoLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum WorldSubTwoLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = WorldSubTwo
 }
-public enum LampLessonLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum LampLessonLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = LampLesson
 }
-public enum PinLessonLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum PinLessonLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = PinLesson
 }
-public enum WorldSubThreeLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum WorldSubThreeLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = WorldSubThree
 }
-public enum LampMechLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum LampMechLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = LampMech
 }
-public enum SecretHintLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum SecretHintLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
     public typealias Content = SecretHint
 }
-public enum TryTwoLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum TryTwoLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
     public typealias Content = TryTwo
 }
-public enum TryLineLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum TryLineLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
@@ -9253,7 +9301,8 @@ public enum SubRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<WorldSubLabel>.self
+        Fixed<ButtonsParaWide, WorldSubLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9262,7 +9311,8 @@ public enum SubTwoRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<WorldSubTwoLabel>.self
+        Fixed<ButtonsParaWide, WorldSubTwoLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9271,7 +9321,8 @@ public enum LampLessonRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<LampLessonLabel>.self
+        Fixed<ButtonsParaWide, LampLessonLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9280,7 +9331,8 @@ public enum PinLessonRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<PinLessonLabel>.self
+        Fixed<ButtonsParaWide, PinLessonLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9307,7 +9359,8 @@ public enum TryRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TryLineLabel>.self
+        Fixed<ButtonsParaWide, TryLineLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9316,7 +9369,8 @@ public enum SubThreeRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<WorldSubThreeLabel>.self
+        Fixed<ButtonsParaWide, WorldSubThreeLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9325,7 +9379,8 @@ public enum LampMechRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<LampMechLabel>.self
+        Fixed<ButtonsParaWide, LampMechLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9353,7 +9408,8 @@ public enum SecretHintRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<SecretHintLabel>.self
+        Fixed<ButtonsParaWide, SecretHintLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9362,7 +9418,8 @@ public enum TryTwoRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TryTwoLabel>.self
+        Fixed<ButtonsParaWide, TryTwoLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9371,7 +9428,8 @@ public enum CountLessonRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<CountLessonLabel>.self
+        Fixed<ButtonsParaWide, CountLessonLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9476,21 +9534,21 @@ public enum WorldArt: GrownDiagram {
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
         Fixed<Plus<U32, U8>, SpanHosted<TitleRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<SubRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<SubTwoRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<SubThreeRow>>.self
+        Fixed<Times<LineTally<WorldSub, ButtonsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<SubRow>>.self
+        Fixed<Times<LineTally<WorldSubTwo, ButtonsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<SubTwoRow>>.self
+        Fixed<Times<LineTally<WorldSubThree, ButtonsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<SubThreeRow>>.self
         Air<Plus<U8, U4>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<LampLessonRow>>.self
+        Fixed<Times<LineTally<LampLesson, ButtonsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<LampLessonRow>>.self
         Air<U8>.self
         Fixed<TrackHeight, SpanHosted<LampRow>>.self
         Air<U8>.self
-        Fixed<Plus<U16, U4>, SpanHosted<LampMechRow>>.self
+        Fixed<Times<LineTally<LampMech, ButtonsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<LampMechRow>>.self
         Air<Breath>.self
-        Fixed<Plus<U16, U4>, SpanHosted<CountLessonRow>>.self
+        Fixed<Times<LineTally<CountLesson, ButtonsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<CountLessonRow>>.self
         Air<U8>.self
         Fixed<TrackHeight, SpanHosted<CountRow>>.self
         Air<Breath>.self
-        Fixed<Plus<U16, U4>, SpanHosted<PinLessonRow>>.self
+        Fixed<Times<LineTally<PinLesson, ButtonsParaWide, TextS>, Plus<U16, U4>>, SpanHosted<PinLessonRow>>.self
         Fixed<Plus<Times<LineTally<PinChordPara, ButtonsParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<PinChordRow>>.self
         Air<U8>.self
         Fixed<Plus<U16, U4>, SpanHosted<PinHeadRow>>.self
@@ -9505,12 +9563,12 @@ public enum WorldArt: GrownDiagram {
         Air<U8>.self
         Fixed<PadSide, SpanHosted<PadRowZero>>.self
         Air<U8>.self
-        Fixed<Plus<U16, U4>, SpanHosted<SecretHintRow>>.self
+        Fixed<Times<LineTally<SecretHint, ButtonsParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<SecretHintRow>>.self
         Fixed<Plus<U16, U4>, SpanHosted<SecretRow>>.self
 
         Air<Plus<U16, U8>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<TryRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<TryTwoRow>>.self
+        Fixed<Times<LineTally<TryLine, ButtonsParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<TryRow>>.self
+        Fixed<Times<LineTally<TryTwo, ButtonsParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<TryTwoRow>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9540,6 +9598,9 @@ extension Note {
 }
 
 // ── the display strings ──
+
+public typealias TypewriterParaWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
+
 
 public enum SheetTitle: Close {}
 extension SheetTitle {
@@ -9610,43 +9671,49 @@ public enum SheetTitleLabel: SpanLabel {
     public typealias Weight = WeightBold
     public typealias Content = SheetTitle
 }
-public enum SheetSubLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum SheetSubLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = SheetSub
 }
-public enum SheetSubTwoLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum SheetSubTwoLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = SheetSubTwo
 }
-public enum SheetSubThreeLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum SheetSubThreeLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = SheetSubThree
 }
-public enum SheetSubFourLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum SheetSubFourLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = SheetSubFour
 }
-public enum TrySheetLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum TrySheetLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
     public typealias Content = TrySheet
 }
-public enum TrySheetTwoLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum TrySheetTwoLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
@@ -9669,7 +9736,8 @@ public enum SheetSubRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<SheetSubLabel>.self
+        Fixed<TypewriterParaWide, SheetSubLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9678,7 +9746,8 @@ public enum SheetSubTwoRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<SheetSubTwoLabel>.self
+        Fixed<TypewriterParaWide, SheetSubTwoLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9687,7 +9756,8 @@ public enum SheetSubThreeRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<SheetSubThreeLabel>.self
+        Fixed<TypewriterParaWide, SheetSubThreeLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9696,7 +9766,8 @@ public enum SheetSubFourRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<SheetSubFourLabel>.self
+        Fixed<TypewriterParaWide, SheetSubFourLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9714,7 +9785,8 @@ public enum TrySheetRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TrySheetLabel>.self
+        Fixed<TypewriterParaWide, TrySheetLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9723,7 +9795,8 @@ public enum TrySheetTwoRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TrySheetTwoLabel>.self
+        Fixed<TypewriterParaWide, TrySheetTwoLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -9735,15 +9808,15 @@ public enum SheetArt: GrownDiagram {
     public static var body: some Structure & DividesY {
         Air<EdgeMargin>.self
         Fixed<Plus<U32, U8>, SpanHosted<SheetTitleRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<SheetSubRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<SheetSubTwoRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<SheetSubThreeRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<SheetSubFourRow>>.self
+        Fixed<Times<LineTally<SheetSub, TypewriterParaWide, TextS>, Plus<U16, U4>>, SpanHosted<SheetSubRow>>.self
+        Fixed<Times<LineTally<SheetSubTwo, TypewriterParaWide, TextS>, Plus<U16, U4>>, SpanHosted<SheetSubTwoRow>>.self
+        Fixed<Times<LineTally<SheetSubThree, TypewriterParaWide, TextS>, Plus<U16, U4>>, SpanHosted<SheetSubThreeRow>>.self
+        Fixed<Times<LineTally<SheetSubFour, TypewriterParaWide, TextS>, Plus<U16, U4>>, SpanHosted<SheetSubFourRow>>.self
         Air<Plus<U16, U8>>.self
         Fixed<SheetTall, SpanHosted<SheetRow>>.self
         Air<Plus<U16, U8>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<TrySheetRow>>.self
-        Fixed<Plus<U16, U4>, SpanHosted<TrySheetTwoRow>>.self
+        Fixed<Times<LineTally<TrySheet, TypewriterParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<TrySheetRow>>.self
+        Fixed<Times<LineTally<TrySheetTwo, TypewriterParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<TrySheetTwoRow>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -10279,7 +10352,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 153;
+const contentRevision = 154;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
