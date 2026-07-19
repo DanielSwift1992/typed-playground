@@ -30,7 +30,7 @@ const SUPPORTED = [
     "FrozenReveal",
     // readings
     "Tally", "Halfway", "Under", "CanvasSize", "CenteredBaseline", "TermText",
-    "LineTally", "Plus", "Times", "Twice", "Half", "Tick", "Succ",
+    "LineTally", "TextWidth", "Plus", "Times", "Twice", "Half", "Tick", "Succ",
     "XYZWrite", "PouredCoordinate", "CanonicalWeights",
     "HAlphaGlow", "HBetaGlow", "PaschenGlow",
     "NeonYellowGlow", "NeonRedGlow",
@@ -75,6 +75,7 @@ const GOLDENS = {
     CenteredBaseline: "goldens/dynamics-draw.svg",
     TermText: "goldens/dynamics-draw.svg",
     LineTally: "pending: no native demo prints this branch yet",
+    TextWidth: "pending: no native demo prints this branch yet",
     Plus: "goldens/dynamics-draw.svg",
     Times: "goldens/dynamics-draw.svg",
     Twice: "goldens/vector-plate.txt",

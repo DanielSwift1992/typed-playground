@@ -317,6 +317,14 @@ function countOf(env, rawNode) {
         }
         return lines;
     }
+    // the measured width of a word, mirrored from Vector.swift (TextWidth): the
+    // advances of its characters summed at a stated size, the same reader the
+    // wrapped labels draw with. A slot sized by its own words: no stated width.
+    if (node.head === "TextWidth") {
+        const content = textOf(env, node.args[0]);
+        const size = parseInt(textOf(env, node.args[1]), 10) || 0;
+        return textWidthPx(content, size);
+    }
     const declaration = env.declarations.get(node.head);
     if (declaration && declaration.entries.length > 0) {
         let total = 0;
