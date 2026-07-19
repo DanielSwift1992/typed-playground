@@ -322,7 +322,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 151</span>
+  <span style="float: right; color: var(--muted);">rev 153</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -1589,7 +1589,7 @@ extension CurveMoral {
 }
 public enum CurveNoteOne: Close {}
 extension CurveNoteOne {
-    public static var typeName: String { "A bar's width is its seconds. N is the number of people, built on the At scale tab." }
+    public static var typeName: String { "A bar's width is its seconds. N is the number of people, and the page builds them on the At scale tab." }
 }
 public enum CurveNoteTwo: Close {}
 extension CurveNoteTwo {
@@ -1609,7 +1609,7 @@ extension BuildTimeHead {
 }
 public enum BuildLineOne: Close {}
 extension BuildLineOne {
-    public static var typeName: String { "the text is read and checked" }
+    public static var typeName: String { "the judge reads the text" }
 }
 public enum BuildLineTwo: Close {}
 extension BuildLineTwo {
@@ -1701,11 +1701,11 @@ extension RowTwoHome {
 }
 public enum ReadingsBreakWord: Close {}
 extension ReadingsBreakWord {
-    public static var typeName: String { "Break it: press Table, click a name: its declaration is opened in the editor." }
+    public static var typeName: String { "Break it: press Table, click a name: the editor opens its declaration." }
 }
 public enum TryTwoWord: Close {}
 extension TryTwoWord {
-    public static var typeName: String { "Break it here: type func or var on any line. It is refused: types only." }
+    public static var typeName: String { "Break it here: type func or var on any line: the linter refuses it, types only." }
 }
 public enum IntroAlt: Close {}
 extension IntroAlt {
@@ -1843,22 +1843,25 @@ public enum Judge12800Label: SpanLabel {
     public typealias Weight = WeightBold
     public typealias Content = Judge12800Word
 }
-public enum MoralLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum MoralLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
     public typealias Content = CurveMoral
 }
-public enum CurveNoteOneLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum CurveNoteOneLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
     public typealias Content = CurveNoteOne
 }
-public enum CurveNoteTwoLabel: SpanLabel {
-    public typealias Y = Under<U2, TextXS>
+public enum CurveNoteTwoLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextPrimary
     public typealias Size = TextXS
     public typealias Weight = WeightRegular
@@ -1871,8 +1874,9 @@ public enum ExplainHeadLabel: SpanLabel {
     public typealias Weight = WeightBold
     public typealias Content = ExplainHeadWord
 }
-public enum ExplainOneLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum ExplainOneLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2064,22 +2068,25 @@ public enum ReadingsHeadLabel: SpanLabel {
     public typealias Weight = WeightBold
     public typealias Content = ReadingsHeadWord
 }
-public enum ReadingsIntroLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum ReadingsIntroLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = ReadingsIntroWord
 }
-public enum ReadingsBreakLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum ReadingsBreakLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
     public typealias Content = ReadingsBreakWord
 }
-public enum TryTwoLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TryTwoLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextPrimary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2198,7 +2205,8 @@ public enum MoralRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<MoralLabel>.self
+        Fixed<IntroParaWide, MoralLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -2207,7 +2215,8 @@ public enum CurveNoteOneRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<CurveNoteOneLabel>.self
+        Fixed<IntroParaWide, CurveNoteOneLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -2216,7 +2225,8 @@ public enum CurveNoteTwoRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<CurveNoteTwoLabel>.self
+        Fixed<IntroParaWide, CurveNoteTwoLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -2234,7 +2244,8 @@ public enum ExplainOneRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<ExplainOneLabel>.self
+        Fixed<IntroParaWide, ExplainOneLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -2288,7 +2299,8 @@ public enum ReadingsIntroRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<ReadingsIntroLabel>.self
+        Fixed<IntroParaWide, ReadingsIntroLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -2385,7 +2397,8 @@ public enum ReadingsBreakRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<ReadingsBreakLabel>.self
+        Fixed<IntroParaWide, ReadingsBreakLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -2394,7 +2407,8 @@ public enum TryTwoRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TryTwoLabel>.self
+        Fixed<IntroParaWide, TryTwoLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -2402,7 +2416,7 @@ public enum TryTwoRow: HFlow {
 public typealias IntroParaWide = Plus<U256, Plus<U128, Plus<U64, U32>>>
 public enum ValueParaWord: Close {}
 extension ValueParaWord {
-    public static var typeName: String { "Everything software does, it does by running: drawing a page, computing a colour, answering a click. To know what a program will do, you run it and watch. A check is a run too: a test is one run, one path of many. On this page nothing runs. The layout of these bands, a company of 12,800 people, the physics of light, one hydrogen atom: each is a file of declarations, and the page draws everything you see from them. A declaration is checked by reading it, and the checker here is called the judge: on every keystroke the judge re-reads the whole file, and a lie, about a salary, a colour, or an electron\u2019s jump, is a line number on your screen. Reading is linear: the largest file here, 136,000 lines, is re-read in 0.2 seconds. A compiler computes what is here written out in full, and takes 199 seconds on the same company: the chart below is both, measured. All of it is checkable right here, in this editor." }
+    public static var typeName: String { "Everything software does, it does by running: drawing a page, computing a colour, answering a click. To know what a program will do, you run it and watch. A check is a run too: a test is one run, one path of many. On this page nothing runs. The layout of these bands, a company of 12,800 people, the physics of light, one hydrogen atom: each is a file of declarations, and the page draws everything you see from them. Here the check is a reading, not a run, and the reader is called the judge: on every keystroke the judge re-reads the whole file, and a lie, about a salary, a colour, or an electron\u2019s jump, is a line number on your screen. Reading is linear: the judge re-reads the largest file here, 136,000 lines, in 0.2 seconds. A compiler computes what you write out in full here, and takes 199 seconds on the same company: the chart below is both, measured. All of it is checkable right here, in this editor." }
 }
 public enum SwiftParaWord: Close {}
 extension SwiftParaWord {
@@ -2472,7 +2486,7 @@ public enum ReadingsMoralParaRow: HFlow {
 }
 public enum TryLieParaWord: Close {}
 extension TryLieParaWord {
-    public static var typeName: String { "Break it: press Plant a lie on The organization. It flips one declaration, and the judge refuses the file, naming the exact line." }
+    public static var typeName: String { "Break it: press Plant a lie on The organization: the key flips one declaration, and the judge refuses the file, naming the exact line." }
 }
 public enum TryLieParaText: SpanLabelWrapped {
     public typealias Y = Tally<U16>
@@ -2544,8 +2558,9 @@ public enum TabsHeadRow: HFlow {
         Air<EdgeMargin>.self
     }
 }
-public enum TabOrgLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TabOrgLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2556,12 +2571,14 @@ public enum TabOrgRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TabOrgLabel>.self
+        Fixed<IntroParaWide, TabOrgLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
-public enum TabScaleLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TabScaleLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2572,12 +2589,14 @@ public enum TabScaleRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TabScaleLabel>.self
+        Fixed<IntroParaWide, TabScaleLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
-public enum TabBasicsLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TabBasicsLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2588,12 +2607,14 @@ public enum TabBasicsRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TabBasicsLabel>.self
+        Fixed<IntroParaWide, TabBasicsLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
-public enum TabWriterLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TabWriterLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2604,12 +2625,14 @@ public enum TabWriterRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TabWriterLabel>.self
+        Fixed<IntroParaWide, TabWriterLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
-public enum TabButtonsLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TabButtonsLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2620,12 +2643,14 @@ public enum TabButtonsRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TabButtonsLabel>.self
+        Fixed<IntroParaWide, TabButtonsLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
-public enum TabLightLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TabLightLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2636,12 +2661,14 @@ public enum TabLightRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TabLightLabel>.self
+        Fixed<IntroParaWide, TabLightLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
-public enum TabAtomLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TabAtomLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2652,12 +2679,14 @@ public enum TabAtomRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TabAtomLabel>.self
+        Fixed<IntroParaWide, TabAtomLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
-public enum TabRulesLabel: SpanLabel {
-    public typealias Y = Under<U2, TextS>
+public enum TabRulesLabel: SpanLabelWrapped {
+    public typealias Y = Tally<U16>
+    public typealias LinePitch = Tally<Plus<U16, U4>>
     public typealias FillColor = TextSecondary
     public typealias Size = TextS
     public typealias Weight = WeightRegular
@@ -2668,7 +2697,8 @@ public enum TabRulesRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Flexible<TabRulesLabel>.self
+        Fixed<IntroParaWide, TabRulesLabel>.self
+        Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
 }
@@ -2716,13 +2746,13 @@ public enum IntroArt: GrownDiagram {
         Air<U4>.self
         Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Times<Plus<U4, Plus<U2, U1>>, Beat>>, Judge12800Row>>>.self
         Air<U8>.self
-        Fixed<LegendTall, SpanHosted<FrozenReveal<Tally<U1>, MoralRow>>>.self
+        Fixed<Times<LineTally<CurveMoral, IntroParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<U1>, MoralRow>>>.self
         Air<U4>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<U1>, CurveNoteOneRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<U1>, CurveNoteTwoRow>>>.self
+        Fixed<Times<LineTally<CurveNoteOne, IntroParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<U1>, CurveNoteOneRow>>>.self
+        Fixed<Times<LineTally<CurveNoteTwo, IntroParaWide, TextXS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<U1>, CurveNoteTwoRow>>>.self
         Air<Plus<U16, U8>>.self
         Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Beat>>, ExplainHeadRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Beat>>, ExplainOneRow>>>.self
+        Fixed<Times<LineTally<ExplainOneWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Beat>>, ExplainOneRow>>>.self
         Air<U8>.self
         Fixed<CompareTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Beat>>, TimelineBand>>>.self
         Air<Plus<U8, U4>>.self
@@ -2731,7 +2761,7 @@ public enum IntroArt: GrownDiagram {
         Fixed<Plus<Times<LineTally<PageBuildParaWord, IntroParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<FrozenReveal<Tally<Plus<U1, Twice<Beat>>>, PageBuildParaRow>>>.self
         Air<Plus<U16, U8>>.self
         Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, ReadingsHeadRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, ReadingsIntroRow>>>.self
+        Fixed<Times<LineTally<ReadingsIntroWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, ReadingsIntroRow>>>.self
         Air<U8>.self
         Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, PanelHeadRow>>>.self
         Air<U4>.self
@@ -2742,20 +2772,20 @@ public enum IntroArt: GrownDiagram {
         Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, PairThreeRow>>>.self
         Air<U8>.self
         Fixed<Plus<Times<LineTally<ReadingsMoralParaWord, IntroParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, ReadingsMoralParaRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, ReadingsBreakRow>>>.self
+        Fixed<Times<LineTally<ReadingsBreakWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<Plus<U2, U1>, Beat>>>, ReadingsBreakRow>>>.self
         Air<Plus<U16, U8>>.self
         Fixed<RowTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabsHeadRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabOrgRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabScaleRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabBasicsRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabWriterRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabButtonsRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabLightRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabAtomRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabRulesRow>>>.self
+        Fixed<Times<LineTally<TabOrgWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabOrgRow>>>.self
+        Fixed<Times<LineTally<TabScaleWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabScaleRow>>>.self
+        Fixed<Times<LineTally<TabBasicsWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabBasicsRow>>>.self
+        Fixed<Times<LineTally<TabWriterWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabWriterRow>>>.self
+        Fixed<Times<LineTally<TabButtonsWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabButtonsRow>>>.self
+        Fixed<Times<LineTally<TabLightWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabLightRow>>>.self
+        Fixed<Times<LineTally<TabAtomWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabAtomRow>>>.self
+        Fixed<Times<LineTally<TabRulesWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TabRulesRow>>>.self
         Air<Plus<U16, U8>>.self
         Fixed<Plus<Times<LineTally<TryLieParaWord, IntroParaWide, TextS>, Plus<U16, U4>>, U8>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TryLieParaRow>>>.self
-        Fixed<LineTall, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TryTwoRow>>>.self
+        Fixed<Times<LineTally<TryTwoWord, IntroParaWide, TextS>, Plus<U16, U4>>, SpanHosted<FrozenReveal<Tally<Plus<U1, Times<U4, Beat>>>, TryTwoRow>>>.self
         Air<EdgeMargin>.self
     }
 }
@@ -10249,7 +10279,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 151;
+const contentRevision = 153;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
