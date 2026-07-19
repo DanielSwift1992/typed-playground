@@ -212,6 +212,9 @@ total += 1;
             + "\npublic enum ProbeRow: HFlow {\n    public typealias Given = U512\n"
             + "    public static var body: some Structure & Divides {\n        Air<U2>.self\n    }\n}\n",
             "states no @StructureBuilder"],
+        ["a gate on one line", clean
+            + "\npublic enum ProbePair<A, B>: Close {}\nextension ProbePair: Close where A == B {}\n",
+            "on the same line"],
     ];
     const missed = [];
     for (const [name, source, wanted] of lies) {

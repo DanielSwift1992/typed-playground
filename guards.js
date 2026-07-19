@@ -50,6 +50,13 @@ function pageGuards(parsed, lines, vocabulary) {
             say(index + 1, "an extension names `" + extended[1]
                 + "`, and this file declares no `" + extended[1] + "`");
         }
+        // a gate spelled on one line is read by NEITHER judge: the reference's
+        // pattern spans the newline, and the port reads only what the reference
+        // reads. An unjudged claim is worse than a refused one, so it is named.
+        if (/^(?:public\s+)?extension\s+\w+\s*:\s*\w+\s+where\s/.test(trimmed)) {
+            say(index + 1, "a gate states its `where` on the same line:"
+                + " a where belongs on the line below, where both judges read it");
+        }
     });
     // a dangling name inside a top alias is silent to the judge port (the port
     // reads the alias whole) and unreachable to the renderer when nothing draws

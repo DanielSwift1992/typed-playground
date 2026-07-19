@@ -147,11 +147,25 @@ function parse(file, text, declarations, order, refusals, extras) {
     const lines = text.split("\n");
     for (let index = 0; index < lines.length; index += 1) {
         const number = index + 1;
-        const line = lines[index].trim();
+        let line = lines[index].trim();
         if (line === "") continue;
         if (line.startsWith("//")) continue;
         if (line.startsWith("import ")) continue;
         if (line.startsWith("@StructureBuilder")) continue;
+
+        // A gate's own spelling: the reference reads `extension F: P` with its
+        // `where` on the NEXT line — WhereJudge.swift's pattern spans the newline
+        // and matches no other shape. The port joins the two into one logical
+        // line, so what this judge reads is what the reference reads, gate for
+        // gate. A `where` on the same line is read by neither, and guards.js
+        // names it rather than let a claim stand unjudged by both.
+        let gateJoined = false;
+        if (/^(?:public\s+)?extension\s+\w+\s*:\s*\w+$/.test(line)
+            && (lines[index + 1] || "").trim().startsWith("where ")) {
+            line += " " + lines[index + 1].trim();
+            index += 1;
+            gateJoined = true;
+        }
 
         if (pendingAlias !== null) {
             const settled = pendingAlias;
@@ -207,8 +221,7 @@ function parse(file, text, declarations, order, refusals, extras) {
         // a conditional conformance: `extension F: P where A == B {}` gates the
         // form by equivalence. The gate is grammar, not domain: both sides are
         // normalized through the dictionary and compared at every use site.
-        if (extras && (line.startsWith("extension ") || line.startsWith("public extension "))
-            && line.includes(" where ") && /\{\s*\}$/.test(line)) {
+        if (extras && gateJoined && line.includes(" where ") && /\{\s*\}$/.test(line)) {
             const head = line.replace("public extension ", "").replace("extension ", "")
                 .replace(/\s*\{\s*\}$/, "").trim();
             const whereAt = head.indexOf(" where ");
@@ -776,12 +789,11 @@ function arithmeticFold(node) {
     const folded = { head: node.head, args: node.args.map(arithmeticFold) };
     const whole = countedLeaf(folded);
     if (whole !== null) return { head: "#" + whole, args: [] };
-    // the numeral ladder's step counts as one more (Numeral.swift: Succ), the
-    // same fold the renderer reads, so two spellings of one number agree
-    if (folded.head === "Succ" && folded.args.length === 1) {
-        const inner = countedLeaf(folded.args[0]);
-        if (inner !== null) return { head: "#" + (inner + 1), args: [] };
-    }
+    // Succ is NOT folded here, and the omission is the law, not an oversight:
+    // the reference's counted leaves are Unit, Never, and a numeral, and its own
+    // comment says the port's judge mirrors this pass. A step of the numeral
+    // ladder stays a symbolic leaf on both sides, so two numbers spelled through
+    // different ladders are two terms — the world spells one ladder instead.
     if (folded.head === "Times" && folded.args.length === 2) {
         const left = countedLeaf(folded.args[0]);
         const right = countedLeaf(folded.args[1]);

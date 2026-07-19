@@ -83,7 +83,10 @@ grammar and the counting canon on the atom's Rydberg lattice, four planted lies
 that each guard must name, and the theory's forty-line golden plate, which the
 port must read value for value. `node check-kit.js` checks all seventy-one ported
 kit names against the theory's sources at a pinned commit, fifty-seven of them
-sealed by goldens.
+sealed by goldens. `./check-theory.sh` turns the direction around: the theory's
+own linter and its where-judge read these worlds, so the law that admits the
+forms and the arbiter of every gate are the reference's, not the port's. Both
+judges answer alike on the corpus and on a planted lie, gate for gate.
 
 ## The theory
 

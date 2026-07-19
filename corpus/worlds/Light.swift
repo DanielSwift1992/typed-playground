@@ -273,9 +273,13 @@ extension LightAlt {
 
 // the polarizer scenes count in their own Succ-ladder; the picker and the
 // spectrum ride the kit's stated rungs (Rung0..Rung8)
+// Two steps of the numeral ladder, then the lattice's own doubling. Succ needs
+// an IntegerValued step, and the slit nodes below read one; a magnitude, though,
+// is compared against sums of single units, and both judges flatten a doubling
+// into those units, so Lit4 and Lit8 double from Lit1 and never through Lit2.
 public typealias Lit1 = Succ<Never>
 public typealias Lit2 = Succ<Lit1>
-public typealias Lit4 = Twice<Lit2>
+public typealias Lit4 = Twice<Twice<Lit1>>
 public typealias Lit8 = Twice<Lit4>
 // one name for a hydrogen mix's colour: three poured coordinates through the
 // canonical weights, written at the chart-neutral edge
@@ -326,7 +330,8 @@ public protocol ScreenColour {
     associatedtype BlueChannel: Structure
 }
 public enum SeenAlike<X: Beam, Y: Beam>: Close {}
-extension SeenAlike: MetamericPair where EyeImage<X> == EyeImage<Y> {}
+extension SeenAlike: MetamericPair
+where EyeImage<X> == EyeImage<Y> {}
 public typealias MetamerFact = SeenAlike<BeamX, BeamY>
 
 // ── the wall and the mirror: the same forgetting, told with directions. A
@@ -346,7 +351,8 @@ public enum LitFromWest: Close, SceneLight {
 public typealias MatteImage<S: SceneLight> = S.Total
 public typealias MirrorImage<S: SceneLight> = Paired<S.FromEast, S.FromWest>
 public enum MatteAlike<X: SceneLight, Y: SceneLight>: Close {}
-extension MatteAlike: MatteBlind where MatteImage<X> == MatteImage<Y> {}
+extension MatteAlike: MatteBlind
+where MatteImage<X> == MatteImage<Y> {}
 public typealias WallFact = MatteAlike<LitFromEast, LitFromWest>
 
 // ── the picker: three slots of your own beam, and the ladder rules that
@@ -422,11 +428,13 @@ public enum RemoveDiagonal: SlotRule {
     public typealias Into = Crossed
 }
 public enum Extinct<P: Polarized>: Close {}
-extension Extinct: AllDark where P.Horizontal == Never, P.Vertical == Never {}
+extension Extinct: AllDark
+where P.Horizontal == Never, P.Vertical == Never {}
 public typealias CrossedFact = Extinct<Crossed>
 public typealias ThreePanes = PassVertical<DiagonalAfterLampH>
 public enum Halves<D: Structure, R: Structure>: Close {}
-extension Halves: QuarterProof where R == Plus<D, D> {}
+extension Halves: QuarterProof
+where R == Plus<D, D> {}
 public typealias HalfFact = Halves<Plus<DiagonalAfterLampH.Horizontal, DiagonalAfterLampH.Vertical>, Lit8>
 public typealias QuarterFact = Halves<ThreePanes.Vertical, Plus<DiagonalAfterLampH.Horizontal, DiagonalAfterLampH.Vertical>>
 
@@ -438,9 +446,11 @@ public typealias QuarterFact = Halves<ThreePanes.Vertical, Plus<DiagonalAfterLam
 public protocol BrightFringe {}
 public protocol DarkFringe {}
 public enum EvenGap<N: SlitNode, K: Structure>: Close {}
-extension EvenGap: BrightFringe where N.Gap == Twice<K> {}
+extension EvenGap: BrightFringe
+where N.Gap == Twice<K> {}
 public enum OddGap<N: SlitNode, K: Structure>: Close {}
-extension OddGap: DarkFringe where N.Gap == Plus<Lit1, Twice<K>> {}
+extension OddGap: DarkFringe
+where N.Gap == Plus<Lit1, Twice<K>> {}
 // the settled brightness of an even node: agreement doubles one contribution
 public typealias BrightNode = Twice<Lit1>
 public enum NodeCenter: Close, SlitNode {
@@ -469,7 +479,8 @@ public typealias ThirdDark = OddGap<NodeThird, Lit1>
 
 public protocol OnRedGreenScreen {}
 public enum FitsRedGreen<C: ScreenColour>: Close {}
-extension FitsRedGreen: OnRedGreenScreen where C.BlueChannel == Never {}
+extension FitsRedGreen: OnRedGreenScreen
+where C.BlueChannel == Never {}
 public enum YellowAtFull: Close, ScreenColour {
     public typealias RedChannel = Lit1
     public typealias GreenChannel = Lit1

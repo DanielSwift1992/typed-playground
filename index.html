@@ -322,7 +322,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 156</span>
+  <span style="float: right; color: var(--muted);">rev 157</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -341,10 +341,10 @@ window.addEventListener("error", (event) => {
 });
 </script>
 <script src="codemirror.js"></script>
-<script src="judge.js?v=15"></script>
+<script src="judge.js?v=16"></script>
 <script src="lint.js?v=4"></script>
 <script src="press.js?v=5"></script>
-<script src="guards.js?v=1"></script>
+<script src="guards.js?v=2"></script>
 <script src="renderer.js?v=12"></script>
 <script>
 "use strict";
@@ -3105,9 +3105,13 @@ extension LightAlt {
 
 // the polarizer scenes count in their own Succ-ladder; the picker and the
 // spectrum ride the kit's stated rungs (Rung0..Rung8)
+// Two steps of the numeral ladder, then the lattice's own doubling. Succ needs
+// an IntegerValued step, and the slit nodes below read one; a magnitude, though,
+// is compared against sums of single units, and both judges flatten a doubling
+// into those units, so Lit4 and Lit8 double from Lit1 and never through Lit2.
 public typealias Lit1 = Succ<Never>
 public typealias Lit2 = Succ<Lit1>
-public typealias Lit4 = Twice<Lit2>
+public typealias Lit4 = Twice<Twice<Lit1>>
 public typealias Lit8 = Twice<Lit4>
 // one name for a hydrogen mix's colour: three poured coordinates through the
 // canonical weights, written at the chart-neutral edge
@@ -3158,7 +3162,8 @@ public protocol ScreenColour {
     associatedtype BlueChannel: Structure
 }
 public enum SeenAlike<X: Beam, Y: Beam>: Close {}
-extension SeenAlike: MetamericPair where EyeImage<X> == EyeImage<Y> {}
+extension SeenAlike: MetamericPair
+where EyeImage<X> == EyeImage<Y> {}
 public typealias MetamerFact = SeenAlike<BeamX, BeamY>
 
 // ── the wall and the mirror: the same forgetting, told with directions. A
@@ -3178,7 +3183,8 @@ public enum LitFromWest: Close, SceneLight {
 public typealias MatteImage<S: SceneLight> = S.Total
 public typealias MirrorImage<S: SceneLight> = Paired<S.FromEast, S.FromWest>
 public enum MatteAlike<X: SceneLight, Y: SceneLight>: Close {}
-extension MatteAlike: MatteBlind where MatteImage<X> == MatteImage<Y> {}
+extension MatteAlike: MatteBlind
+where MatteImage<X> == MatteImage<Y> {}
 public typealias WallFact = MatteAlike<LitFromEast, LitFromWest>
 
 // ── the picker: three slots of your own beam, and the ladder rules that
@@ -3254,11 +3260,13 @@ public enum RemoveDiagonal: SlotRule {
     public typealias Into = Crossed
 }
 public enum Extinct<P: Polarized>: Close {}
-extension Extinct: AllDark where P.Horizontal == Never, P.Vertical == Never {}
+extension Extinct: AllDark
+where P.Horizontal == Never, P.Vertical == Never {}
 public typealias CrossedFact = Extinct<Crossed>
 public typealias ThreePanes = PassVertical<DiagonalAfterLampH>
 public enum Halves<D: Structure, R: Structure>: Close {}
-extension Halves: QuarterProof where R == Plus<D, D> {}
+extension Halves: QuarterProof
+where R == Plus<D, D> {}
 public typealias HalfFact = Halves<Plus<DiagonalAfterLampH.Horizontal, DiagonalAfterLampH.Vertical>, Lit8>
 public typealias QuarterFact = Halves<ThreePanes.Vertical, Plus<DiagonalAfterLampH.Horizontal, DiagonalAfterLampH.Vertical>>
 
@@ -3270,9 +3278,11 @@ public typealias QuarterFact = Halves<ThreePanes.Vertical, Plus<DiagonalAfterLam
 public protocol BrightFringe {}
 public protocol DarkFringe {}
 public enum EvenGap<N: SlitNode, K: Structure>: Close {}
-extension EvenGap: BrightFringe where N.Gap == Twice<K> {}
+extension EvenGap: BrightFringe
+where N.Gap == Twice<K> {}
 public enum OddGap<N: SlitNode, K: Structure>: Close {}
-extension OddGap: DarkFringe where N.Gap == Plus<Lit1, Twice<K>> {}
+extension OddGap: DarkFringe
+where N.Gap == Plus<Lit1, Twice<K>> {}
 // the settled brightness of an even node: agreement doubles one contribution
 public typealias BrightNode = Twice<Lit1>
 public enum NodeCenter: Close, SlitNode {
@@ -3301,7 +3311,8 @@ public typealias ThirdDark = OddGap<NodeThird, Lit1>
 
 public protocol OnRedGreenScreen {}
 public enum FitsRedGreen<C: ScreenColour>: Close {}
-extension FitsRedGreen: OnRedGreenScreen where C.BlueChannel == Never {}
+extension FitsRedGreen: OnRedGreenScreen
+where C.BlueChannel == Never {}
 public enum YellowAtFull: Close, ScreenColour {
     public typealias RedChannel = Lit1
     public typealias GreenChannel = Lit1
@@ -6453,9 +6464,11 @@ public enum Orbital4p: Close, Orbital {
     public typealias RadialNodes = Rung2
 }
 public enum Lowers<F: Orbital, T: Orbital>: Close {}
-extension Lowers: DipoleAllowed where F.L == Succ<T.L> {}
+extension Lowers: DipoleAllowed
+where F.L == Succ<T.L> {}
 public enum Raises<F: Orbital, T: Orbital>: Close {}
-extension Raises: DipoleAllowed where T.L == Succ<F.L> {}
+extension Raises: DipoleAllowed
+where T.L == Succ<F.L> {}
 public typealias HydrogenColour<A: Structure, B: Structure, C: Structure> = XYZWrite<PouredCoordinate<A, HAlphaGlow.XShare, B, HBetaGlow.XShare, C, PaschenGlow.XShare>, PouredCoordinate<A, HAlphaGlow.YShare, B, HBetaGlow.YShare, C, PaschenGlow.YShare>, PouredCoordinate<A, HAlphaGlow.ZShare, B, HBetaGlow.ZShare, C, PaschenGlow.ZShare>>
 public typealias BetaFact = Lowers<Orbital4p, Orbital2s>
 public typealias PaschenFact = Lowers<Orbital4p, Orbital3s>
@@ -6522,7 +6535,8 @@ public enum BalmerJump: Close {
 }
 public protocol SameDrop {}
 public enum RoadPair<X, Y>: Close {}
-extension RoadPair: SameDrop where X == Y {}
+extension RoadPair: SameDrop
+where X == Y {}
 public typealias TwoRoadsFact = RoadPair<Plus<PaschenJump.Drop, BalmerJump.Drop>, BetaJump.Drop>
 
 // ── the Rydberg lattice: the law is four numbers, the rest is judged ──
@@ -6549,7 +6563,8 @@ public typealias LymanAlphaDrop = Plus<U64, Plus<U32, Plus<U8, U4>>>
 // a whole that must be the sum of its two parts, judged as arithmetic
 public protocol EnergyClosed {}
 public enum EnergySum<Whole, Left, Right>: Close {}
-extension EnergySum: EnergyClosed where Whole == Plus<Left, Right> {}
+extension EnergySum: EnergyClosed
+where Whole == Plus<Left, Right> {}
 
 // the stitches: every drop against its two floors, and the two roads one drop
 public typealias ThirdFloorStitch = EnergySum<FloorThreeDepth, FloorFourDepth, PaschenAlphaDrop>
@@ -6562,7 +6577,8 @@ public typealias TwoRoadsOneDrop = EnergySum<BalmerBetaDrop, PaschenAlphaDrop, B
 public typealias FloorThreeByLadder = Plus<FloorFourDepth, PaschenAlphaDrop>
 public protocol LadderStitched {}
 public enum LadderStep<A, B>: Close {}
-extension LadderStep: LadderStitched where A == B {}
+extension LadderStep: LadderStitched
+where A == B {}
 public typealias ThirdFloorByLadder = LadderStep<FloorThreeByLadder, Plus<FloorFourDepth, PaschenAlphaDrop>>
 public enum RechargeFromTrap: SlotRule {
     public typealias Slot = ElectronSlot
@@ -10438,7 +10454,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 156;
+const contentRevision = 157;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);

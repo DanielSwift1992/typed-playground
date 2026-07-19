@@ -188,9 +188,11 @@ public enum Orbital4p: Close, Orbital {
     public typealias RadialNodes = Rung2
 }
 public enum Lowers<F: Orbital, T: Orbital>: Close {}
-extension Lowers: DipoleAllowed where F.L == Succ<T.L> {}
+extension Lowers: DipoleAllowed
+where F.L == Succ<T.L> {}
 public enum Raises<F: Orbital, T: Orbital>: Close {}
-extension Raises: DipoleAllowed where T.L == Succ<F.L> {}
+extension Raises: DipoleAllowed
+where T.L == Succ<F.L> {}
 public typealias HydrogenColour<A: Structure, B: Structure, C: Structure> = XYZWrite<PouredCoordinate<A, HAlphaGlow.XShare, B, HBetaGlow.XShare, C, PaschenGlow.XShare>, PouredCoordinate<A, HAlphaGlow.YShare, B, HBetaGlow.YShare, C, PaschenGlow.YShare>, PouredCoordinate<A, HAlphaGlow.ZShare, B, HBetaGlow.ZShare, C, PaschenGlow.ZShare>>
 public typealias BetaFact = Lowers<Orbital4p, Orbital2s>
 public typealias PaschenFact = Lowers<Orbital4p, Orbital3s>
@@ -257,7 +259,8 @@ public enum BalmerJump: Close {
 }
 public protocol SameDrop {}
 public enum RoadPair<X, Y>: Close {}
-extension RoadPair: SameDrop where X == Y {}
+extension RoadPair: SameDrop
+where X == Y {}
 public typealias TwoRoadsFact = RoadPair<Plus<PaschenJump.Drop, BalmerJump.Drop>, BetaJump.Drop>
 
 // ── the Rydberg lattice: the law is four numbers, the rest is judged ──
@@ -284,7 +287,8 @@ public typealias LymanAlphaDrop = Plus<U64, Plus<U32, Plus<U8, U4>>>
 // a whole that must be the sum of its two parts, judged as arithmetic
 public protocol EnergyClosed {}
 public enum EnergySum<Whole, Left, Right>: Close {}
-extension EnergySum: EnergyClosed where Whole == Plus<Left, Right> {}
+extension EnergySum: EnergyClosed
+where Whole == Plus<Left, Right> {}
 
 // the stitches: every drop against its two floors, and the two roads one drop
 public typealias ThirdFloorStitch = EnergySum<FloorThreeDepth, FloorFourDepth, PaschenAlphaDrop>
@@ -297,7 +301,8 @@ public typealias TwoRoadsOneDrop = EnergySum<BalmerBetaDrop, PaschenAlphaDrop, B
 public typealias FloorThreeByLadder = Plus<FloorFourDepth, PaschenAlphaDrop>
 public protocol LadderStitched {}
 public enum LadderStep<A, B>: Close {}
-extension LadderStep: LadderStitched where A == B {}
+extension LadderStep: LadderStitched
+where A == B {}
 public typealias ThirdFloorByLadder = LadderStep<FloorThreeByLadder, Plus<FloorFourDepth, PaschenAlphaDrop>>
 public enum RechargeFromTrap: SlotRule {
     public typealias Slot = ElectronSlot
