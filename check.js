@@ -321,14 +321,23 @@ if (trapLie === atomSource) {
     const roadVerdict = judge("Atom.swift", roadLie, pageKit);
     const roadRefusals = roadVerdict.refusals.filter((refusal) =>
         refusal.premise.includes("RoadPair") && refusal.premise.includes("be equivalent"));
+    // absorption is the same selection rule, upward: a shine certificate whose
+    // two floors do not change shape refuses like a forbidden emission
+    const shineLie = atomSource.replace(
+        "public typealias ShineBetaFact = Raises<Orbital2s, Orbital4p>",
+        "public typealias ShineBetaFact = Raises<Orbital2s, Orbital3s>");
+    const shineRefusals = judge("Atom.swift", shineLie, pageKit).refusals.filter((refusal) =>
+        refusal.premise.includes("ShineBetaFact") && refusal.premise.includes("be equivalent"));
     if (trapRefusals.length === 1 && roadRefusals.length === 1
+        && shineLie !== atomSource && shineRefusals.length === 1
         && alphaTrace === 1 && betaTrace === 1
         && (atomArt.errors || []).length === 0) {
         passed += 1;
     } else {
-        failures.push("atom: want 1 trap equivalence, 1 road equivalence, 1 alpha "
-            + "trace, 1 beta trace, 0 draw errors, got " + trapRefusals.length
-            + " / " + roadRefusals.length + " / " + alphaTrace + " / " + betaTrace
+        failures.push("atom: want 1 trap equivalence, 1 road equivalence, 1 shine "
+            + "equivalence, 1 alpha trace, 1 beta trace, 0 draw errors, got "
+            + trapRefusals.length + " / " + roadRefusals.length + " / "
+            + shineRefusals.length + " / " + alphaTrace + " / " + betaTrace
             + " / " + (atomArt.errors || []).length);
     }
 }
