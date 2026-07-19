@@ -1,0 +1,2187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The playground — types in, verdicts and drawings out</title>
+<meta name="description" content="A static studio for Swift types: the judge names every broken claim as you type, and declared canvases draw themselves. No build, no server, no dependencies.">
+<meta property="og:title" content="The playground: types in, verdicts and drawings out">
+<meta property="og:description" content="A static studio for Swift types: the judge names every broken claim as you type, and declared canvases draw themselves. No build, no server, no dependencies.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://danielswift1992.github.io/typed-playground/">
+<meta property="og:image" content="https://danielswift1992.github.io/typed-playground/screenshot.png">
+<link rel="stylesheet" href="codemirror.css">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
+<style>
+  /* the palette mirrors Design.swift's walks: paper, mist, ink at two covers, accent, action, line */
+  :root {
+    --paper: #FFFFFF; --mist: #F6F7F8; --ink: #1C1C1E;
+    --text: rgba(0,0,0,0.80); --muted: rgba(0,0,0,0.54);
+    --accent: #FFDD2D; --action: #007AFF; --line: #EAECEE;
+    --refusal: #C4453B; --law: #B25000; --ok: #248A3D;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--mist); color: var(--text);
+    font: 15px/1.5 system-ui, sans-serif;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  /* a scroll that hits its edge stops there: no bounce, no spilling into the parent pane */
+  html, body { overscroll-behavior: none; }
+  .CodeMirror-scroll, #canvases, #verdicts, main { overscroll-behavior: none; }
+  header { padding: 10px 20px 8px; border-bottom: 1px solid var(--line); background: var(--paper); flex: none; }
+  #head-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; row-gap: 4px; }
+  .grow { flex: 1; }
+  header h1 { font-size: 17px; color: var(--ink); }
+  #head-row button, #head-row a {
+    font: 12px system-ui, sans-serif; padding: 4px 10px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--mist); color: var(--ink);
+    cursor: pointer; text-decoration: none;
+  }
+  #head-row button:hover, #head-row a:hover { border-color: var(--action); color: var(--action); }
+  header .badge {
+    font-size: 11px; padding: 2px 8px; border-radius: 9px;
+    background: transparent; border: 1px solid var(--line); color: var(--muted);
+  }
+  header .badge.ok { color: var(--ok); }
+  header .badge.bad { background: var(--refusal); color: var(--paper); border-color: var(--refusal); }
+  header p { font-size: 13px; color: var(--muted); margin-top: 2px; max-width: 76em; }
+  nav { padding: 8px 20px; background: var(--paper); border-bottom: 1px solid var(--line); }
+  nav button {
+    font: 13px system-ui, sans-serif; padding: 5px 12px; margin-right: 6px;
+    border-radius: 9px; border: 1px solid var(--line); background: var(--mist);
+    color: var(--ink); cursor: pointer;
+  }
+  nav button.active { background: var(--ink); color: var(--paper); border-color: var(--ink); }
+  .tab-sep {
+    display: inline-block; width: 1px; height: 16px; background: var(--line);
+    margin: 0 10px 0 4px; vertical-align: middle;
+  }
+  main { flex: 1; display: flex; min-height: 0; }
+  #editor-wrap {
+    flex: 0 0 clamp(360px, 50%, 900px); position: relative; background: var(--paper);
+    border-right: 1px solid var(--line);
+  }
+  #splitter {
+    flex: none; width: 6px; margin-left: -6px; cursor: col-resize;
+    touch-action: none; background: transparent; z-index: 2;
+  }
+  #splitter:hover, #splitter.dragging { background: var(--action); opacity: 0.5; }
+  #editor-host { position: absolute; inset: 0 0 28px 0; }
+  .CodeMirror {
+    height: 100%; background: var(--paper); color: var(--text);
+    font: 12.5px/19px ui-monospace, Menlo, monospace;
+  }
+  .CodeMirror-scroll { padding-bottom: 120px; }
+  /* air between the line numbers and the code */
+  .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { padding: 0 4px 0 14px; }
+  .CodeMirror-gutters { background: var(--paper); border-right: 1px solid var(--line); }
+  .CodeMirror-linenumber { color: rgba(0,0,0,0.30); font-size: 11px; }
+  .CodeMirror-cursor { border-left: 2px solid var(--ink); }
+  /* the token walk mirrors Xcode's Default (Light) preset */
+  .cm-keyword { color: #9B2393; font-weight: 600; }
+  .cm-string { color: #C41A16; }
+  .cm-comment { color: #5D6C79; }
+  .cm-attribute { color: #947100; }
+  .cm-localtype { color: #0B4F79; font-weight: 600; }
+  .cm-knownname { color: #3900A0; }
+  .cm-ghost { color: rgba(0,0,0,0.34); }
+  .cm-badname {
+    color: var(--refusal); font-weight: 600;
+    text-decoration: underline wavy var(--refusal) 1px; text-underline-offset: 3px;
+  }
+  /* findings: a washed line, a colored number, a note under the line */
+  .line-flag-bad { background: rgba(196,69,59,0.06); }
+  .line-flag-law { background: rgba(178,80,0,0.06); }
+  .gutter-flag-bad .CodeMirror-linenumber { color: var(--refusal); font-weight: 700; }
+  .gutter-flag-law .CodeMirror-linenumber { color: var(--law); font-weight: 700; }
+  .flag-note {
+    padding: 2px 8px 3px 34px; font-size: 11px; font-style: italic;
+    color: var(--refusal); background: rgba(196,69,59,0.08);
+  }
+  .flag-note.law { color: var(--law); background: rgba(178,80,0,0.08); }
+  #inspector {
+    position: absolute; bottom: 0; left: 0; right: 0;
+    padding: 5px 18px 5px 60px; font-size: 11.5px; color: var(--muted);
+    background: var(--paper); border-top: 1px solid var(--line);
+  }
+  #inspector-text {
+    display: block; white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis; padding-right: 130px;
+  }
+  #completion {
+    display: none; position: absolute; z-index: 5; min-width: 15em;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10); overflow: hidden;
+    font: 12px ui-monospace, Menlo, monospace;
+  }
+  .completion-row {
+    display: flex; gap: 14px; justify-content: space-between;
+    padding: 4px 10px; cursor: pointer;
+  }
+  .completion-row.chosen, .completion-row:hover { background: var(--mist); }
+  .completion-row .kind {
+    font: 10px system-ui, sans-serif; color: var(--muted);
+    text-transform: uppercase; letter-spacing: 0.05em;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .completion-row .swatch {
+    width: 10px; height: 10px; border-radius: 3px; display: inline-block;
+    border: 1px solid var(--line);
+  }
+  #pager {
+    position: absolute; right: 8px; top: 50%; transform: translateY(-50%);
+    display: none; align-items: center; gap: 6px; background: var(--paper);
+    padding-left: 10px; font-size: 11.5px; color: var(--ink);
+  }
+  #pager button {
+    font: 12px system-ui, sans-serif; padding: 1px 8px; border-radius: 6px;
+    border: 1px solid var(--line); background: var(--mist); cursor: pointer;
+  }
+  #pager button:hover { border-color: var(--action); color: var(--action); }
+  #inspector .tag {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em;
+    color: var(--muted); margin-right: 8px;
+  }
+  #inspector b { color: var(--ink); font-weight: 600; }
+  #editor { padding-bottom: 120px; }
+  #actions-row {
+    display: flex; align-items: center; background: var(--paper);
+    border-bottom: 1px solid var(--line); padding-right: 16px;
+  }
+  #actions {
+    padding: 8px 16px; flex: 1;
+    display: flex; gap: 6px; flex-wrap: wrap; align-items: center;
+  }
+  #actions-row > button {
+    font: 12.5px system-ui, sans-serif; padding: 4px 11px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer;
+  }
+  #actions-row > button:hover { border-color: var(--action); color: var(--action); }
+  #actions .caption {
+    font-size: 11px; color: var(--muted); margin-right: 8px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  #actions button {
+    font: 12.5px system-ui, sans-serif; padding: 4px 11px; border-radius: 8px;
+    border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer;
+  }
+  #actions button:hover { border-color: var(--action); color: var(--action); }
+  #actions button.loud { background: rgba(0,122,255,0.12); border-color: transparent; color: var(--action); font-weight: 600; }
+  #actions button.loud:hover { background: rgba(0,122,255,0.2); color: var(--action); }
+  #canvases.dark {
+    background: #101012;
+    --vi-surface-card: #1C1C1E; --vi-surface-track: rgba(255,255,255,0.15);
+    --vi-text-primary: rgba(255,255,255,0.90); --vi-text-secondary: rgba(255,255,255,0.70);
+    --vi-accent: #FFDD2D; --vi-action: #4972CF; --vi-line: rgba(255,255,255,0.15);
+    --vi-on-accent: #1C1C1E; --vi-on-action: #FFFFFF;
+  }
+  aside { flex: 1; display: flex; flex-direction: column; min-width: 0; }
+  #canvases { padding: 16px; overflow: auto; background: var(--mist); flex: 1; min-height: 0;
+    display: flex; flex-direction: column; justify-content: safe center; }
+  #canvases.stale svg { opacity: 0.4; filter: saturate(0.4); }
+  #canvases svg { width: 100%; height: auto; display: block; margin: 0 auto 12px; flex: none; }
+  #canvases a { cursor: pointer; }
+  #canvases a:hover { opacity: 0.8; }
+  .line-pressed { background: rgba(255, 221, 45, 0.35); }
+  /* the table surface: the same file as relations, beside the code surface */
+  #table-host { position: absolute; inset: 0 0 28px 0; overflow: auto;
+    background: var(--paper); padding: 12px 16px 120px; font-size: 12.5px; }
+  #table-host h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+    color: var(--muted); margin: 18px 0 6px; font-weight: 600; }
+  #table-host h3:first-child { margin-top: 4px; }
+  #table-host table { border-collapse: collapse; width: 100%; }
+  #table-host th { text-align: left; font-size: 11px; color: var(--muted);
+    font-weight: 500; padding: 3px 10px 3px 6px; border-bottom: 1px solid var(--line); }
+  #table-host td { padding: 3px 10px 3px 6px; border-bottom: 1px solid var(--line);
+    font-family: ui-monospace, Menlo, monospace; vertical-align: top; }
+  #table-host td.cell-value { max-width: 300px; white-space: normal;
+    overflow-wrap: anywhere; }
+  #table-host tr:hover td { background: rgba(0, 0, 0, 0.02); }
+  #table-host th { position: sticky; top: -12px; background: var(--paper);
+    cursor: pointer; user-select: none; }
+  #table-host th:hover { color: var(--text); }
+  #table-host th .dir { color: var(--action); }
+  #table-host td.cell-name { color: #0B4F79; font-weight: 600; cursor: pointer; }
+  #table-host td.cell-name:hover { text-decoration: underline; }
+  #table-host td.cell-value { color: #3900A0; }
+  #table-host td .computed { color: var(--muted); font-size: 10.5px;
+    margin-left: 6px; }
+  #table-host td .swatch { display: inline-block; width: 10px; height: 10px;
+    border-radius: 3px; border: 1px solid var(--line); margin-right: 5px;
+    vertical-align: -1px; }
+  #table-host td .enterable { cursor: pointer; }
+  #table-host td .enterable:hover { text-decoration: underline; }
+  #table-host td.cell-live { cursor: pointer; }
+  #table-host td.cell-live:hover { background: rgba(0, 122, 255, 0.06); }
+  #table-host td.cell-bad { background: rgba(196, 69, 59, 0.10); }
+  #table-host td.cell-bad::after { content: " ✗"; color: var(--refusal); }
+  #table-host .slot-menu { position: absolute; background: var(--paper);
+    border: 1px solid var(--line); border-radius: 8px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.10); z-index: 30; min-width: 180px; }
+  #table-host .slot-menu div { padding: 5px 12px; cursor: pointer;
+    font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  #table-host .slot-menu div:hover { background: rgba(0, 122, 255, 0.08); }
+  #table-host .slot-menu div .via { color: var(--muted); font-size: 10.5px; }
+  /* one file, two writing surfaces: a trough with a pill, the platform's own segment */
+  #surface-switch { display: inline-flex; background: var(--mist);
+    border-radius: 7px; padding: 2px; gap: 2px; }
+  #surface-switch button { border: none; border-radius: 5px; margin: 0;
+    background: transparent; color: var(--muted); font-size: 12px;
+    padding: 3px 12px; }
+  #surface-switch button:hover { color: var(--text); }
+  #surface-switch button.active-surface { background: var(--paper);
+    color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+  #verdict-panel { border-top: 1px solid var(--line); background: var(--paper); }
+  #verdict-head { display: flex; align-items: center; gap: 10px; padding: 9px 16px 7px; }
+  .chip { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 9px; }
+  .chip.ok { background: rgba(36,138,61,0.12); color: var(--ok); }
+  .chip.bad { background: var(--refusal); color: #FFFFFF; }
+  .chip.law { background: rgba(178,80,0,0.12); color: var(--law); }
+  #status { font-size: 12px; color: var(--muted); }
+  #status b { color: var(--ink); font-weight: 600; }
+  #verdicts { max-height: 30vh; overflow: auto; padding: 0 12px 4px; }
+  .refusal {
+    padding: 7px 12px; border-radius: 10px; background: var(--paper);
+    border: 1px solid var(--line); border-left: 3px solid var(--refusal);
+    margin-bottom: 6px; font-size: 12.5px; cursor: pointer;
+  }
+  .refusal:hover { border-color: var(--action); }
+  .refusal.law { border-left-color: var(--law); }
+  .refusal .where { color: var(--muted); font-size: 11.5px; }
+  .refusal .what { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; }
+  #controls { padding: 8px 12px; border-top: 1px solid var(--line); background: var(--paper); }
+  #controls .label { display: inline; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; margin-right: 6px; }
+  #controls button {
+    font: 12.5px system-ui, sans-serif; padding: 4px 10px; margin: 2px 4px 2px 0;
+    border-radius: 8px; border: 1px solid var(--line); background: var(--mist);
+    color: var(--ink); cursor: pointer;
+  }
+  #controls button:hover { border-color: var(--action); color: var(--action); }
+  #controls button.primary { background: rgba(0,122,255,0.12); border-color: transparent; color: var(--action); font-weight: 600; }
+  #controls button.primary:hover { background: rgba(0,122,255,0.2); color: var(--action); }
+  footer { padding: 7px 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); background: var(--paper); flex: none; }
+  footer code { font-family: ui-monospace, Menlo, monospace; }
+  footer a { color: var(--action); text-decoration: none; }
+  footer a:hover { text-decoration: underline; }
+  @media (max-width: 900px) {
+    main { flex-direction: column; overflow-y: auto; }
+    aside { order: -1; flex: none; }
+    #editor-wrap { flex: none !important; height: 42vh; border-right: 0; border-top: 1px solid var(--line); }
+    #splitter { display: none; }
+    .tab-sep { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div id="head-row">
+    <h1>The playground</h1>
+    <span class="grow"></span>
+    <a id="repo-link" href="https://github.com/DanielSwift1992/typed-playground" target="_blank" rel="noopener">GitHub ↗</a>
+    <span class="badge" id="selfcheck" title="the reference judge is a Swift program in the theory's repository, not the compiler: four of its recorded verdicts re-run here on every load, and 4/4 means this JavaScript port matches it">self-test…</span>
+  </div>
+</header>
+
+<nav id="tabs"></nav>
+
+<main>
+  <div id="editor-wrap">
+    <div id="editor-host"></div>
+    <div id="table-host" style="display: none;"></div>
+    <div id="inspector"><span id="inspector-text"><span class="tag">inspect</span>caret on a name shows its meaning here · ⌥-click jumps to its declaration</span><span id="pager"><button id="page-prev">‹</button><span id="page-label"></span><button id="page-next">›</button></span></div>
+  </div>
+  <div id="splitter" title="drag to resize the preview · double-click to reset"></div>
+  <aside>
+    <div id="actions-row">
+      <div id="actions"></div>
+      <button id="theme" title="the canvases redraw in the dark palette">Dark canvas</button>
+    </div>
+    <div id="canvases"></div>
+    <div id="verdict-panel">
+      <div id="verdict-head">
+        <span id="verdict-chip" class="chip">…</span>
+        <span class="grow"></span>
+        <span id="status" title="one pass: declarations read into the dictionary, references answered by lookup, premises checked, wall time"></span>
+      </div>
+      <div id="verdicts"></div>
+    </div>
+    <div id="controls">
+      <span class="label">The file</span>
+      <span id="surface-switch"><button id="surface-code"
+        class="active-surface">Code</button><button id="surface-table">Table</button></span>
+      <button id="reset">Reset</button>
+      <button id="download" class="primary">Download</button>
+    </div>
+  </aside>
+</main>
+
+<footer>
+  Every tab is a real Swift file: Download it, and the theory's repository checks the same
+  file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
+  for the drawings. ·
+  <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
+  <span style="float: right; color: var(--muted);">rev 155</span>
+</footer>
+
+<div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
+
+
+<script>
+window.addEventListener("error", (event) => {
+    if (window.scriptsMissing) return; // the six-files banner already names the cause
+    const banner = document.getElementById("crash");
+    banner.style.display = "block";
+    // a data: document carries the whole page in its own address: never print that
+    const source = (event.filename || "").startsWith("data:") ? "inline"
+        : (event.filename || "").split("/").pop().slice(0, 80);
+    banner.textContent = "the page hit an error: " + event.message
+        + " (" + source + ":" + event.lineno + ")";
+});
+</script>
+<script src="codemirror.js"></script>
+<script src="judge.js?v=13"></script>
+<script src="lint.js?v=4"></script>
+<script src="press.js?v=3"></script>
+<script src="renderer.js?v=12"></script>
+<script>
+"use strict";
+
+// storage that never kills the page: some file:// modes refuse localStorage entirely
+const storage = (() => {
+    let backing;
+    try {
+        localStorage.setItem("playground-probe", "1");
+        localStorage.removeItem("playground-probe");
+        backing = localStorage;
+    } catch (refused) {
+        const held = new Map();
+        backing = { getItem: (k) => held.get(k) ?? null,
+                    setItem: (k, v) => held.set(k, v),
+                    removeItem: (k) => held.delete(k) };
+    }
+    return { getItem: (k) => backing.getItem(k),
+             setItem: (k, v) => { try { backing.setItem(k, v); } catch (full) {} },
+             removeItem: (k) => backing.removeItem(k) };
+})();
+
+if (typeof judge === "undefined" || typeof renderAll === "undefined"
+    || typeof lint === "undefined" || typeof press === "undefined"
+    || typeof CodeMirror === "undefined") {
+    window.scriptsMissing = true;
+    const banner = document.getElementById("crash");
+    banner.style.display = "block";
+    banner.textContent = "a script did not load: the page needs its seven files"
+        + " (index.html, judge.js, lint.js, renderer.js, press.js,"
+        + " codemirror.js, codemirror.css) in one folder. On the live site"
+        + " this is a fresh deploy mid-flight: a hard reload mends it.";
+    // nothing below can run without the engines: stop here so no stray error
+    // overwrites the one banner that names the cause
+    throw new Error("the engine files did not load");
+}
+
+// ── the kit vocabulary the judge tolerates on drawing tabs ──
+const kitVocabulary = {
+    seeds: new Set(["SpanNothing", "SurfaceCard", "SurfaceTrack", "TextPrimary",
+        "TextSecondary", "AccentRole", "ActionRole", "LineRole", "OnAccent", "OnActionRole",
+        "Paper", "Mist", "Ink", "Accent", "Action", "Muted",
+        "TextXXS", "TextXS", "TextS", "TextM", "TextL", "TitleT", "DisplayS", "Display",
+        "WeightRegular", "WeightBold", "R12", "R20", "HairlineWidth", "FontStack",
+        "U1", "U2", "U4", "U8", "U16", "U32", "U64", "U128", "U256", "U512",
+        "EdgeMargin", "Breath", "HairBreath", "WideSurface", "FilmStripTall", "RestAir",
+        // the dynamics medium, ported from the theory's triples branch
+        "SlotRule", "R10", "TrackHeight", "DotSlot", "KeySide",
+        // the spectral bridge: the weights axis, seven stated weights, the ladder
+        "CanonicalWeights", "HAlphaGlow", "HBetaGlow", "PaschenGlow",
+        "NeonYellowGlow", "NeonRedGlow", "SodiumDGlow", "SodiumIRGlow",
+        "Rung0", "Rung1", "Rung2", "Rung3", "Rung4", "Rung5", "Rung6",
+        "Rung7", "Rung8", "Unit",
+        "SRGBRedPrimary", "SRGBGreenPrimary", "SRGBBluePrimary",
+        "P3RedPrimary", "P3GreenPrimary", "P3BluePrimary",
+        "Rec2020RedPrimary", "Rec2020GreenPrimary", "Rec2020BluePrimary"]),
+    generics: new Set(["Air", "Flexible", "Layered", "TimedReveal", "FrozenReveal",
+        "Tally", "CanvasSize", "Plus", "Times", "Twice", "Half",
+        "Fixed", "SpanHosted", "SpanLink", "Halfway", "Under", "Paired",
+        "RuleKey", "TermText", "CenteredBaseline", "Chord",
+        "LineTally", "TextWidth", "SpanLabelMidWrapped", "SpanLabelWrapped", "Succ",
+        "XYZWrite", "PouredCoordinate", "Exactly", "EdgeSame", "EdgeEven", "EdgeOdd",
+        "EdgeAtLeast", "PerceptualRung"]),
+    bareSeeds: new Set(["RestAir"]),
+};
+
+const basicsFile = `@@WORLD:Basics@@`;
+
+const companyFile = `@@WORLD:Company@@`;
+
+const organizationFile = `@@WORLD:Organization@@`;
+
+// ── the big company, generated the way the repository generates its own: every
+// coordinate stated directly by the rotation's index, no person derived from another ──
+
+const givenPool = [
+    ["Ada", "Female"], ["Grace", "Female"], ["Alan", "Male"], ["Edsger", "Male"],
+    ["Barbara", "Female"], ["John", "Male"], ["Margaret", "Female"], ["Donald", "Male"],
+    ["Radia", "Female"], ["Ken", "Male"], ["Frances", "Female"], ["Niklaus", "Male"],
+];
+const familyPool = ["Lovelace", "Hopper", "Turing", "Dijkstra", "Liskov", "Backus",
+    "Hamilton", "Knuth", "Perlman", "Thompson", "Allen", "Wirth"];
+const bornPool = ["Y1815", "Y1906", "Y1912", "Y1930", "Y1936", "Y1938", "Y1939", "Y1943"];
+const rankPool = ["IndividualContributor", "Lead", "Manager"];
+const departmentPool = ["Finance", "Engineering", "Sales", "People"];
+const sitePool = ["OnSite", "Hybrid", "Remote"];
+
+function mustReplace(view, from, to) {
+    if (!view.includes(from)) throw new Error("makeBigCompany anchor lost: " + from.slice(0, 48));
+    return view.replace(from, to);
+}
+
+function makeBigCompany(count) {
+    const lines = [];
+    lines.push("import VerificationIsIdentification", "import DocumentKit", "");
+    lines.push("// A generated company of " + count + " people. Every field is computed from the");
+    lines.push("// person's index, so no person depends on another. The cards above count");
+    lines.push("// this list live: edit anyone, and the judge re-checks the file as you type.", "");
+    let view = organizationView.slice(organizationView.indexOf("// ── the display strings"));
+    view = mustReplace(view, '"The Organization"', '"The Organization, N = ' + thousands(count) + '"');
+    // the same paragraph layout as the organization: five sentences swapped 1:1
+    view = mustReplace(view,
+        '"Four people, their departments and shares, written as types in the file on the left."',
+        '"This file is the same organization, written out for ' + thousands(count) + ' people."');
+    view = mustReplace(view,
+        '"Every number below is read out of the file on every edit: nothing is stored beside it."',
+        '"A compiler computes what each line means from the other lines. Here that takes 199 seconds."');
+    view = mustReplace(view,
+        '"Press Hire one more: a fifth person is written into the file, and every number follows."',
+        '"The judge computes nothing: every fact is there in full, and a check is one read."');
+    view = mustReplace(view,
+        '"Plant a lie writes one false line: the judge refuses the file and names the line."',
+        '"So on every edit the judge re-reads the whole file, @LINES@ lines, in 0.2 seconds."');
+    view = mustReplace(view,
+        '"Press Table under the preview: the same people appear as rows."',
+        '"Press Plant a lie deep: it breaks one line near the bottom, and the judge names its number."');
+    view = mustReplace(view,
+        '"Break it by hand: change one Finance to Sales on the left. The judge refuses the share lines."',
+        '"The editor shows this file in pages. The judge reads all pages at once."');
+    lines.push(view);
+    for (let i = 0; i < givenPool.length; i += 1) {
+        lines.push("public enum " + givenPool[i][0] + ": GivenNameCycle {");
+        lines.push("    public typealias Next = " + givenPool[(i + 1) % givenPool.length][0]);
+        lines.push("    public typealias Sex = " + givenPool[i][1], "}");
+    }
+    for (let i = 0; i < familyPool.length; i += 1) {
+        lines.push("public enum " + familyPool[i] + ": FamilyNameCycle {");
+        lines.push("    public typealias Next = " + familyPool[(i + 1) % familyPool.length], "}");
+    }
+    for (let i = 0; i < bornPool.length; i += 1) {
+        lines.push("public enum " + bornPool[i] + ": BirthYearCycle {");
+        lines.push("    public typealias Next = " + bornPool[(i + 1) % bornPool.length], "}");
+    }
+    lines.push("");
+    const width = String(count - 1).length;
+    const handle = (i) => "Emp" + String(i).padStart(width, "0");
+    for (let i = 0; i < count; i += 1) {
+        lines.push("public enum " + handle(i) + ": Employee, Person {");
+        lines.push("    public typealias Rank = " + rankPool[i % 3]);
+        lines.push("    public typealias Home = " + departmentPool[i % 4]);
+        lines.push("    public typealias Given = " + givenPool[i % 12][0]);
+        lines.push("    public typealias Family = " + familyPool[Math.floor(i / 12) % 12]);
+        lines.push("    public typealias Born = " + bornPool[Math.floor(i / 144) % 8]);
+        lines.push("    public typealias Site = " + sitePool[i % 3]);
+        lines.push("    public typealias Sex = Given.Sex", "}");
+    }
+    lines.push("", "public enum Company: Roster {", "    @StructureBuilder",
+        "    public static var body: some Structure {");
+    for (let i = 0; i < count; i += 8) {
+        const row = [];
+        for (let j = i; j < Math.min(i + 8, count); j += 1) row.push(handle(j) + ".self;");
+        lines.push("        " + row.join(" "));
+    }
+    lines.push("    }", "}");
+    for (const [team, department, offset] of
+        [["FinanceTeam", "Finance", 0], ["EngineeringTeam", "Engineering", 1]]) {
+        lines.push("", "public enum " + team + ": Team {", "    @StructureBuilder",
+            "    public static var body: some Structure {");
+        for (let i = offset; i < count; i += 4) {
+            lines.push("        VerifiedInDepartment<" + handle(i) + ", " + department + ">.self;");
+        }
+        lines.push("    }", "}");
+    }
+    lines.push("", "public enum AllAccesses: AccessLedger {", "    @StructureBuilder",
+        "    public static var body: some Structure {");
+    for (let i = 0; i < count; i += 1) {
+        lines.push("        VerifiedView<" + handle(i) + ", "
+            + departmentPool[i % 4] + "Share>.self;");
+    }
+    lines.push("    }", "}", "");
+    const full = lines.join("\n");
+    return full.replace("@LINES@", thousands(full.split("\n").length));
+}
+
+const organizationView = organizationFile.slice(0,
+    organizationFile.indexOf("// ── the data the page reads"));
+
+const introFile = `@@WORLD:ReadMe@@`;
+
+const lightFile = `@@WORLD:Light@@`;
+
+
+const atomFile = `@@WORLD:Atom@@`;
+
+const rulesFile = `@@WORLD:Rules@@`;
+
+const faqFile = `@@WORLD:FAQ@@`;
+
+const worldFile = `@@WORLD:World@@`;
+
+const typewriterFile = `@@WORLD:Typewriter@@`;
+
+const tabs = [
+    { id: "readme", group: "intro", title: "Read me", file: "ReadMe.swift", text: introFile,
+      caption: "the page draws its own manual: this introduction is the file on the left" },
+    { id: "organization", group: "company", title: "The organization", file: "Organization.swift",
+      text: organizationFile,
+      caption: "a company as types: the cards count the people declared in the file" },
+    { id: "scale", group: "company", title: "At scale", file: "BigCompany.swift", text: null,
+      caption: "12,800 people, 136,000 lines: a planted lie is named by line, on every edit" },
+    { id: "basics", group: "mechanics", title: "Basics", file: "Basics.swift", text: basicsFile,
+      caption: "layout in four steps: a row, three shares, a dot, a film" },
+    { id: "writer", group: "mechanics", title: "A typewriter", file: "Typewriter.swift", text: typewriterFile,
+      caption: "type on your keyboard: a keystroke appends one character to the Note literal in the file" },
+    { id: "buttons", group: "mechanics", title: "Buttons", file: "World.swift", text: worldFile,
+      caption: "every key on the canvas is a rule declared in the file: a press rewrites one typealias line" },
+    { id: "light", group: "physics", title: "Light", file: "Light.swift", text: lightFile,
+      caption: "the lamp is code: edit a number and every colour is recomputed" },
+    { id: "atom", group: "physics", title: "The atom", file: "Atom.swift", text: atomFile,
+      caption: "the atom is a few lines, not a simulation: change a law and the judge re-checks every line" },
+    { id: "rules", group: "reference", title: "Rules", file: "Rules.swift", text: rulesFile,
+      caption: "how to write here: the two moves, the five forms, the law" },
+    { id: "faq", group: "reference", title: "FAQ", file: "FAQ.swift", text: faqFile,
+      caption: "the FAQ is a file: edit an answer and the page redraws it" },
+];
+
+// the lies the buttons plant on the company tab, anchored on the pristine snippets
+const otherShare = {
+    FinanceShare: "SalesShare", EngineeringShare: "FinanceShare",
+    SalesShare: "EngineeringShare", PeopleShare: "FinanceShare",
+};
+
+const lies = {
+    cross: [
+        "        VerifiedView<\n            Emp03,\n            EngineeringShare\n        >.self;",
+        "        VerifiedView<\n            Emp03,\n            FinanceShare\n        >.self;",
+    ],
+    rank: [
+        "public enum Emp02: Employee, Person {\n    public typealias Rank = Lead",
+        "public enum Emp02: Employee, Person {\n    public typealias Rank = Leed",
+    ],
+    site: [
+        "    public typealias Born = Y1815\n    public typealias Site = OnSite\n    public typealias Sex = Given.Sex\n}\n\npublic enum Company",
+        "    public typealias Born = Y1815\n    public typealias Site = Sales\n    public typealias Sex = Given.Sex\n}\n\npublic enum Company",
+    ],
+};
+
+// verdicts captured from the Swift judge (Sources/Tools/Judge.swift) on the company
+// corpus — the port must reproduce them, character for character, on every load
+const golden = {
+    clean: { declarations: 15, lookups: 47, premises: 45, refusals: [] },
+    cross: [{ line: 104, premise: "VerifiedView requires Emp03.Home == FinanceShare.Home: Engineering against Finance" }],
+    rank:  [{ line: 46,  premise: "Emp02.Rank: the name Leed resolves to nothing" }],
+    site:  [{ line: 69,  premise: "Person requires Site in workplace: Emp04.Site = Sales lands in department" }],
+};
+
+function escapeMarkup(text) {
+    return text.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;").replaceAll('"', "&quot;");
+}
+
+// names that read as structure, painted plain: the coordinate keys and the modules
+const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "Size",
+    "Weight", "Content", "Given", "Across", "AriaLabel", "Defs", "CY", "R",
+    "Begin", "Dwell", "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
+    "Slot", "From", "Into", "Ink", "DotOneInk", "DotTwoInk", "DotThreeInk",
+    "DotFourInk", "StageWord", "SecretInk",
+    "G", "P", "N", "T", "Glyph", "PageTerm", "NoteTerm", "Counting", "LinePitch",
+    "AlphaLevel", "BetaLevel", "PaschenLevel", "Horizontal", "Vertical",
+    "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
+    "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
+    "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
+    "L", "RadialNodes", "Seat", "Flash", "Drop",
+    "DocumentKit", "VerificationIsIdentification", "Organization"]);
+let localNames = new Set();
+
+// every name the dictionaries answer for; rebuilt after each judgment
+const fixedNames = new Set([
+    "HFlow", "VFlow", "GrownDiagram", "Diagram", "Group", "Close", "Open",
+    "Structure", "Divides", "DividesY", "Roster", "Team", "AccessLedger",
+    "Employee", "Person", "GivenNameCycle", "FamilyNameCycle", "BirthYearCycle",
+    // the coordinate keys the kit and the policy read (typealias left-hand sides)
+    "H", "Radius", "Fill", "Stroke", "Y", "FillColor", "Size", "Weight", "Content",
+    "Given", "Across", "AriaLabel", "Defs", "CY", "R", "Begin", "Dwell",
+    "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
+    "Slot", "From", "Into", "Ink", "DotOneInk", "DotTwoInk", "DotThreeInk",
+    "DotFourInk", "StageWord", "SecretInk",
+    "G", "P", "N", "T", "Glyph", "PageTerm", "NoteTerm", "Counting", "LinePitch",
+    "AlphaLevel", "BetaLevel", "PaschenLevel", "Horizontal", "Vertical",
+    "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
+    "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
+    "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
+    "L", "RadialNodes", "Seat", "Flash", "Drop",
+    "SpanLabel", "SpanLink", "SoftShadow", "DisplayS", "Never", "Spanning",
+    // the modules an import names
+    "DocumentKit", "VerificationIsIdentification", "Organization",
+    ...spanShapes, ...kitVocabulary.seeds, ...kitVocabulary.generics,
+    ...ranks, ...departments, ...workplaces, ...genders,
+    ...shareHomes.keys(), ...gatePremises.keys(),
+]);
+let knownNames = fixedNames;
+let lineNotes = new Map();
+let paintedNameKey = "";
+
+// ── the editor: one CodeMirror instance, one DOM, no mirrors to drift ──
+
+CodeMirror.defineMode("playground-swift", () => ({
+    token: (stream) => {
+        if (stream.match("//")) { stream.skipToEnd(); return "comment"; }
+        if (stream.match('"')) {
+            while (!stream.eol()) { if (stream.next() === '"') break; }
+            return "string";
+        }
+        if (stream.match(/^@[A-Za-z]+/)) return "attribute";
+        if (stream.match(/^[A-Za-z_][A-Za-z0-9_]*/)) {
+            const word = stream.current();
+            if (word === "self" || keywordSet.has(word)) return "keyword";
+            if (/^[A-Z]/.test(word)) {
+                if (quietNames.has(word)) return null;
+                if (localNames.has(word)) return "localtype";
+                if (knownNames.has(word)) return "knownname";
+                return "badname";
+            }
+            return null;
+        }
+        if (stream.match(/^[<>,.]/)) return "ghost";
+        stream.next();
+        return null;
+    },
+}));
+
+const cm = CodeMirror(document.getElementById("editor-host"), {
+    value: "",
+    mode: "playground-swift",
+    lineNumbers: true,
+    indentUnit: 4,
+    viewportMargin: Infinity,
+    dragDrop: false,
+});
+
+// the old three-layer editor spoke DOM: this shim keeps every reader honest
+const editor = {
+    get value() { return cm.getValue(); },
+    set value(next) { cm.setValue(next); },
+    get selectionStart() { return cm.indexFromPos(cm.getCursor("from")); },
+    get selectionEnd() { return cm.indexFromPos(cm.getCursor("to")); },
+    setSelectionRange(from, to) {
+        cm.setSelection(cm.posFromIndex(from), cm.posFromIndex(to));
+    },
+    focus() { cm.focus(); },
+    get scrollTop() { return cm.getScrollInfo().top; },
+    set scrollTop(top) { cm.scrollTo(null, top); },
+};
+
+// findings are physical marks: cleared on any edit, applied after a verdict
+let flagged = [];
+function clearFlags() {
+    for (const flag of flagged) {
+        cm.removeLineClass(flag.handle, "background", flag.back);
+        cm.removeLineClass(flag.handle, "gutter", flag.gutter);
+        flag.widget.clear();
+    }
+    flagged = [];
+}
+function applyFlags() {
+    clearFlags();
+    for (const [globalLine, entry] of lineNotes) {
+        const local = globalLine - pageStart() - 1;
+        if (local < 0 || local >= cm.lineCount()) continue;
+        const back = entry.kind === "law" ? "line-flag-law" : "line-flag-bad";
+        const gutter = entry.kind === "law" ? "gutter-flag-law" : "gutter-flag-bad";
+        const handle = cm.addLineClass(local, "background", back);
+        cm.addLineClass(local, "gutter", gutter);
+        const note = document.createElement("div");
+        note.className = "flag-note" + (entry.kind === "law" ? " law" : "");
+        note.textContent = entry.note;
+        const widget = cm.addLineWidget(local, note);
+        flagged.push({ handle, back, gutter, widget });
+    }
+}
+const status = document.getElementById("status");
+const verdicts = document.getElementById("verdicts");
+const canvases = document.getElementById("canvases");
+
+// one press for every trigger: the applier substitutes one line, the reader's
+// place is kept, the rewritten line flashes, and a refusal speaks briefly in
+// the caption. What pressed — a click or a keystroke — the medium never knows.
+function speakBriefly(message, holdMs) {
+    const caption = document.querySelector("#actions .caption");
+    const standing = activeTab.caption;
+    caption.textContent = message;
+    setTimeout(() => { caption.textContent = standing; }, holdMs || 4000);
+}
+function applyPress(ruleArgument) {
+    const before = fullText();
+    const pressed = press(before, ruleArgument);
+    if (pressed.error) {
+        speakBriefly("the applier refuses: " + pressed.error);
+        return;
+    }
+    if (!pressed.applied) return;
+    // a mismatch is a lawful no-op: the file stands byte-identical, nothing moves.
+    // a press rewrites exactly one line, so the editor takes exactly one line:
+    // the document is not re-set whole, and the reader's place never moves
+    const local = pressed.line - pageStart() - 1;
+    const beforeLines = before.split("\n");
+    const afterLines = pressed.text.split("\n");
+    if (afterLines.length === beforeLines.length
+        && local >= 0 && local < cm.lineCount()) {
+        cm.replaceRange(afterLines[pressed.line - 1],
+            { line: local, ch: 0 },
+            { line: local, ch: cm.getLine(local).length }, "press");
+        storage.setItem(storageKey(activeTab), fullText());
+        render();
+        // typing is a stream: the literal movements skip the flash the rule
+        // keys keep, so the sheet types without a blink
+        if (!/^(append|rubout|clear) /.test(ruleArgument)) {
+            cm.addLineClass(local, "background", "line-pressed");
+            setTimeout(() => cm.removeLineClass(local, "background", "line-pressed"), 1200);
+        }
+        return;
+    }
+    const keptScroll = cm.getScrollInfo();
+    const keptCursor = cm.getCursor();
+    setEditorFile(pressed.text);
+    cm.setCursor(keptCursor);
+    cm.scrollTo(keptScroll.left, keptScroll.top);
+}
+
+// ── the table surface: the same file, projected as relations. The page adds
+// no model: rows are the judge's declarations, columns are their slot keys,
+// the state table is the top aliases whose <Name>Slot marker stands declared.
+// A touch on a live cell offers the rules that unify with the current term,
+// and choosing one is a press, never an edit. Every cell knows its line. ──
+
+let tableMode = false;
+let tableSort = null; // { signature, key, dir }: one ordering at a time
+
+function tableGroups() {
+    if (!lastParsed) return { state: [], groups: [] };
+    // the state rows: top aliases with a declared <Name>Slot marker
+    const state = [];
+    for (const [name, alias] of lastParsed.topAliases) {
+        if (lastParsed.declarations.has(name + "Slot")) {
+            state.push({ name, term: alias.target, line: alias.line });
+        }
+    }
+    // entity groups: declarations sharing a conformance signature and slot keys
+    const buckets = new Map();
+    for (const declaration of lastParsed.declarations.values()) {
+        if (declaration.aliases.size === 0) continue;
+        const keys = [...declaration.aliases.keys()].sort();
+        const signature = declaration.conformances.join("+") + " · " + keys.join(",");
+        if (!buckets.has(signature)) {
+            buckets.set(signature, { conformances: declaration.conformances,
+                keys, rows: [] });
+        }
+        buckets.get(signature).rows.push(declaration);
+    }
+    const groups = [...buckets.values()].filter((group) => group.rows.length >= 2);
+    for (const group of groups) group.rows.sort((a, b) => a.line - b.line);
+    groups.sort((a, b) => a.rows[0].line - b.rows[0].line);
+    return { state, groups };
+}
+
+// the rules whose From unifies with a slot's current term: the cell's menu
+function slotOffers(slotMarker, currentTerm) {
+    const offers = [];
+    if (typeof parseTerm !== "function") return offers;
+    const current = parseTerm(currentTerm);
+    for (const declaration of lastParsed.declarations.values()) {
+        if (!declaration.conformances.includes("SlotRule")) continue;
+        const slot = declaration.aliases.get("Slot");
+        const from = declaration.aliases.get("From");
+        const into = declaration.aliases.get("Into");
+        if (!slot || slot.target !== slotMarker || !from || !into) continue;
+        const variables = declaration.params || [];
+        const bindings = new Map();
+        if (!unify(parseTerm(from.target), current, variables, bindings)) continue;
+        // an instance-bound rule needs arguments the table cannot guess yet
+        const counts = new Map();
+        occurrences(parseTerm(from.target), variables, counts);
+        if (variables.some((variable) => !counts.has(variable))) continue;
+        let landing = into.target;
+        for (const [variable, value] of bindings) {
+            landing = landing.replace(new RegExp("\\b" + variable + "\\b", "g"), value);
+        }
+        offers.push({ rule: declaration.name, landing });
+    }
+    return offers;
+}
+
+function findingLines() {
+    const lines = new Map();
+    for (const finding of lastFindings || []) {
+        if (finding.shownLine) lines.set(finding.shownLine, finding.premise);
+    }
+    return lines;
+}
+
+function enterName(name) {
+    const declaration = lastParsed.declarations.get(name);
+    if (!declaration) return;
+    setSurface(false);
+    reveal(declaration.line);
+}
+
+function buildTables() {
+    const host = document.getElementById("table-host");
+    host.innerHTML = "";
+    const bad = findingLines();
+    const { state, groups } = tableGroups();
+    // the projection reads what the canvas would read: a countable target
+    // annotates its number, a color target wears its swatch. Failures stay
+    // silent: not every cell is a magnitude.
+    const annotate = (cell, target) => {
+        try {
+            const node = parseType(target);
+            // a bare declared name is a term, not a magnitude: its count of one
+            // is the judge's bookkeeping, noise to a reader
+            if (node.args.length === 0 && lastParsed.declarations.has(node.head)) {
+                return;
+            }
+            const environment = makeEnvironment(lastParsed.declarations,
+                lastParsed.literals, lastParsed.topAliases);
+            const counted = countOf(environment, node);
+            if (environment.errors.length === 0 && Number.isFinite(counted)
+                && String(counted) !== target.trim()) {
+                const note = document.createElement("span");
+                note.className = "computed";
+                note.textContent = "= " + counted;
+                cell.append(note);
+                return;
+            }
+            const environmentTwo = makeEnvironment(lastParsed.declarations,
+                lastParsed.literals, lastParsed.topAliases);
+            const read = textOf(environmentTwo, node);
+            if (environmentTwo.errors.length === 0) {
+                const color = read.match(/(#[0-9A-Fa-f]{3,8})\)?$/);
+                if (read.startsWith("#") || read.startsWith("var(")) {
+                    const swatch = document.createElement("span");
+                    swatch.className = "swatch";
+                    swatch.style.background = color ? color[1] : read;
+                    cell.prepend(swatch);
+                } else if (/^\d+(\.\d+)?$/.test(read) && read !== target.trim()) {
+                    const note = document.createElement("span");
+                    note.className = "computed";
+                    note.textContent = "= " + read;
+                    cell.append(note);
+                }
+            }
+        } catch (quiet) {}
+    };
+    const enterable = (term) => {
+        const span = document.createElement("span");
+        span.textContent = term;
+        const bare = term.split("<")[0].trim();
+        if (lastParsed.declarations.has(bare)) {
+            span.className = "enterable";
+            span.title = "go to the declaration";
+            span.addEventListener("click", (event) => {
+                event.stopPropagation();
+                enterName(bare);
+            });
+        }
+        return span;
+    };
+    if (state.length > 0) {
+        const heading = document.createElement("h3");
+        heading.textContent = "the state · one row per slot";
+        host.append(heading);
+        const table = document.createElement("table");
+        table.innerHTML = "<tr><th>slot</th><th>term</th></tr>";
+        for (const row of state) {
+            const tr = document.createElement("tr");
+            const name = document.createElement("td");
+            name.className = "cell-name";
+            name.textContent = row.name;
+            const value = document.createElement("td");
+            value.className = "cell-value cell-live";
+            if (bad.has(row.line)) {
+                value.classList.add("cell-bad");
+                value.title = bad.get(row.line);
+            }
+            value.append(enterable(row.term));
+            value.title = value.title || "touch: the rules that move this slot";
+            value.addEventListener("click", (event) => {
+                openSlotMenu(event, row);
+            });
+            tr.append(name, value);
+            table.append(tr);
+        }
+        host.append(table);
+    }
+    for (const group of groups) {
+        const heading = document.createElement("h3");
+        heading.textContent = group.conformances.join(", ") + " · "
+            + group.rows.length + " rows";
+        // a group is an object too, and its source is its own rows: entering
+        // it lands on the first declaration. The conformance name itself is
+        // the kit's when the file declares no such name, and the title says so.
+        heading.style.cursor = "pointer";
+        const conformance = group.conformances[0];
+        heading.title = (lastParsed.declarations.has(conformance)
+            ? "go to " + conformance
+            : conformance + " is a kit protocol; these rows conform to it")
+            + " · click: go to the first row, line " + group.rows[0].line;
+        heading.addEventListener("click", () => {
+            setSurface(false);
+            reveal(group.rows[0].line);
+        });
+        host.append(heading);
+        const table = document.createElement("table");
+        const head = document.createElement("tr");
+        const signature = group.conformances.join("+") + group.keys.join(",");
+        const sortMark = (key) => tableSort && tableSort.signature === signature
+            && tableSort.key === key
+            ? ' <span class="dir">' + (tableSort.dir > 0 ? "\u2193" : "\u2191") + "</span>"
+            : "";
+        const headers = ["name", ...group.keys];
+        for (const key of headers) {
+            const th = document.createElement("th");
+            th.innerHTML = key + sortMark(key);
+            th.title = "sort by " + key;
+            th.addEventListener("click", () => {
+                const dir = tableSort && tableSort.signature === signature
+                    && tableSort.key === key ? -tableSort.dir : 1;
+                tableSort = { signature, key, dir };
+                buildTables();
+            });
+            head.append(th);
+        }
+        table.append(head);
+        let rows = group.rows;
+        if (tableSort && tableSort.signature === signature) {
+            const value = (declaration) => tableSort.key === "name"
+                ? declaration.name
+                : (declaration.aliases.get(tableSort.key)?.target ?? "");
+            rows = [...rows].sort((a, b) =>
+                tableSort.dir * value(a).localeCompare(value(b), undefined,
+                    { numeric: true }));
+        }
+        for (const declaration of rows) {
+            const tr = document.createElement("tr");
+            const name = document.createElement("td");
+            name.className = "cell-name enterable";
+            name.textContent = declaration.name;
+            name.title = "go to line " + declaration.line;
+            name.addEventListener("click", () => enterName(declaration.name));
+            tr.append(name);
+            for (const key of group.keys) {
+                const alias = declaration.aliases.get(key);
+                const cell = document.createElement("td");
+                cell.className = "cell-value";
+                if (alias) {
+                    if (bad.has(alias.line)) {
+                        cell.classList.add("cell-bad");
+                        cell.title = bad.get(alias.line);
+                    }
+                    cell.append(enterable(alias.target));
+                    annotate(cell, alias.target);
+                }
+                tr.append(cell);
+            }
+            table.append(tr);
+        }
+        host.append(table);
+    }
+}
+
+function openSlotMenu(event, row) {
+    closeSlotMenu();
+    const offers = slotOffers(row.name + "Slot", row.term);
+    if (offers.length === 0) {
+        speakBriefly("no rule moves " + row.name + " from " + row.term, 2500);
+        return;
+    }
+    const menu = document.createElement("div");
+    menu.className = "slot-menu";
+    for (const offer of offers) {
+        const item = document.createElement("div");
+        item.innerHTML = offer.landing.replaceAll("&", "&amp;").replaceAll("<", "&lt;")
+            + ' <span class="via">· press ' + offer.rule + "</span>";
+        item.addEventListener("click", () => {
+            closeSlotMenu();
+            applyPress(offer.rule);
+        });
+        menu.append(item);
+    }
+    const host = document.getElementById("table-host");
+    host.append(menu);
+    const hostBox = host.getBoundingClientRect();
+    menu.style.left = Math.min(event.clientX - hostBox.left + host.scrollLeft,
+        hostBox.width - 200) + "px";
+    menu.style.top = (event.clientY - hostBox.top + host.scrollTop + 8) + "px";
+}
+
+function closeSlotMenu() {
+    for (const open of document.querySelectorAll(".slot-menu")) open.remove();
+}
+document.addEventListener("click", (event) => {
+    if (!event.target.closest(".slot-menu") && !event.target.closest(".cell-live")) {
+        closeSlotMenu();
+    }
+});
+
+function setSurface(table) {
+    tableMode = table;
+    document.getElementById("editor-host").style.display = table ? "none" : "";
+    document.getElementById("table-host").style.display = table ? "" : "none";
+    document.getElementById("surface-code").classList.toggle("active-surface", !table);
+    document.getElementById("surface-table").classList.toggle("active-surface", table);
+    if (table) buildTables();
+    else cm.refresh();
+}
+document.getElementById("surface-code").addEventListener("click", () => setSurface(false));
+document.getElementById("surface-table").addEventListener("click", () => setSurface(true));
+
+// a drawn key names its rewrite rules: the host reads the names off the markup
+// and presses. The page knows no domain: the rules live in the file itself.
+canvases.addEventListener("click", (event) => {
+    const key = event.target.closest("g.vi-rule");
+    if (!key) return;
+    const names = key.getAttribute("data-vi-rules");
+    if (!names) return;
+    applyPress(names.trim().split(/\s+/).join(","));
+});
+const tabBar = document.getElementById("tabs");
+let activeTab = tabs[0];
+
+// the revision of the worlds' content: bump it when any world's text changes,
+// and every stale save in localStorage steps aside for the fresh file
+const contentRevision = 155;
+function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
+for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+    const key = localStorage.key(index);
+    if (key && key.startsWith("playground-") && !key.startsWith("playground-r" + contentRevision + "-")) {
+        try { localStorage.removeItem(key); } catch (full) { /* a cleanup is comfort */ }
+    }
+}
+
+let lastParsed = null;
+let lastFindings = [];
+let lastReads = null;
+let completionPool = [];
+const lastGood = new Map();
+let standingMarkup = "";
+
+// the engine tripping is a state like any other: named in the chip, never a frozen page
+function setCanvasMarkup(markup) {
+    canvases.innerHTML = markup;
+    for (const svg of canvases.querySelectorAll("svg")) {
+        svg.style.maxWidth = Math.min(svg.viewBox.baseVal.width * 1.5, 960) + "px";
+        // a page nicety, not a declaration: an accent bar inside a reveal grows
+        // from half its stated width to the whole of it as it appears
+        for (const cue of svg.querySelectorAll('g > set[attributeName="opacity"]')) {
+            const begin = cue.getAttribute("begin");
+            for (const bar of cue.parentElement.querySelectorAll("rect")) {
+                const accent = (bar.getAttribute("fill") || "").includes("--vi-accent");
+                const width = Number(bar.getAttribute("width"));
+                const height = Number(bar.getAttribute("height"));
+                if (!accent || !width || height > 32) continue;
+                const grow = document.createElementNS("http://www.w3.org/2000/svg", "animate");
+                grow.setAttribute("attributeName", "width");
+                grow.setAttribute("from", String(width / 2));
+                grow.setAttribute("to", String(width));
+                grow.setAttribute("begin", begin);
+                grow.setAttribute("dur", "0.35s");
+                grow.setAttribute("fill", "freeze");
+                bar.append(grow);
+            }
+        }
+    }
+}
+
+function renderFailed(failure) {
+    const chip = document.getElementById("verdict-chip");
+    chip.className = "chip bad";
+    chip.textContent = "✗ the page's engine failed · the canvas shows the last good state";
+    status.textContent = "";
+    verdicts.innerHTML = "";
+    const card = document.createElement("div");
+    card.className = "refusal";
+    const where = document.createElement("div");
+    where.className = "where";
+    where.textContent = "the engine";
+    const what = document.createElement("div");
+    what.className = "what";
+    what.textContent = String(failure && failure.message ? failure.message : failure);
+    card.append(where, what);
+    verdicts.append(card);
+    canvases.classList.add("stale");
+}
+
+function render() {
+    let verdict;
+    let drawn;
+    const full = fullText();
+    const allLines = full.split("\n");
+    try {
+        verdict = judge(activeTab.file, full, kitVocabulary);
+        lastParsed = verdict.parsed;
+        localNames = new Set([...verdict.parsed.declarations.keys(),
+            ...verdict.parsed.topAliases.keys(), ...verdict.parsed.literals.keys()]);
+        for (const alias of verdict.parsed.topAliases.values()) {
+            for (const parameter of alias.params ?? []) localNames.add(parameter);
+        }
+        knownNames = new Set([...fixedNames, ...localNames]);
+        completionPool = [...localNames, ...keywordPool, ...fixedNames];
+        // the mode reads these sets lazily, but CodeMirror caches painted tokens:
+        // when the file's names change, ask for one fresh tokenization pass
+        const nameKey = [...localNames].sort().join(" ");
+        if (nameKey !== paintedNameKey) {
+            paintedNameKey = nameKey;
+            cm.setOption("mode", "playground-swift");
+        }
+        drawn = renderAll(verdict.parsed.declarations, verdict.parsed.order,
+            verdict.parsed.literals, verdict.parsed.topAliases);
+    } catch (failure) {
+        renderFailed(failure);
+        return;
+    }
+    document.getElementById("crash").style.display = "none";
+    lastReads = drawn.reads;
+    // the `?` reading is the echo of a field already reported by name: show it only alone
+    if (drawn.errors.length > 1) {
+        drawn.errors = drawn.errors.filter((error) => error !== "no reading for `?`");
+    }
+    // ── one shape for every objection: source, color, and one shown line that
+    // the note, the gutter, and the card all read together ──
+    const findings = [];
+    for (const refusal of verdict.refusals) {
+        findings.push({ source: "the judge", kind: "judge", counts: true,
+            shownLine: refineRefusalLine(refusal.premise, refusal.line, allLines),
+            premise: refusal.premise });
+    }
+    allLines.forEach((line, index) => {
+        const trimmed = line.trim();
+        if (trimmed.startsWith("import ")
+            && trimmed !== "import VerificationIsIdentification"
+            && trimmed !== "import DocumentKit") {
+            findings.push({ source: "the page", kind: "judge", counts: true,
+                shownLine: index + 1,
+                premise: "the imports are fixed: only VerificationIsIdentification and DocumentKit stand here" });
+        }
+        if (/^(public\s+)?static var body: some Structure/.test(trimmed)) {
+            const above = index > 0 ? allLines[index - 1].trim() : "";
+            if (above !== "@StructureBuilder") {
+                findings.push({ source: "the page", kind: "judge", counts: true,
+                    shownLine: index + 1,
+                    premise: "a body states no @StructureBuilder on the line above: the builder attribute is required" });
+            }
+        }
+        // an extension stands on a declared name: the judge port reads the extension
+        // either way, but Swift would refuse the orphan, so the page says it first
+        const extended = trimmed.match(/^(?:public\s+)?extension\s+([A-Za-z_]\w*)/);
+        if (extended && !verdict.parsed.declarations.has(extended[1])
+            && !verdict.parsed.topAliases.has(extended[1])) {
+            findings.push({ source: "the page", kind: "judge", counts: true,
+                shownLine: index + 1,
+                premise: "an extension names `" + extended[1]
+                    + "`, and this file declares no `" + extended[1] + "`" });
+        }
+    });
+    // a dangling name inside a top alias is silent to the judge port (the port
+    // reads the alias whole) and unreachable to the renderer when nothing draws
+    // it, so the page looks every word up the way the CI vector does
+    for (const [aliasName, alias] of verdict.parsed.topAliases) {
+        for (const piece of alias.target.split(/[<>,\s]+/)) {
+            const word = piece.split(".")[0];
+            if (word === "" || !/^[A-Z]/.test(word)) continue;
+            const known = verdict.parsed.declarations.has(word)
+                || verdict.parsed.topAliases.has(word)
+                || verdict.parsed.literals.has(word)
+                || kitVocabulary.seeds.has(word)
+                || kitVocabulary.generics.has(word)
+                || fixedNames.has(word)
+                || (alias.params || []).includes(word);
+            if (!known) {
+                findings.push({ source: "the page", kind: "judge", counts: true,
+                    shownLine: alias.line,
+                    premise: "`" + aliasName + "` names `" + word
+                        + "`, and nothing declares it" });
+            }
+        }
+    }
+    for (const error of drawn.errors) {
+        findings.push({ source: "the renderer", kind: "judge", counts: true,
+            shownLine: errorLine(error, allLines), premise: error });
+    }
+    const spoken = new Set(findings.map((finding) => finding.shownLine).filter(Boolean));
+    const objections = typeof lint === "undefined" ? [] : lint(activeTab.file, full);
+    for (const objection of objections.filter((o) => !spoken.has(o.line))) {
+        findings.push({ source: "the law", kind: "law", counts: false,
+            shownLine: objection.line, premise: objection.premise, rule: objection.rule });
+    }
+    findings.sort((a, b) => (a.shownLine ?? Infinity) - (b.shownLine ?? Infinity));
+    lastFindings = findings;
+    if (tableMode) buildTables();
+
+    lineNotes = new Map();
+    for (const finding of findings) {
+        if (finding.shownLine && !lineNotes.has(finding.shownLine)) {
+            lineNotes.set(finding.shownLine, { note: finding.premise, kind: finding.kind });
+        }
+    }
+    applyFlags();
+    const brokenCount = findings.filter((finding) => finding.counts).length;
+    const lawCount = findings.length - brokenCount;
+    const broke = brokenCount > 0;
+    const markup = drawn.canvases.map((canvas) => canvas.svg).join("");
+    if (broke && lastGood.has(activeTab.id)) {
+        canvases.classList.add("stale");
+        if (standingMarkup !== lastGood.get(activeTab.id)) {
+            standingMarkup = lastGood.get(activeTab.id);
+            setCanvasMarkup(standingMarkup);
+        }
+    } else {
+        canvases.classList.remove("stale");
+        if (standingMarkup !== markup) {
+            standingMarkup = markup;
+            setCanvasMarkup(markup);
+        }
+        if (!broke) lastGood.set(activeTab.id, markup);
+    }
+    status.innerHTML = counted(verdict.declarations, "declaration") + " · "
+        + (verdict.lookups + verdict.premises === 0
+            ? "no claims in this file"
+            : counted(verdict.lookups, "lookup") + " · " + counted(verdict.premises, "premise"))
+        + " · <b>" + verdict.milliseconds.toFixed(1) + "</b>&nbsp;ms";
+    const chip = document.getElementById("verdict-chip");
+    if (brokenCount === 0 && lawCount > 0) {
+        chip.className = "chip law";
+        chip.textContent = "✓ all claims checked · the law refuses " + lawCount
+            + " line" + (lawCount > 1 ? "s" : "");
+    } else if (brokenCount === 0) {
+        chip.className = "chip ok";
+        chip.textContent = "✓ all claims checked";
+    } else {
+        chip.className = "chip bad";
+        chip.textContent = "✗ refuses " + brokenCount + " claim" + (brokenCount > 1 ? "s" : "")
+            + (lastGood.has(activeTab.id) ? " · the canvas is the last good state" : "");
+    }
+    verdicts.innerHTML = "";
+    for (const finding of findings) {
+        const card = document.createElement("div");
+        card.className = "refusal" + (finding.kind === "law" ? " law" : "");
+        const where = document.createElement("div");
+        where.className = "where";
+        where.textContent = finding.source
+            + (finding.rule ? " · " + finding.rule : "")
+            + (finding.shownLine ? " · " + activeTab.file + " : " + finding.shownLine : "");
+        const what = document.createElement("div");
+        what.className = "what";
+        what.textContent = finding.premise;
+        card.append(where, what);
+        if (finding.shownLine) {
+            card.addEventListener("click", () => reveal(finding.shownLine));
+        }
+        verdicts.append(card);
+    }
+}
+
+// the judge pins a gate refusal to the line its buffer drained on, one entry
+// late (the Swift judge does the same, and the golden vectors seal it): the page
+// refines the shown line by the names the premise itself carries
+function refineRefusalLine(premise, fallback, lines) {
+    lines = lines ?? fullText().split("\n");
+    const halfGate = premise.match(/^(\w+) requires (\w+)\./);
+    const gate = premise.match(/requires (\w+)\.(\w+) == (\w+)/)
+        ?? (halfGate ? [null, halfGate[2], null, halfGate[1]] : null);
+    if (gate) {
+        const [, left, , right] = gate;
+        const leftWord = new RegExp("\\b" + left + "\\b");
+        const rightWord = new RegExp("\\b" + right + "\\b");
+        for (let i = 0; i < lines.length; i += 1) {
+            if (!leftWord.test(lines[i])) continue;
+            for (let j = Math.max(0, i - 3); j <= Math.min(lines.length - 1, i + 3); j += 1) {
+                if (j !== i && rightWord.test(lines[j])) return i + 1;
+                if (j === i && lines[i].indexOf(right) > lines[i].indexOf(left)) return i + 1;
+            }
+        }
+        return fallback;
+    }
+    const slot = premise.match(/^(\w+)\.(\w+)[ :=]/) || premise.match(/(\w+)\.(\w+) = /);
+    if (slot && lastParsed) {
+        const [, owner, axis] = slot;
+        const declaration = lastParsed.declarations.get(owner);
+        if (declaration) {
+            for (let i = declaration.line - 1; i < Math.min(lines.length, declaration.line + 40); i += 1) {
+                if (lines[i].includes("typealias " + axis)) return i + 1;
+                if (lines[i].trim() === "}") break;
+            }
+        }
+    }
+    return fallback;
+}
+
+// a renderer message names the declaration it stumbled on: that name has a line
+function errorLine(message, lines) {
+    if (!lastParsed) return null;
+    const quoted = message.match(/`([A-Za-z_][A-Za-z0-9_.]*)`/);
+    const leading = message.match(/^([A-Z][A-Za-z0-9]*)\b/);
+    const name = (quoted && quoted[1]) || (leading && leading[1]);
+    if (!name) return null;
+    const carrier = lastParsed.declarations.get(name)
+        ?? lastParsed.topAliases.get(name)
+        ?? lastParsed.literals.get(name);
+    if (carrier && carrier.line) return carrier.line;
+    // the name is missing from the dictionary (that is the complaint): point at
+    // its first appearance in the text, usually the line that broke it
+    const word = new RegExp("\\b" + name + "\\b");
+    const haystack = lines ?? fullText().split("\n");
+    for (let index = 0; index < haystack.length; index += 1) {
+        if (word.test(haystack[index])) return index + 1;
+    }
+    return null;
+}
+
+function reveal(line) {
+    if (bigDoc) {
+        gotoPage(Math.floor((line - 1) / pageLines));
+        line -= pageStart();
+    }
+    const local = Math.max(0, Math.min(line - 1, cm.lineCount() - 1));
+    cm.focus();
+    cm.setSelection({ line: local, ch: 0 }, { line: local, ch: cm.getLine(local).length });
+    cm.scrollIntoView({ line: local, ch: 0 }, 120);
+}
+
+function insertText(text) {
+    cm.focus();
+    cm.replaceSelection(text);
+}
+
+// replaces the whole text by touching only the span that differs, through the undo stack
+// a giant file reads in pages of two thousand lines: the editor holds one page,
+// the judge reads the whole file, and a refusal card turns to its page itself
+const pageLines = 2000;
+let bigDoc = null;
+
+function pageStart() {
+    return bigDoc ? bigDoc.page * pageLines : 0;
+}
+
+function fullText() {
+    if (!bigDoc) return editor.value;
+    return bigDoc.headText + editor.value + bigDoc.tailText;
+}
+
+function loadFile(next, page) {
+    if (next.length > 300000) {
+        const lines = next.split("\n");
+        const total = Math.max(1, Math.ceil(lines.length / pageLines));
+        const at = Math.max(0, Math.min(page ?? 0, total - 1));
+        const head = lines.slice(0, at * pageLines);
+        const slice = lines.slice(at * pageLines, (at + 1) * pageLines);
+        const tail = lines.slice((at + 1) * pageLines);
+        bigDoc = {
+            page: at, total,
+            headText: head.length > 0 ? head.join("\n") + "\n" : "",
+            tailText: tail.length > 0 ? "\n" + tail.join("\n") : "",
+        };
+        // the gutter speaks global line numbers: page two of the giant starts
+        // at 2001, so the option is set before the text repaints
+        cm.setOption("firstLineNumber", pageStart() + 1);
+        editor.value = slice.join("\n");
+    } else {
+        bigDoc = null;
+        cm.setOption("firstLineNumber", 1);
+        editor.value = next;
+    }
+    cm.clearHistory();
+    cm.scrollTo(0, 0);
+    syncPager();
+}
+
+function gotoPage(page) {
+    if (!bigDoc || page === bigDoc.page) return;
+    loadFile(fullText(), page);
+    applyFlags();
+}
+
+function syncPager() {
+    const pager = document.getElementById("pager");
+    if (!bigDoc) {
+        pager.style.display = "none";
+        return;
+    }
+    pager.style.display = "inline-flex";
+    document.getElementById("page-label").textContent =
+        "page " + (bigDoc.page + 1) + " of " + bigDoc.total;
+}
+
+// a button does not edit: it refreshes the state to a known file, whole and at once
+function setEditorFile(next) {
+    loadFile(next, 0);
+    hideCompletion();
+    render();
+}
+
+function plantLie(name) {
+    const [anchor, planted] = lies[name];
+    if (!fullText().includes(anchor)) {
+        status.innerHTML = "the anchor is edited away: reset first";
+        return;
+    }
+    setEditorFile(fullText().replace(anchor, planted));
+}
+
+function hireOne() {
+    const text = fullText();
+    const indices = [...text.matchAll(/public enum Emp(\d+): Employee/g)]
+        .map((match) => Number(match[1]));
+    if (indices.length === 0) return;
+    const next = Math.max(...indices) + 1;
+    const handle = "Emp" + String(next).padStart(2, "0");
+    const givens = ["Ada", "Grace", "Alan"];
+    const families = ["Lovelace", "Hopper", "Turing"];
+    const bornYears = ["Y1815", "Y1906"];
+    const hireRanks = ["IndividualContributor", "Lead", "Manager"];
+    const hireHomes = ["Finance", "Engineering", "Sales", "People"];
+    const hireSites = ["OnSite", "Hybrid", "Remote"];
+    const person = "public enum " + handle + ": Employee, Person {\n"
+        + "    public typealias Rank = " + hireRanks[next % 3] + "\n"
+        + "    public typealias Home = " + hireHomes[next % 4] + "\n"
+        + "    public typealias Given = " + givens[next % 3] + "\n"
+        + "    public typealias Family = " + families[Math.floor(next / 3) % 3] + "\n"
+        + "    public typealias Born = " + bornYears[next % 2] + "\n"
+        + "    public typealias Site = " + hireSites[next % 3] + "\n"
+        + "    public typealias Sex = Given.Sex\n}\n\n";
+    let updated = text.replace("public enum Company: Roster {",
+        person + "public enum Company: Roster {");
+    updated = updated.replace(/;\n(    \}\n\}\s*public enum FinanceTeam)/,
+        "; " + handle + ".self;\n$1");
+    const lastEntry = updated.lastIndexOf(">.self;");
+    updated = updated.slice(0, lastEntry + 7)
+        + "\n        VerifiedView<\n            " + handle + ",\n            "
+        + hireHomes[next % 4] + "Share\n        >.self;"
+        + updated.slice(lastEntry + 7);
+    setEditorFile(updated);
+}
+
+function plantDeepLie() {
+    const text = fullText();
+    const head = text.lastIndexOf("VerifiedView<");
+    if (head < 0) return;
+    const tail = text.indexOf(">.self", head);
+    const segment = text.slice(head, tail);
+    const share = segment.split(",")[1].trim();
+    const planted = otherShare[share];
+    if (!planted) return;
+    setEditorFile(text.slice(0, head)
+        + segment.replace(share, planted) + text.slice(tail));
+}
+
+const companyBySize = new Map();
+function generateCompany(count) {
+    storage.removeItem(storageKey(activeTab));
+    if (!companyBySize.has(count)) companyBySize.set(count, makeBigCompany(count));
+    setEditorFile(companyBySize.get(count));
+    renderActions(activeTab);
+}
+
+function actionButton(label, handler, loud) {
+    const button = document.createElement("button");
+    button.textContent = label;
+    if (loud) button.className = "loud";
+    button.addEventListener("click", handler);
+    return button;
+}
+
+function thousands(value) {
+    return String(value).replace(/\B(?=(\d{3})+(?!\d))/g, "\u2009");
+}
+function counted(value, word) {
+    return "<b>" + thousands(value) + "</b> " + word + (value === 1 ? "" : "s");
+}
+
+function renderActions(tab) {
+    const bar = document.getElementById("actions");
+    bar.innerHTML = "";
+    const caption = document.createElement("span");
+    caption.className = "caption";
+    caption.textContent = tab.caption;
+    bar.append(caption);
+    if (tab.id === "organization") {
+        bar.append(actionButton("Hire one more", hireOne, true),
+            actionButton("Plant a lie", () => plantLie("cross")),
+            actionButton("Break a name", () => plantLie("rank")));
+    }
+    if (tab.id === "scale") {
+        const current = (fullText().match(/public enum Emp\d+: Employee/g) || []).length;
+        caption.textContent = current === 12800
+            ? "12\u2009800 people, " + thousands(fullText().split("\n").length)
+                + " lines: a planted lie is named by line, on every edit"
+            : "a generated company of " + thousands(current) + " people";
+        for (const size of [200, 1000, 5000, 12800]) {
+            bar.append(actionButton(thousands(size), () => generateCompany(size), size === current));
+        }
+        bar.append(actionButton("Plant a lie deep", plantDeepLie));
+    }
+    if (tab.id === "basics") {
+        bar.append(actionButton("Replay the film", () => { setCanvasMarkup(standingMarkup); }));
+    }
+}
+
+function selectTab(tab) {
+    activeTab = tab;
+    for (const button of tabBar.querySelectorAll("button")) {
+        button.className = button.dataset.id === tab.id ? "active" : "";
+    }
+    loadFile(storage.getItem(storageKey(tab))
+        ?? tab.text ?? (tab.text = makeBigCompany(12800)), 0);
+    renderActions(tab);
+    render();
+}
+
+let lastTabGroup = null;
+for (const tab of tabs) {
+    if (lastTabGroup !== null && tab.group !== lastTabGroup) {
+        const sep = document.createElement("span");
+        sep.className = "tab-sep";
+        tabBar.append(sep);
+    }
+    lastTabGroup = tab.group;
+    const button = document.createElement("button");
+    button.textContent = tab.title;
+    button.dataset.id = tab.id;
+    button.addEventListener("click", () => selectTab(tab));
+    tabBar.append(button);
+}
+
+// one clause per kit form: what the name does, for the caret inspector
+const kitReadings = new Map([
+    ["HFlow", "divides a given width across its members"],
+    ["VFlow", "divides a given height down its members"],
+    ["GrownDiagram", "a canvas that derives its frame from what its members take"],
+    ["Diagram", "a canvas with a stated size"],
+    ["Group", "concatenates its members in order"],
+    ["Fixed", "a slot that takes a stated count"],
+    ["Paired", "two members carried as one: the left, then the right"],
+    ["Air", "space: takes its count, draws nothing"],
+    ["RestAir", "owns the remainder, draws nothing"],
+    ["Flexible", "shares the remainder equally"],
+    ["Layered", "two layers, one slice"],
+    ["SpanHosted", "hosts a row or group inside a slice"],
+    ["TimedReveal", "reveals on a cue, hides after a dwell (SVG clock)"],
+    ["FrozenReveal", "reveals on a cue and stays"],
+    ["Tally", "reads a count as digits"],
+    ["SpanLink", "a live link around its content"],
+    ["Halfway", "the midpoint of two counts"],
+    ["Under", "a baseline hung a text-size under a rung"],
+    ["SoftShadow", "the one card shadow, a filter def"],
+    ["CanvasSize", "a stated viewBox from two counts"],
+    ["Close", "a leaf atom"],
+    ["Roster", "a body of people"], ["Team", "a body of verified members"],
+    ["AccessLedger", "a body of proved accesses"],
+]);
+
+function wordAt(position) {
+    const text = editor.value;
+    let start = position;
+    let end = position;
+    const wordly = /[A-Za-z0-9_]/;
+    while (start > 0 && wordly.test(text[start - 1])) start -= 1;
+    while (end < text.length && wordly.test(text[end])) end += 1;
+    return text.slice(start, end);
+}
+
+function pathAt(position) {
+    const text = editor.value;
+    let start = position;
+    let end = position;
+    const pathly = /[A-Za-z0-9_.]/;
+    while (start > 0 && pathly.test(text[start - 1])) start -= 1;
+    while (end < text.length && pathly.test(text[end])) end += 1;
+    return text.slice(start, end).replace(/^\.+|\.+$/g, "").replace(/\.self$/, "");
+}
+
+function enclosingDeclaration(position) {
+    const before = editor.value.slice(0, position);
+    const opens = [...before.matchAll(/(?:public )?enum (\w+)[^\n]*\{\s*$/gm)];
+    if (opens.length === 0) return null;
+    const last = opens[opens.length - 1];
+    const closed = editor.value.indexOf("\n}", last.index);
+    if (closed >= 0 && closed < position) return null;
+    return last[1];
+}
+
+// the caret's dotted path, settled by the same walker the judge uses
+function describePath(path, position) {
+    if (!lastParsed || !path.includes(".")) return null;
+    const segments = path.split(".");
+    const walkerState = { settled: new Map(), refused: new Map(), lookups: 0,
+        readers: new Map(), gateTouches: new Map() };
+    let cursor;
+    let line = null;
+    if (lastParsed.declarations.has(segments[0])) {
+        cursor = segments[0];
+    } else {
+        const owner = enclosingDeclaration(position);
+        if (!owner) return null;
+        cursor = value(owner, segments[0], lastParsed.declarations, walkerState);
+        if (cursor === null) {
+            const reason = walkerState.refused.get(owner + " " + segments[0]);
+            return { text: "<b>" + path + "</b> : " + (reason ?? "resolves to nothing"),
+                bad: true };
+        }
+    }
+    for (let index = 1; index < segments.length; index += 1) {
+        const member = segments[index];
+        const carrier = lastParsed.declarations.get(cursor);
+        if (carrier && carrier.aliases.has(member)) {
+            line = carrier.aliases.get(member).line;
+            const settled = value(cursor, member, lastParsed.declarations, walkerState);
+            if (settled === null) {
+                const reason = walkerState.refused.get(cursor + " " + member);
+                return { text: "<b>" + path + "</b> : " + (reason ?? "resolves to nothing"),
+                    bad: true };
+            }
+            cursor = settled;
+            continue;
+        }
+        if (member === "Next" && nextInCycle.has(cursor)) {
+            cursor = nextInCycle.get(cursor);
+            continue;
+        }
+        return { text: "<b>" + path + "</b> : " + cursor + " carries no " + member,
+            bad: true };
+    }
+    const landed = category(cursor, lastParsed.declarations);
+    return { text: "<b>" + path + "</b> settles to <b>" + cursor + "</b>"
+        + (landed ? " (" + landed + ")" : ""), line };
+}
+
+function describe(word) {
+    if (word === "" || !lastParsed) return null;
+    const declaration = lastParsed.declarations.get(word);
+    if (declaration) {
+        const roles = declaration.conformances.length > 0
+            ? declaration.conformances.join(", ") : "a declaration";
+        return { text: "<b>" + word + "</b> : " + roles + " · line "
+            + declaration.line, line: declaration.line };
+    }
+    const alias = lastParsed.topAliases.get(word);
+    if (alias) {
+        if (alias.params && alias.params.length > 0) {
+            return { text: "<b>" + word + "</b>&lt;" + alias.params.join(", ") + "&gt; = "
+                + escapeMarkup(alias.target) + " · line " + alias.line, line: alias.line };
+        }
+        const env = { declarations: lastParsed.declarations,
+            literals: lastParsed.literals, topAliases: lastParsed.topAliases, errors: [] };
+        const count = countOf(env, parseType(alias.target));
+        const counted = env.errors.length === 0 ? " · a count of " + count : "";
+        return { text: "<b>" + word + "</b> = " + escapeMarkup(alias.target) + counted
+            + " · line " + alias.line, line: alias.line };
+    }
+    const literal = lastParsed.literals.get(word);
+    if (literal) {
+        return { text: "<b>" + word + "</b> : an atom, &quot;"
+            + escapeMarkup(literal.value) + "&quot; · line " + literal.line,
+            line: literal.line };
+    }
+    if (seedCount.has(word)) {
+        return { text: "<b>" + word + "</b> : a count of " + seedCount.get(word)
+            + ", from the dictionary" };
+    }
+    if (seedText.has(word)) {
+        return { text: "<b>" + word + "</b> : " + escapeMarkup(seedText.get(word))
+            + ", from the dictionary" };
+    }
+    if (gatePremises.has(word)) {
+        const premise = gatePremises.get(word);
+        const right = premise[1] ? "B." + premise[1] : "B";
+        return { text: "<b>" + word + "</b> : a gate, requires A." + premise[0]
+            + " == " + right };
+    }
+    if (conformanceRequirements.has(word)) {
+        const wants = conformanceRequirements.get(word)
+            .map((requirement) => requirement[0] + " in " + requirement[1]).join(", ");
+        return { text: "<b>" + word + "</b> : a conformance, wants " + wants };
+    }
+    if (kitReadings.has(word)) {
+        return { text: "<b>" + word + "</b> : " + kitReadings.get(word) };
+    }
+    if (knownNames.has(word)) return { text: "<b>" + word + "</b> : a dictionary name" };
+    if (keywordSet.has(word)) return { text: "<b>" + word + "</b> : a Swift keyword" };
+    return { text: "<b>" + word + "</b> resolves to nothing", bad: true };
+}
+
+function fanIn(word) {
+    if (!lastParsed) return "";
+    const chains = lastParsed.readers.get(word)?.size ?? 0;
+    const gates = lastParsed.gateTouches.get(word) ?? 0;
+    const drawnBy = lastReads?.get(word)?.size ?? 0;
+    const parts = [];
+    if (chains > 0) parts.push(chains + " value chain" + (chains > 1 ? "s" : ""));
+    if (gates > 0) parts.push(gates + " premise" + (gates > 1 ? "s" : ""));
+    if (drawnBy > 0) parts.push(drawnBy + " canvas" + (drawnBy > 1 ? "es" : ""));
+    if (parts.length === 0) return "";
+    return " · read by " + parts.join(" · ");
+}
+
+const inspector = document.getElementById("inspector");
+const inspectorText = document.getElementById("inspector-text");
+const inspectorIdle = '<span class="tag">inspect</span>'
+    + "place the caret on a name and its meaning shows here · ⌥-click jumps to its declaration";
+function inspect() {
+    try {
+        inspectUnsafe();
+    } catch (failure) {
+        inspectorText.innerHTML = inspectorIdle;
+    }
+}
+
+function inspectUnsafe() {
+    const path = pathAt(editor.selectionStart);
+    const word = wordAt(editor.selectionStart);
+    let described = describePath(path, editor.selectionStart);
+    let subject = path;
+    if (!described && word === "self" && (path === "" || path === "self")) {
+        described = { text: "<b>.self</b> : the type handed as a value, the one verb a body speaks" };
+        subject = "";
+    }
+    if (!described) {
+        subject = path !== "" && !path.includes(".") ? path : word;
+        described = describe(subject);
+    }
+    if (!described) {
+        inspectorText.innerHTML = inspectorIdle;
+        return;
+    }
+    inspectorText.innerHTML = '<span class="tag">inspect</span>' + described.text
+        + (subject ? fanIn(subject) : "")
+        + (described.line ? " · ⌥-click jumps" : "");
+}
+let inspectFrame = 0;
+let inspectedAt = -1;
+function scheduleInspect() {
+    if (inspectFrame) return;
+    inspectFrame = requestAnimationFrame(() => {
+        inspectFrame = 0;
+        if (editor.selectionStart === inspectedAt) return;
+        inspectedAt = editor.selectionStart;
+        inspect();
+    });
+}
+cm.on("cursorActivity", scheduleInspect);
+cm.on("mousedown", (instance, event) => {
+    if (!event.altKey) return;
+    const at = cm.indexFromPos(cm.coordsChar({ left: event.clientX, top: event.clientY }, "window"));
+    const described = describePath(pathAt(at), at) ?? describe(wordAt(at));
+    if (described && described.line) {
+        event.preventDefault();
+        reveal(described.line);
+    }
+});
+
+// ── completion: names the dictionaries answer for, offered as you type ──
+const completion = document.createElement("div");
+completion.id = "completion";
+document.getElementById("editor-wrap").append(completion);
+let completionItems = [];
+let completionChosen = 0;
+let completionPrefixLength = 0;
+
+
+const keywordPool = ["public", "enum", "extension", "static", "var", "typealias",
+    "import", "some", "protocol", "String"];
+const keywordSet = new Set(keywordPool);
+
+function completionKind(name) {
+    if (name === "self" || keywordPool.includes(name)) return "keyword";
+    if (name === "StructureBuilder") return "attribute";
+    if (name === "Next") return "cycle";
+    if (localNames.has(name)) return "this file";
+    if (seedCount.has(name)) return "count";
+    if (seedText.has(name)) return "style";
+    if (gatePremises.has(name)) return "checked pair";
+    if (kitReadings.has(name) || spanShapes.has(name)) return "drawing";
+    return "people";
+}
+
+// a popup that lost its editor is stale: the row's own mousedown prevents this blur
+
+function hideCompletion() {
+    completion.style.display = "none";
+    completionItems = [];
+}
+
+function acceptCompletion(name) {
+    const at = editor.selectionStart;
+    editor.setSelectionRange(at - completionPrefixLength, at);
+    hideCompletion();
+    insertText(name);
+}
+
+function drawCompletion() {
+    completion.innerHTML = "";
+    completionItems.forEach((name, index) => {
+        const row = document.createElement("div");
+        row.className = "completion-row" + (index === completionChosen ? " chosen" : "");
+        const label = document.createElement("span");
+        label.textContent = name;
+        const kind = document.createElement("span");
+        kind.className = "kind";
+        if (seedText.has(name) && seedText.get(name).length < 40) {
+            const swatch = document.createElement("span");
+            swatch.className = "swatch";
+            swatch.style.background = seedText.get(name);
+            kind.append(swatch);
+        }
+        kind.append(seedCount.has(name)
+            ? seedCount.get(name) + " · count" : completionKind(name));
+        row.append(label, kind);
+        row.addEventListener("mousedown", (event) => {
+            event.preventDefault();
+            acceptCompletion(name);
+        });
+        completion.append(row);
+    });
+}
+
+function presentCompletion(start, items, prefixLength) {
+    if (items.length === 0) {
+        hideCompletion();
+        return;
+    }
+    completionItems = items.slice(0, 8);
+    completionPrefixLength = prefixLength;
+    completionChosen = 0;
+    const caret = cm.cursorCoords(true, "page");
+    const wrapRect = document.getElementById("editor-wrap").getBoundingClientRect();
+    completion.style.left = Math.min(Math.max(caret.left - wrapRect.left, 8), 560) + "px";
+    completion.style.top = (caret.bottom - wrapRect.top + 4) + "px";
+    completion.style.display = "block";
+    drawCompletion();
+}
+
+function settleOwner(path, position) {
+    if (!lastParsed) return null;
+    const segments = path.split(".");
+    const walkerState = { settled: new Map(), refused: new Map(), lookups: 0,
+        readers: new Map(), gateTouches: new Map() };
+    let cursor;
+    if (lastParsed.declarations.has(segments[0])) {
+        cursor = segments[0];
+    } else {
+        const owner = enclosingDeclaration(position);
+        if (!owner) return null;
+        cursor = value(owner, segments[0], lastParsed.declarations, walkerState);
+        if (cursor === null) return null;
+    }
+    for (let index = 1; index < segments.length; index += 1) {
+        const member = segments[index];
+        const carrier = lastParsed.declarations.get(cursor);
+        if (carrier && carrier.aliases.has(member)) {
+            cursor = value(cursor, member, lastParsed.declarations, walkerState);
+            if (cursor === null) return null;
+            continue;
+        }
+        if (member === "Next" && nextInCycle.has(cursor)) {
+            cursor = nextInCycle.get(cursor);
+            continue;
+        }
+        return null;
+    }
+    return cursor;
+}
+
+function offerCompletion() {
+    const at = editor.selectionStart;
+    const text = editor.value;
+    let start = at;
+    while (start > 0 && /[A-Za-z0-9_]/.test(text[start - 1])) start -= 1;
+    const prefix = text.slice(start, at);
+    if (text[start - 1] === "." && start > 1) {
+        let ownerEnd = start - 1;
+        let ownerStart = ownerEnd;
+        while (ownerStart > 0 && /[A-Za-z0-9_.]/.test(text[ownerStart - 1])) ownerStart -= 1;
+        const ownerPath = text.slice(ownerStart, ownerEnd).replace(/^\.+/, "");
+        const owner = ownerPath === "" ? null : settleOwner(ownerPath, at);
+        const offers = [];
+        if (owner) {
+            const carrier = lastParsed.declarations.get(owner);
+            if (carrier) offers.push(...carrier.aliases.keys());
+            if (nextInCycle.has(owner)) offers.push("Next");
+        }
+        offers.push("self");
+        presentCompletion(start, offers.filter((name) =>
+            name.toLowerCase().startsWith(prefix.toLowerCase()) && name !== prefix),
+            prefix.length);
+        return;
+    }
+    if (text[start - 1] === "@") {
+        presentCompletion(start, ["StructureBuilder"].filter((name) =>
+            name.toLowerCase().startsWith(prefix.toLowerCase()) && name !== prefix),
+            prefix.length);
+        return;
+    }
+    if (prefix.length < 2 || !/[A-Za-z]/.test(prefix[0])) {
+        hideCompletion();
+        return;
+    }
+    const pool = completionPool;
+    const seen = new Set();
+    const lowered = prefix.toLowerCase();
+    // a name offers itself on any part, not only its head: `Stage` finds
+    // PinStage0; names that start with the typed piece still sort first
+    const heads = [];
+    const tails = [];
+    for (const name of pool) {
+        if (name === prefix || seen.has(name) || quietNames.has(name)) continue;
+        const at = name.toLowerCase().indexOf(lowered);
+        if (at < 0) continue;
+        seen.add(name);
+        (at === 0 ? heads : tails).push(name);
+    }
+    heads.sort((a, b) => a.length - b.length);
+    tails.sort((a, b) => a.length - b.length);
+    completionItems = heads.concat(tails);
+    presentCompletion(start, completionItems, prefix.length);
+}
+
+cm.on("blur", () => setTimeout(hideCompletion, 150));
+
+function stepOverOr(character) {
+    const at = editor.selectionStart;
+    if (editor.value[at] === character && at === editor.selectionEnd) {
+        editor.setSelectionRange(at + 1, at + 1);
+        return;
+    }
+    if (character === "}") return CodeMirror.Pass;
+    const start = at;
+    insertText(character + character);
+    editor.setSelectionRange(start + 1, start + 1);
+}
+
+cm.setOption("extraKeys", {
+    Tab: () => {
+        if (completionItems.length > 0) {
+            acceptCompletion(completionItems[completionChosen]);
+            return;
+        }
+        insertText("    ");
+    },
+    Enter: () => {
+        if (completionItems.length > 0) {
+            acceptCompletion(completionItems[completionChosen]);
+            return;
+        }
+        const at = editor.selectionStart;
+        const lineStart = editor.value.lastIndexOf("\n", at - 1) + 1;
+        const head = editor.value.slice(lineStart, at);
+        const indent = head.match(/^[ ]*/)[0] + (/\{\s*$/.test(head) ? "    " : "");
+        insertText("\n" + indent);
+    },
+    Up: () => {
+        if (completionItems.length === 0) return CodeMirror.Pass;
+        completionChosen = (completionChosen + completionItems.length - 1) % completionItems.length;
+        drawCompletion();
+    },
+    Down: () => {
+        if (completionItems.length === 0) return CodeMirror.Pass;
+        completionChosen = (completionChosen + 1) % completionItems.length;
+        drawCompletion();
+    },
+    Esc: () => {
+        if (completionItems.length === 0) return CodeMirror.Pass;
+        hideCompletion();
+    },
+    Left: () => { hideCompletion(); return CodeMirror.Pass; },
+    Right: () => { hideCompletion(); return CodeMirror.Pass; },
+    "'{'": () => {
+        const at = editor.selectionStart;
+        if (at !== editor.selectionEnd) return CodeMirror.Pass;
+        insertText("{}");
+        editor.setSelectionRange(at + 1, at + 1);
+    },
+    "'}'": () => stepOverOr("}"),
+    "'\"'": () => stepOverOr('"'),
+    "Cmd-/": () => toggleComment(),
+    "Ctrl-/": () => toggleComment(),
+});
+
+function toggleComment() {
+    const text = editor.value;
+    const from = text.lastIndexOf("\n", editor.selectionStart - 1) + 1;
+    let to = text.indexOf("\n", editor.selectionEnd);
+    if (to < 0) to = text.length;
+    const block = text.slice(from, to);
+    const lines = block.split("\n");
+    const allCommented = lines.every((line) =>
+        line.trim() === "" || line.trimStart().startsWith("//"));
+    const toggled = lines.map((line) => {
+        if (line.trim() === "") return line;
+        if (allCommented) return line.replace(/^([ ]*)\/\/[ ]?/, "$1");
+        return line.replace(/^([ ]*)/, "$1// ");
+    }).join("\n");
+    editor.setSelectionRange(from, to);
+    insertText(toggled);
+}
+
+let pending = null;
+cm.on("change", (instance, change) => {
+    if (change.origin === "setValue") return;
+    clearFlags();
+    if (change.origin === "+input") offerCompletion();
+    else hideCompletion();
+    clearTimeout(pending);
+    pending = setTimeout(() => {
+        if (fullText().length < 1000000) storage.setItem(storageKey(activeTab), fullText());
+        render();
+    }, bigDoc ? 350 : 120);
+});
+
+// ── the splitter: the preview width is an input you hold in your hand ──
+const splitter = document.getElementById("splitter");
+const editorWrap = document.getElementById("editor-wrap");
+let splitDrag = null;
+splitter.addEventListener("pointerdown", (event) => {
+    splitDrag = { fromX: event.clientX, fromWidth: editorWrap.getBoundingClientRect().width };
+    splitter.classList.add("dragging");
+    try { splitter.setPointerCapture(event.pointerId); } catch { /* a capture is comfort, not correctness */ }
+    event.preventDefault();
+});
+// during a drag the editor keeps its whole document in the DOM
+// (viewportMargin Infinity, the browser-search contract), so every pixel of
+// width remeasures every line. The drag trims the margin to the viewport and
+// coalesces moves to animation frames; the release restores the contract.
+let splitFrame = null;
+splitter.addEventListener("pointermove", (event) => {
+    if (!splitDrag) return;
+    if (splitDrag.margin === undefined) {
+        splitDrag.margin = cm.getOption("viewportMargin");
+        cm.setOption("viewportMargin", 10);
+    }
+    splitDrag.lastX = event.clientX;
+    if (splitFrame !== null) return;
+    splitFrame = requestAnimationFrame(() => {
+        splitFrame = null;
+        if (!splitDrag) return;
+        const total = splitter.parentElement.getBoundingClientRect().width;
+        const width = splitDrag.fromWidth + (splitDrag.lastX - splitDrag.fromX);
+        const clamped = Math.max(280, Math.min(total - 240, width));
+        editorWrap.style.flex = "0 0 " + clamped + "px";
+    });
+});
+const splitDone = () => {
+    if (splitDrag && splitDrag.margin !== undefined) {
+        cm.setOption("viewportMargin", splitDrag.margin);
+        cm.refresh();
+    }
+    splitDrag = null;
+    splitter.classList.remove("dragging");
+};
+splitter.addEventListener("pointerup", splitDone);
+splitter.addEventListener("pointercancel", splitDone);
+splitter.addEventListener("dblclick", () => { editorWrap.style.flex = ""; });
+
+document.getElementById("page-prev").addEventListener("click", () => {
+    if (bigDoc) gotoPage(bigDoc.page - 1);
+});
+document.getElementById("page-next").addEventListener("click", () => {
+    if (bigDoc) gotoPage(bigDoc.page + 1);
+});
+
+document.getElementById("theme").addEventListener("click", () => {
+    const dark = canvases.classList.toggle("dark");
+    document.getElementById("theme").textContent = dark ? "Light canvas" : "Dark canvas";
+});
+
+document.getElementById("reset").addEventListener("click", () => {
+    storage.removeItem(storageKey(activeTab));
+    setEditorFile(activeTab.text);
+});
+
+// an editor measured while the tab was hidden draws blank until remeasured:
+// the classic CodeMirror footgun, closed by refreshing on the first show
+document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") cm.refresh();
+});
+
+// the typewriter listens to the real keyboard: a keystroke is a trigger like a
+// click. A letter maps to its term by the alphabet's own convention (h is
+// LetterH, the same kind of convention that reads FooSlot as Foo), and the
+// press hands that term to TypeGlyph as its instance argument. Whether the
+// term exists is the file's question, not the page's: an undeclared letter is
+// refused aloud, and nothing is typed.
+document.addEventListener("keydown", (event) => {
+    if (activeTab.id !== "writer") return;
+    if (event.target.closest && event.target.closest(".CodeMirror")) return;
+    if (event.metaKey || event.ctrlKey || event.altKey) return;
+    // the prose genre: a keystroke is append, rubout, or clear on the Note
+    // literal. The character is the layout's own (Russian keys type Russian);
+    // whether it may enter is the literal alphabet's question, answered by the
+    // applier with the character's name.
+    let movement = null;
+    if (event.key.length === 1) {
+        movement = "append Note " + event.key;
+    } else if (event.key === "Backspace") {
+        movement = "rubout Note";
+    } else if (event.key === "Escape") {
+        movement = "clear Note";
+    }
+    if (movement === null) return;
+    event.preventDefault();
+    applyPress(movement);
+});
+
+document.getElementById("download").addEventListener("click", () => {
+    const blob = new Blob([editor.value], { type: "text/plain" });
+    const anchor = document.createElement("a");
+    anchor.href = URL.createObjectURL(blob);
+    anchor.download = activeTab.file;
+    anchor.click();
+    URL.revokeObjectURL(anchor.href);
+});
+
+// ── the differential seat, in-page: the port against the Swift judge's record ──
+function selfCheck() {
+    const badge = document.getElementById("selfcheck");
+    let passed = 0;
+    let total = 0;
+    const clean = judge("Company.swift", companyFile);
+    total += 1;
+    if (clean.refusals.length === 0
+        && clean.declarations === golden.clean.declarations
+        && clean.lookups === golden.clean.lookups
+        && clean.premises === golden.clean.premises) passed += 1;
+    for (const name of ["cross", "rank", "site"]) {
+        total += 1;
+        const [anchor, planted] = lies[name];
+        const verdict = judge("Company.swift", companyFile.replace(anchor, planted));
+        const expected = golden[name];
+        const matches = verdict.refusals.length === expected.length
+            && expected.every((want, index) =>
+                verdict.refusals[index].line === want.line
+                && verdict.refusals[index].premise === want.premise);
+        if (matches) passed += 1;
+    }
+    badge.textContent = "self-test: " + passed + "/" + total + " vs the reference judge";
+    badge.className = "badge " + (passed === total ? "ok" : "bad");
+}
+
+selfCheck();
+selectTab(tabs[0]);
+</script>
+</body>
+</html>
