@@ -322,7 +322,7 @@
   file again, <code>swift run Tools judge</code> for the company, <code>swift build</code>
   for the drawings. ·
   <a href="https://danielswift1992.github.io/verification-is-identification/">the theory behind this →</a>
-  <span style="float: right; color: var(--muted);">rev 155</span>
+  <span style="float: right; color: var(--muted);">rev 156</span>
 </footer>
 
 <div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
@@ -341,9 +341,9 @@ window.addEventListener("error", (event) => {
 });
 </script>
 <script src="codemirror.js"></script>
-<script src="judge.js?v=13"></script>
+<script src="judge.js?v=15"></script>
 <script src="lint.js?v=4"></script>
-<script src="press.js?v=3"></script>
+<script src="press.js?v=5"></script>
 <script src="renderer.js?v=12"></script>
 <script>
 "use strict";
@@ -438,7 +438,10 @@ function mustReplace(view, from, to) {
 
 function makeBigCompany(count) {
     const lines = [];
-    lines.push("import VerificationIsIdentification", "import DocumentKit", "");
+    // the same three modules the seed names: the people below are the domain's
+    // own types, so the generated file builds where the seed builds
+    lines.push("import VerificationIsIdentification", "import DocumentKit",
+        "import Organization", "");
     lines.push("// A generated company of " + count + " people. Every field is computed from the");
     lines.push("// person's index, so no person depends on another. The cards above count");
     lines.push("// this list live: edit anyone, and the judge re-checks the file as you type.", "");
@@ -585,9 +588,9 @@ const lies = {
 // corpus — the port must reproduce them, character for character, on every load
 const golden = {
     clean: { declarations: 15, lookups: 47, premises: 45, refusals: [] },
-    cross: [{ line: 104, premise: "VerifiedView requires Emp03.Home == FinanceShare.Home: Engineering against Finance" }],
-    rank:  [{ line: 46,  premise: "Emp02.Rank: the name Leed resolves to nothing" }],
-    site:  [{ line: 69,  premise: "Person requires Site in workplace: Emp04.Site = Sales lands in department" }],
+    cross: [{ line: 106, premise: "VerifiedView requires Emp03.Home == FinanceShare.Home: Engineering against Finance" }],
+    rank:  [{ line: 48,  premise: "Emp02.Rank: the name Leed resolves to nothing" }],
+    site:  [{ line: 71,  premise: "Person requires Site in workplace: Emp04.Site = Sales lands in department" }],
 };
 
 function escapeMarkup(text) {
@@ -1066,7 +1069,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 155;
+const contentRevision = 156;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
@@ -1170,14 +1173,19 @@ function render() {
             shownLine: refineRefusalLine(refusal.premise, refusal.line, allLines),
             premise: refusal.premise });
     }
+    // the three modules a downloaded world may name: the theory, the drawing kit,
+    // and the domain the company tabs are written against. Each world is a target
+    // of the package beside this page, so what the guard admits is what
+    // `swift build` reads.
+    const fixedImports = ["import VerificationIsIdentification", "import DocumentKit",
+        "import Organization"];
     allLines.forEach((line, index) => {
         const trimmed = line.trim();
-        if (trimmed.startsWith("import ")
-            && trimmed !== "import VerificationIsIdentification"
-            && trimmed !== "import DocumentKit") {
+        if (trimmed.startsWith("import ") && !fixedImports.includes(trimmed)) {
             findings.push({ source: "the page", kind: "judge", counts: true,
                 shownLine: index + 1,
-                premise: "the imports are fixed: only VerificationIsIdentification and DocumentKit stand here" });
+                premise: "the imports are fixed: only VerificationIsIdentification, DocumentKit,"
+                    + " and Organization are legal here" });
         }
         if (/^(public\s+)?static var body: some Structure/.test(trimmed)) {
             const above = index > 0 ? allLines[index - 1].trim() : "";
@@ -1191,7 +1199,8 @@ function render() {
         // either way, but Swift would refuse the orphan, so the page says it first
         const extended = trimmed.match(/^(?:public\s+)?extension\s+([A-Za-z_]\w*)/);
         if (extended && !verdict.parsed.declarations.has(extended[1])
-            && !verdict.parsed.topAliases.has(extended[1])) {
+            && !verdict.parsed.topAliases.has(extended[1])
+            && !fixedNames.has(extended[1])) {
             findings.push({ source: "the page", kind: "judge", counts: true,
                 shownLine: index + 1,
                 premise: "an extension names `" + extended[1]

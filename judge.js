@@ -292,6 +292,46 @@ function parse(file, text, declarations, order, refusals, extras) {
             continue;
         }
 
+        // a protocol names a form and states the axes a conformer owes. The
+        // compiler needs one wherever a constraint or a gate stands: `<P: Counting>`
+        // takes a protocol, and `extension F: G where …` inherits from one. The
+        // judge registers the name so every reference to it settles, and reads
+        // the axes the body states.
+        if (line.startsWith("public protocol ") || line.startsWith("protocol ")) {
+            const afterKeyword = line.replace("public protocol ", "").replace("protocol ", "");
+            const selfClosed = /\{\s*\}$/.test(afterKeyword);
+            const head = afterKeyword.replace(/\s*\{\s*\}$/, "").replace(/\s*\{$/, "")
+                .replace(/\s+where\s+.*$/, "").trim();
+            const colon = head.indexOf(":");
+            const name = (colon >= 0 ? head.slice(0, colon) : head).trim();
+            const conformances = colon >= 0
+                ? head.slice(colon + 1).split(",").map((piece) => piece.trim())
+                : [];
+            const standing = declarations.get(name);
+            if (standing) {
+                refusals.push({ file, line: number,
+                    premise: name + " is declared twice: line " + standing.line
+                        + " already declares it" });
+                if (!selfClosed) stack.push(standing);
+                continue;
+            }
+            const declaration = { name, qualified: name, parent: null, conformances,
+                params: [], line: number, aliases: new Map(), entries: [], axes: [] };
+            declarations.set(name, declaration);
+            order.push(name);
+            if (!selfClosed) stack.push(declaration);
+            continue;
+        }
+
+        // an axis a protocol states: the name a conformer owes a value for
+        if (line.startsWith("associatedtype ")) {
+            const owner = stack.length > 0 ? stack[stack.length - 1] : null;
+            if (owner && owner.axes) {
+                owner.axes.push(line.replace("associatedtype ", "").split(":")[0].trim());
+            }
+            continue;
+        }
+
         if (line.startsWith("public typealias ") || line.startsWith("typealias ")) {
             const body = line.replace("public typealias ", "").replace("typealias ", "");
             const equals = body.indexOf("=");
@@ -736,6 +776,12 @@ function arithmeticFold(node) {
     const folded = { head: node.head, args: node.args.map(arithmeticFold) };
     const whole = countedLeaf(folded);
     if (whole !== null) return { head: "#" + whole, args: [] };
+    // the numeral ladder's step counts as one more (Numeral.swift: Succ), the
+    // same fold the renderer reads, so two spellings of one number agree
+    if (folded.head === "Succ" && folded.args.length === 1) {
+        const inner = countedLeaf(folded.args[0]);
+        if (inner !== null) return { head: "#" + (inner + 1), args: [] };
+    }
     if (folded.head === "Times" && folded.args.length === 2) {
         const left = countedLeaf(folded.args[0]);
         const right = countedLeaf(folded.args[1]);

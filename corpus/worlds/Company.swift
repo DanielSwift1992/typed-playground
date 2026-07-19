@@ -1,4 +1,6 @@
 import VerificationIsIdentification
+import DocumentKit
+import Organization
 
 // A small company, stated as types. Edit anything: the judge reads every claim live.
 

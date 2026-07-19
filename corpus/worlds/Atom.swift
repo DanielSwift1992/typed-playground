@@ -157,36 +157,41 @@ extension AtomAlt {
 
 public typealias EllS = Never
 public typealias EllP = Succ<Never>
-public enum DipoleAllowed: Close {}
+public protocol DipoleAllowed {}
+// an orbital states a lobe step and its rings: the two axes a jump reads
+public protocol Orbital {
+    associatedtype L: IntegerValued
+    associatedtype RadialNodes: Structure
+}
 // an orbital states its rings, never its shell: the shell is a reading,
 // one more than the lobes’ step plus the rings, so a wrong shell
 // cannot be written (Hydrogen.swift at 205f63d)
-public typealias ShellHeight<O> = Plus<Succ<O.L>, O.RadialNodes>
-public enum Orbital1s: Close {
+public typealias ShellHeight<O: Orbital> = Plus<Succ<O.L>, O.RadialNodes>
+public enum Orbital1s: Close, Orbital {
     public typealias L = EllS
     public typealias RadialNodes = Rung0
 }
-public enum Orbital2s: Close {
+public enum Orbital2s: Close, Orbital {
     public typealias L = EllS
     public typealias RadialNodes = Rung1
 }
-public enum Orbital2p: Close {
+public enum Orbital2p: Close, Orbital {
     public typealias L = EllP
     public typealias RadialNodes = Rung0
 }
-public enum Orbital3s: Close {
+public enum Orbital3s: Close, Orbital {
     public typealias L = EllS
     public typealias RadialNodes = Rung2
 }
-public enum Orbital4p: Close {
+public enum Orbital4p: Close, Orbital {
     public typealias L = EllP
     public typealias RadialNodes = Rung2
 }
-public enum Lowers<F, T>: Close {}
+public enum Lowers<F: Orbital, T: Orbital>: Close {}
 extension Lowers: DipoleAllowed where F.L == Succ<T.L> {}
-public enum Raises<F, T>: Close {}
+public enum Raises<F: Orbital, T: Orbital>: Close {}
 extension Raises: DipoleAllowed where T.L == Succ<F.L> {}
-public typealias HydrogenColour<A, B, C> = XYZWrite<PouredCoordinate<A, HAlphaGlow.XShare, B, HBetaGlow.XShare, C, PaschenGlow.XShare>, PouredCoordinate<A, HAlphaGlow.YShare, B, HBetaGlow.YShare, C, PaschenGlow.YShare>, PouredCoordinate<A, HAlphaGlow.ZShare, B, HBetaGlow.ZShare, C, PaschenGlow.ZShare>>
+public typealias HydrogenColour<A: Structure, B: Structure, C: Structure> = XYZWrite<PouredCoordinate<A, HAlphaGlow.XShare, B, HBetaGlow.XShare, C, PaschenGlow.XShare>, PouredCoordinate<A, HAlphaGlow.YShare, B, HBetaGlow.YShare, C, PaschenGlow.YShare>, PouredCoordinate<A, HAlphaGlow.ZShare, B, HBetaGlow.ZShare, C, PaschenGlow.ZShare>>
 public typealias BetaFact = Lowers<Orbital4p, Orbital2s>
 public typealias PaschenFact = Lowers<Orbital4p, Orbital3s>
 public typealias BalmerFact = Raises<Orbital3s, Orbital2p>
@@ -216,7 +221,7 @@ public enum Ground: Close {
     public typealias Seat = Orbital1s
     public typealias Flash = Rung4
 }
-typealias Electron = Charged
+public typealias Electron = Charged
 public enum ElectronSlot: Close {}
 public enum DropBeta: SlotRule {
     public typealias Slot = ElectronSlot
@@ -250,7 +255,7 @@ public enum PaschenJump: Close {
 public enum BalmerJump: Close {
     public typealias Drop = Rung1
 }
-public enum SameDrop: Close {}
+public protocol SameDrop {}
 public enum RoadPair<X, Y>: Close {}
 extension RoadPair: SameDrop where X == Y {}
 public typealias TwoRoadsFact = RoadPair<Plus<PaschenJump.Drop, BalmerJump.Drop>, BetaJump.Drop>
@@ -277,7 +282,7 @@ public typealias BalmerBetaDrop = Plus<U16, Plus<U8, Plus<U2, U1>>>
 public typealias LymanAlphaDrop = Plus<U64, Plus<U32, Plus<U8, U4>>>
 
 // a whole that must be the sum of its two parts, judged as arithmetic
-public enum EnergyClosed: Close {}
+public protocol EnergyClosed {}
 public enum EnergySum<Whole, Left, Right>: Close {}
 extension EnergySum: EnergyClosed where Whole == Plus<Left, Right> {}
 
@@ -290,7 +295,7 @@ public typealias TwoRoadsOneDrop = EnergySum<BalmerBetaDrop, PaschenAlphaDrop, B
 // the compile tier: the ladder spelling and the recorded depth name one
 // number, and the nominal compiler proves this witness itself
 public typealias FloorThreeByLadder = Plus<FloorFourDepth, PaschenAlphaDrop>
-public enum LadderStitched: Close {}
+public protocol LadderStitched {}
 public enum LadderStep<A, B>: Close {}
 extension LadderStep: LadderStitched where A == B {}
 public typealias ThirdFloorByLadder = LadderStep<FloorThreeByLadder, Plus<FloorFourDepth, PaschenAlphaDrop>>

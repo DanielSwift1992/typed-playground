@@ -238,7 +238,7 @@ function press(text, ruleArgument) {
     const lines = text.split("\n");
     let slotLine = -1;
     for (let index = 0; index < lines.length; index += 1) {
-        if (lines[index].trim().startsWith(marker)) {
+        if (lines[index].trim().replace(/^public /, "").startsWith(marker)) {
             if (slotLine >= 0) {
                 return { text, applied: false,
                     error: "slot " + aliasName + " appears twice in this file" };
@@ -284,7 +284,15 @@ function press(text, ruleArgument) {
         instanceBound.forEach((variable, index) => {
             bindings.set(variable, serializeTerm(instance[index]));
         });
-        if (!unify(pattern, currentTerm, rule.variables, bindings)) {
+        // A rule whose pattern IS its slot states no shape to match: whatever
+        // term the slot holds is the match, and every parameter it declares is
+        // information the press carries. The kit writes this form (`From =
+        // PlateSlot` beside `Slot = PlateSlot`), and a mixed rule — a pattern
+        // variable beside an instance parameter — has no spelling at all: a key
+        // is bare when its parameters are spelling, Exactly when they are the
+        // atom, and the two kinds are told apart by statement.
+        const slotIsPattern = rule.from === rule.slot;
+        if (!slotIsPattern && !unify(pattern, currentTerm, rule.variables, bindings)) {
             continue;
         }
         if (matched !== null) {

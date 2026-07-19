@@ -18,9 +18,9 @@ import DocumentKit
 
 // ── the state: the world is these two lines, and a press rewrites one ──
 
-typealias LampMode = LampOff
-typealias PinProgress = PinStage0
-typealias Count = Never
+public typealias LampMode = LampOff
+public typealias PinProgress = PinStage0
+public typealias Count = Never
 
 // ── the lamp's terms: each has its own ink, and the renderer reads it ──
 
@@ -79,8 +79,10 @@ public enum PinUnlocked: Close {
 // ── the counter's terms: a floor and a wrap, an infinite space from two names.
 // Tick counts itself: one more than what it wraps, and Never counts zero ──
 
+public protocol Counting {}
+extension Never: Counting {}
 public enum CountSlot: Close {}
-public enum Tick<P: Counting>: Close {}
+public enum Tick<P: Counting>: Close, Counting {}
 
 // ── the rules: the lamp's two, then the pin's table of thirty-one ──
 
@@ -790,7 +792,7 @@ public enum CountRow: HFlow {
         Fixed<U64, CountCaption>.self
         Air<U8>.self
         Flexible<CountNumber>.self
-        Fixed<KeySide, RuleKey<BumpUp, PlusOneKey>>.self
+        Fixed<KeySide, RuleKey<BumpUp<Count>, PlusOneKey>>.self
         Air<EdgeMargin>.self
     }
 }

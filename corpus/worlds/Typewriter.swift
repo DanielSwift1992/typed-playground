@@ -16,9 +16,9 @@ import DocumentKit
 
 // ── the note: the whole state of this world is the string below ──
 
-enum Note: Close {}
+public enum Note: Close {}
 extension Note {
-    static var typeName: String { "" }
+    public static var typeName: String { "" }
 }
 
 // ── the display strings ──

@@ -279,52 +279,73 @@ public typealias Lit4 = Twice<Lit2>
 public typealias Lit8 = Twice<Lit4>
 // one name for a hydrogen mix's colour: three poured coordinates through the
 // canonical weights, written at the chart-neutral edge
-public typealias HydrogenColour<A, B, C> = XYZWrite<PouredCoordinate<A, HAlphaGlow.XShare, B, HBetaGlow.XShare, C, PaschenGlow.XShare>, PouredCoordinate<A, HAlphaGlow.YShare, B, HBetaGlow.YShare, C, PaschenGlow.YShare>, PouredCoordinate<A, HAlphaGlow.ZShare, B, HBetaGlow.ZShare, C, PaschenGlow.ZShare>>
+public typealias HydrogenColour<A: Structure, B: Structure, C: Structure> = XYZWrite<PouredCoordinate<A, HAlphaGlow.XShare, B, HBetaGlow.XShare, C, PaschenGlow.XShare>, PouredCoordinate<A, HAlphaGlow.YShare, B, HBetaGlow.YShare, C, PaschenGlow.YShare>, PouredCoordinate<A, HAlphaGlow.ZShare, B, HBetaGlow.ZShare, C, PaschenGlow.ZShare>>
 
 // two more gases, each a list of stated weights: the door mixes any three
-public typealias NeonColour<A, B> = XYZWrite<PouredCoordinate<A, NeonYellowGlow.XShare, B, NeonRedGlow.XShare, Never, PaschenGlow.XShare>, PouredCoordinate<A, NeonYellowGlow.YShare, B, NeonRedGlow.YShare, Never, PaschenGlow.YShare>, PouredCoordinate<A, NeonYellowGlow.ZShare, B, NeonRedGlow.ZShare, Never, PaschenGlow.ZShare>>
-public typealias SodiumColour<A, B> = XYZWrite<PouredCoordinate<A, SodiumDGlow.XShare, B, SodiumIRGlow.XShare, Never, PaschenGlow.XShare>, PouredCoordinate<A, SodiumDGlow.YShare, B, SodiumIRGlow.YShare, Never, PaschenGlow.YShare>, PouredCoordinate<A, SodiumDGlow.ZShare, B, SodiumIRGlow.ZShare, Never, PaschenGlow.ZShare>>
+public typealias NeonColour<A: Structure, B: Structure> = XYZWrite<PouredCoordinate<A, NeonYellowGlow.XShare, B, NeonRedGlow.XShare, Never, PaschenGlow.XShare>, PouredCoordinate<A, NeonYellowGlow.YShare, B, NeonRedGlow.YShare, Never, PaschenGlow.YShare>, PouredCoordinate<A, NeonYellowGlow.ZShare, B, NeonRedGlow.ZShare, Never, PaschenGlow.ZShare>>
+public typealias SodiumColour<A: Structure, B: Structure> = XYZWrite<PouredCoordinate<A, SodiumDGlow.XShare, B, SodiumIRGlow.XShare, Never, PaschenGlow.XShare>, PouredCoordinate<A, SodiumDGlow.YShare, B, SodiumIRGlow.YShare, Never, PaschenGlow.YShare>, PouredCoordinate<A, SodiumDGlow.ZShare, B, SodiumIRGlow.ZShare, Never, PaschenGlow.ZShare>>
 
-public enum MetamericPair: Close {}
-public enum LampBeam: Close {
+public protocol MetamericPair {}
+public enum LampBeam: Close, Beam {
     public typealias AlphaLevel = Rung8
     public typealias BetaLevel = Rung8
     public typealias PaschenLevel = Rung8
 }
-public enum BeamX: Close {
+public enum BeamX: Close, Beam {
     public typealias AlphaLevel = Rung8
     public typealias BetaLevel = Never
     public typealias PaschenLevel = Never
 }
-public enum BeamY: Close {
+public enum BeamY: Close, Beam {
     public typealias AlphaLevel = Rung8
     public typealias BetaLevel = Never
     public typealias PaschenLevel = BeamInfrared
 }
-typealias BeamInfrared = Rung4
-public typealias EyeImage<B> = Paired<B.AlphaLevel, B.BetaLevel>
-public typealias PrismImage<B> = Paired<B.AlphaLevel, Paired<B.BetaLevel, B.PaschenLevel>>
-public enum SeenAlike<X, Y>: Close {}
+public typealias BeamInfrared = Rung4
+public typealias EyeImage<B: Beam> = Paired<B.AlphaLevel, B.BetaLevel>
+public typealias PrismImage<B: Beam> = Paired<B.AlphaLevel, Paired<B.BetaLevel, B.PaschenLevel>>
+// the shapes a gate reads: each names the axes its generic reaches for
+public protocol Beam {
+    associatedtype AlphaLevel: Structure
+    associatedtype BetaLevel: Structure
+    associatedtype PaschenLevel: Structure
+}
+public protocol SceneLight {
+    associatedtype Total: Structure
+    associatedtype FromEast: Structure
+    associatedtype FromWest: Structure
+}
+public protocol Polarized {
+    associatedtype Horizontal: Structure
+    associatedtype Vertical: Structure
+}
+public protocol SlitNode {
+    associatedtype Gap: Structure
+}
+public protocol ScreenColour {
+    associatedtype BlueChannel: Structure
+}
+public enum SeenAlike<X: Beam, Y: Beam>: Close {}
 extension SeenAlike: MetamericPair where EyeImage<X> == EyeImage<Y> {}
 public typealias MetamerFact = SeenAlike<BeamX, BeamY>
 
 // ── the wall and the mirror: the same forgetting, told with directions. A
 // matte surface reads the total and drops the side; a mirror reads both
 // sides apart. Directional metamerism is the eye’s story a second time. ──
-public enum MatteBlind: Close {}
-public enum LitFromEast: Close {
+public protocol MatteBlind {}
+public enum LitFromEast: Close, SceneLight {
     public typealias FromEast = Lit1
     public typealias FromWest = Never
     public typealias Total = Lit1
 }
-public enum LitFromWest: Close {
+public enum LitFromWest: Close, SceneLight {
     public typealias FromEast = Never
     public typealias FromWest = Lit1
     public typealias Total = Lit1
 }
-public typealias MatteImage<S> = S.Total
-public typealias MirrorImage<S> = Paired<S.FromEast, S.FromWest>
-public enum MatteAlike<X, Y>: Close {}
+public typealias MatteImage<S: SceneLight> = S.Total
+public typealias MirrorImage<S: SceneLight> = Paired<S.FromEast, S.FromWest>
+public enum MatteAlike<X: SceneLight, Y: SceneLight>: Close {}
 extension MatteAlike: MatteBlind where MatteImage<X> == MatteImage<Y> {}
 public typealias WallFact = MatteAlike<LitFromEast, LitFromWest>
 
@@ -332,27 +353,28 @@ public typealias WallFact = MatteAlike<LitFromEast, LitFromWest>
 // climb them. Every key is a chord of four rules over one slot; exactly one
 // From matches the slot's current level, so a press is a single rewrite. ──
 
-typealias MixAlpha = Rung4
-typealias MixBeta = Rung4
-typealias MixIR = Never
+public typealias MixAlpha = Rung4
+public typealias MixBeta = Rung4
+public typealias MixIR = Never
 public enum MixAlphaSlot: Close {}
 public enum MixBetaSlot: Close {}
 public enum MixIRSlot: Close {}
-// one rule per line: the current level binds in the pattern, the target
-// arrives with the press — Exactly keys carry the atom whole
-public enum SetAlpha<P, T>: SlotRule {
+// one rule per line: the pattern of each rule is its own slot, so any level in
+// the slot is a match, and the target arrives with the press — an Exactly key
+// carries that atom whole
+public enum SetAlpha<T>: SlotRule {
     public typealias Slot = MixAlphaSlot
-    public typealias From = P
+    public typealias From = MixAlphaSlot
     public typealias Into = T
 }
-public enum SetBeta<P, T>: SlotRule {
+public enum SetBeta<T>: SlotRule {
     public typealias Slot = MixBetaSlot
-    public typealias From = P
+    public typealias From = MixBetaSlot
     public typealias Into = T
 }
-public enum SetIR<P, T>: SlotRule {
+public enum SetIR<T>: SlotRule {
     public typealias Slot = MixIRSlot
-    public typealias From = P
+    public typealias From = MixIRSlot
     public typealias Into = T
 }
 
@@ -372,23 +394,22 @@ public enum LowerInfrared: SlotRule {
 
 // ── the polarizers: a lamp, a killing filter, a presented diagonal ──
 
-public enum AllDark: Close {}
-public enum QuarterProof: Close {}
-public typealias Lit8 = Plus<Twice<Twice<Lit1>>, Twice<Twice<Lit1>>>
-public enum LampH: Close {
+public protocol AllDark {}
+public protocol QuarterProof {}
+public enum LampH: Close, Polarized {
     public typealias Horizontal = Lit8
     public typealias Vertical = Never
 }
-public enum PassVertical<P>: Close {
+public enum PassVertical<P: Polarized>: Close, Polarized {
     public typealias Horizontal = Never
     public typealias Vertical = P.Vertical
 }
-public enum DiagonalAfterLampH: Close {
+public enum DiagonalAfterLampH: Close, Polarized {
     public typealias Horizontal = Twice<Lit1>
     public typealias Vertical = Twice<Lit1>
 }
 public typealias Crossed = PassVertical<LampH>
-typealias PaneStack = Crossed
+public typealias PaneStack = Crossed
 public enum PaneStackSlot: Close {}
 public enum InsertDiagonal: SlotRule {
     public typealias Slot = PaneStackSlot
@@ -400,11 +421,11 @@ public enum RemoveDiagonal: SlotRule {
     public typealias From = ThreePanes
     public typealias Into = Crossed
 }
-public enum Extinct<P>: Close {}
+public enum Extinct<P: Polarized>: Close {}
 extension Extinct: AllDark where P.Horizontal == Never, P.Vertical == Never {}
 public typealias CrossedFact = Extinct<Crossed>
 public typealias ThreePanes = PassVertical<DiagonalAfterLampH>
-public enum Halves<D, R>: Close {}
+public enum Halves<D: Structure, R: Structure>: Close {}
 extension Halves: QuarterProof where R == Plus<D, D> {}
 public typealias HalfFact = Halves<Plus<DiagonalAfterLampH.Horizontal, DiagonalAfterLampH.Vertical>, Lit8>
 public typealias QuarterFact = Halves<ThreePanes.Vertical, Plus<DiagonalAfterLampH.Horizontal, DiagonalAfterLampH.Vertical>>
@@ -414,27 +435,27 @@ public typealias QuarterFact = Halves<ThreePanes.Vertical, Plus<DiagonalAfterLam
 // has its parity in the spelling: an even gap is a pair, an odd one is a pair
 // a pair. Even settles bright, odd settles to nothing. ──
 
-public enum BrightFringe: Close {}
-public enum DarkFringe: Close {}
-public enum EvenGap<N, K>: Close {}
+public protocol BrightFringe {}
+public protocol DarkFringe {}
+public enum EvenGap<N: SlitNode, K: Structure>: Close {}
 extension EvenGap: BrightFringe where N.Gap == Twice<K> {}
-public enum OddGap<N, K>: Close {}
+public enum OddGap<N: SlitNode, K: Structure>: Close {}
 extension OddGap: DarkFringe where N.Gap == Plus<Lit1, Twice<K>> {}
 // the settled brightness of an even node: agreement doubles one contribution
 public typealias BrightNode = Twice<Lit1>
-public enum NodeCenter: Close {
+public enum NodeCenter: Close, SlitNode {
     public typealias ThroughLeft = Succ<Lit2>
     public typealias Gap = Twice<Never>
 }
-public enum NodeFirst: Close {
+public enum NodeFirst: Close, SlitNode {
     public typealias ThroughLeft = Succ<Lit2>
     public typealias Gap = Plus<Lit1, Twice<Never>>
 }
-public enum NodeSecond: Close {
+public enum NodeSecond: Close, SlitNode {
     public typealias ThroughLeft = Succ<Lit2>
     public typealias Gap = Twice<Lit1>
 }
-public enum NodeThird: Close {
+public enum NodeThird: Close, SlitNode {
     public typealias ThroughLeft = Succ<Lit2>
     public typealias Gap = Plus<Lit1, Twice<Lit1>>
 }
@@ -446,10 +467,10 @@ public typealias ThirdDark = OddGap<NodeThird, Lit1>
 // ── the red-green screen: its reach is a written rule. Every colour on it
 // is dark in blue; a colour that is not has no place on it. ──
 
-public enum OnRedGreenScreen: Close {}
-public enum FitsRedGreen<C>: Close {}
+public protocol OnRedGreenScreen {}
+public enum FitsRedGreen<C: ScreenColour>: Close {}
 extension FitsRedGreen: OnRedGreenScreen where C.BlueChannel == Never {}
-public enum YellowAtFull: Close {
+public enum YellowAtFull: Close, ScreenColour {
     public typealias RedChannel = Lit1
     public typealias GreenChannel = Lit1
     public typealias BlueChannel = Never
@@ -482,7 +503,7 @@ public enum SodiumGas: Close {
     public typealias BetaName = NoSecondName
     public typealias IRName = SodiumIRName
 }
-typealias Gas = HydrogenGas
+public typealias Gas = HydrogenGas
 public enum GasSlot: Close {}
 public enum PickHydrogen<P>: SlotRule {
     public typealias Slot = GasSlot
@@ -499,11 +520,11 @@ public enum PickSodium<P>: SlotRule {
     public typealias From = P
     public typealias Into = SodiumGas
 }
-public typealias MixColour<A, B, C> = XYZWrite<PouredCoordinate<A, Gas.AlphaWeight.XShare, B, Gas.BetaWeight.XShare, C, Gas.IRWeight.XShare>, PouredCoordinate<A, Gas.AlphaWeight.YShare, B, Gas.BetaWeight.YShare, C, Gas.IRWeight.YShare>, PouredCoordinate<A, Gas.AlphaWeight.ZShare, B, Gas.BetaWeight.ZShare, C, Gas.IRWeight.ZShare>>
+public typealias MixColour<A: Structure, B: Structure, C: Structure> = XYZWrite<PouredCoordinate<A, Gas.AlphaWeight.XShare, B, Gas.BetaWeight.XShare, C, Gas.IRWeight.XShare>, PouredCoordinate<A, Gas.AlphaWeight.YShare, B, Gas.BetaWeight.YShare, C, Gas.IRWeight.YShare>, PouredCoordinate<A, Gas.AlphaWeight.ZShare, B, Gas.BetaWeight.ZShare, C, Gas.IRWeight.ZShare>>
 
 // ── the live fringe: the gap is a line of code, and the stripe reads its
 // parity at the edge — press the gap and the page rereads the parity ──
-typealias LiveGap = Rung1
+public typealias LiveGap = Rung1
 public enum LiveGapSlot: Close {}
 public enum Widen01: SlotRule {
     public typealias Slot = LiveGapSlot
@@ -995,7 +1016,7 @@ public enum YouCoreFace: SpanDot {
     public typealias Fill = Ink
 }
 public typealias YouRing = Layered<YouRingFace, YouCoreFace>
-public typealias PrimaryColour<P, L> = XYZWrite<Times<L, P.XShare>, Times<L, P.YShare>, Times<L, P.ZShare>>
+public typealias PrimaryColour<P: CanonicalWeights, L: Structure> = XYZWrite<Times<L, P.XShare>, Times<L, P.YShare>, Times<L, P.ZShare>>
 public enum PairOneLeft: SpanTrack {
     public typealias H = Tally<Plus<U16, U8>>
     public typealias Radius = Tally<U4>
@@ -3162,11 +3183,11 @@ public enum GasKeysRow: HFlow {
     @StructureBuilder
     public static var body: some Structure & Divides {
         Air<EdgeMargin>.self
-        Fixed<Plus<U64, U32>, RuleKey<PickHydrogen, GasHydrogenKey>>.self
+        Fixed<Plus<U64, U32>, RuleKey<PickHydrogen<Gas>, GasHydrogenKey>>.self
         Air<U8>.self
-        Fixed<Plus<U64, U16>, RuleKey<PickNeon, GasNeonKey>>.self
+        Fixed<Plus<U64, U16>, RuleKey<PickNeon<Gas>, GasNeonKey>>.self
         Air<U8>.self
-        Fixed<Plus<U64, U16>, RuleKey<PickSodium, GasSodiumKey>>.self
+        Fixed<Plus<U64, U16>, RuleKey<PickSodium<Gas>, GasSodiumKey>>.self
         Flexible<SpanNothing>.self
         Air<EdgeMargin>.self
     }
