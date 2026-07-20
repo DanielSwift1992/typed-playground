@@ -10023,30 +10023,23 @@ const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "
     "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
     "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
     "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
+    "XShare", "YShare", "ZShare",
+    "IntegerValued", "F", "Whole", "Left", "Right",
     "L", "RadialNodes", "Seat", "Flash", "Drop",
     "DocumentKit", "VerificationIsIdentification", "Organization"]);
 let localNames = new Set();
 
 // every name the dictionaries answer for; rebuilt after each judgment
+// every name the dictionaries answer for: the quiet ones above, which the editor
+// paints without a wave, and the forms and domain names that only the inspector
+// and the guards read. The quiet names are spelled once, up there, and carried
+// here, so a name added for the editor never has to be added twice.
 const fixedNames = new Set([
+    ...quietNames,
     "HFlow", "VFlow", "GrownDiagram", "Diagram", "Group", "Close", "Open",
     "Structure", "Divides", "DividesY", "Roster", "Team", "AccessLedger",
     "Employee", "Person", "GivenNameCycle", "FamilyNameCycle", "BirthYearCycle",
-    // the coordinate keys the kit and the policy read (typealias left-hand sides)
-    "H", "Radius", "Fill", "Stroke", "Y", "FillColor", "Size", "Weight", "Content",
-    "Given", "Across", "AriaLabel", "Defs", "CY", "R", "Begin", "Dwell",
-    "Next", "Sex", "Rank", "Home", "Family", "Born", "Site",
-    "Slot", "From", "Into", "Ink", "DotOneInk", "DotTwoInk", "DotThreeInk",
-    "DotFourInk", "StageWord", "SecretInk",
-    "G", "P", "N", "T", "Glyph", "PageTerm", "NoteTerm", "Counting", "LinePitch",
-    "AlphaLevel", "BetaLevel", "PaschenLevel", "Horizontal", "Vertical",
-    "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
-    "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
-    "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
-    "L", "RadialNodes", "Seat", "Flash", "Drop",
     "SpanLabel", "SpanLink", "SoftShadow", "DisplayS", "Never", "Spanning",
-    // the modules an import names
-    "DocumentKit", "VerificationIsIdentification", "Organization",
     ...spanShapes, ...kitVocabulary.seeds, ...kitVocabulary.generics,
     ...ranks, ...departments, ...workplaces, ...genders,
     ...shareHomes.keys(), ...gatePremises.keys(),

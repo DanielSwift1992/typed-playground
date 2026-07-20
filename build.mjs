@@ -109,7 +109,11 @@ const tabsText = "[\n" + tabs.map((tab) =>
 ).join("\n") + "\n]";
 
 let out = fs.readFileSync("shell.html", "utf8");
-for (const [marker, filled] of [["@@TABS@@", tabsText],
+// the revision is stated once, where the page reads it, and printed into the
+// footer from there: a number the reader sees is never a second copy
+const revision = out.match(/const contentRevision = (\d+);/);
+if (!revision) { console.error("the shell states no contentRevision"); process.exit(1); }
+for (const [marker, filled] of [["@@TABS@@", tabsText], ["@@REV@@", revision[1]],
   ["@@PALETTE_LIT@@", litMount], ["@@PALETTE_DIM@@", dimMount]]) {
   if (!out.includes(marker)) { console.error("missing marker " + marker); process.exit(1); }
   out = out.replace(marker, filled);

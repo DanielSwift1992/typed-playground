@@ -540,6 +540,52 @@ if (energyLie === latticeSource) {
     }
 }
 
+// ── the numbers the README states are counted, never remembered. The theory
+// keeps the same gate over its own README, and the reason is the same one this
+// file exists for: a number written by hand drifts the moment the thing it
+// counts changes, and nothing but a reader would ever notice. This runs last,
+// so the count it compares is the whole run's own.
+total += 1;
+{
+    const readme = fs.readFileSync(path.join(__dirname, "README.md"), "utf8");
+    const shell = fs.readFileSync(path.join(__dirname, "shell.html"), "utf8");
+    const spelled = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+        "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+        "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one",
+        "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six",
+        "twenty-seven", "twenty-eight", "twenty-nine", "thirty"];
+    // what the page actually ships: itself, and every file it loads by name
+    const shipped = new Set(["index.html"]);
+    for (const hit of shell.matchAll(/<script src="([^"?]+)/g)) shipped.add(hit[1]);
+    for (const hit of shell.matchAll(/<link[^>]*href="([^"?]+)/g)) {
+        // a data URI is drawn, not shipped: the favicon travels inside the page
+        if (!hit[1].startsWith("data:")) shipped.add(hit[1]);
+    }
+    const complaints = [];
+    const statedChecks = readme.match(/replays ([a-z-]+) checks/);
+    if (!statedChecks) complaints.push("the README states no check count");
+    else if (spelled[total] !== statedChecks[1]) {
+        complaints.push("the README says " + statedChecks[1] + " checks and the run is "
+            + spelled[total]);
+    }
+    // the banner's own sentence, not the whole shell: the script tags name these
+    // files too, and a list checked against them would always pass
+    const bannerAt = shell.indexOf("a script did not load");
+    const banner = bannerAt < 0 ? "" : shell.slice(bannerAt, shell.indexOf("in one folder", bannerAt));
+    for (const [where, text] of [["the README", readme], ["the crash banner", banner]]) {
+        const statedFiles = text.match(/(?:page is|needs its) ([a-z-]+) files/);
+        if (!statedFiles) { complaints.push(where + " states no file count"); continue; }
+        if (spelled[shipped.size] !== statedFiles[1]) {
+            complaints.push(where + " says " + statedFiles[1] + " files and the page ships "
+                + spelled[shipped.size]);
+        }
+        const unnamed = [...shipped].filter((file) => !text.includes(file));
+        if (unnamed.length > 0) complaints.push(where + " names none of " + unnamed.join(", "));
+    }
+    if (complaints.length === 0) passed += 1;
+    else failures.push("the counts: " + complaints.join("; "));
+}
+
 console.log("self-test: " + passed + "/" + total
     + " vs the reference judge, the draw, and every world");
 for (const line of failures) console.error("  " + line);
