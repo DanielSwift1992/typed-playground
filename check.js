@@ -377,9 +377,9 @@ const lightArt = renderAll(lightJudged.parsed.declarations, lightJudged.parsed.o
     lightJudged.parsed.literals, lightJudged.parsed.topAliases);
 const lightSvg = lightArt.canvases.length > 0 ? lightArt.canvases[0].svg : "";
 const fullRed = (lightSvg.match(/color\(xyz-d65 0\.250 0\.093 0\.000\)/g) || []).length;
-const fullCyan = (lightSvg.match(/color\(xyz-d65 0\.062 0\.187 0\.593\)/g) || []).length;
+const fullCyan = (lightSvg.match(/color\(xyz-d65 0\.093 0\.312 1\.031\)/g) || []).length;
 const halfMix = (lightSvg.match(/color\(xyz-d65 0\.125 0\.046 0\.000\)/g) || []).length;
-const centreMix = (lightSvg.match(/color\(xyz-d65 0\.156 0\.140 0\.296\)/g) || []).length;
+const centreMix = (lightSvg.match(/color\(xyz-d65 0\.171 0\.203 0\.515\)/g) || []).length;
 if (fullRed === 7 && fullCyan === 2 && halfMix === 2 && centreMix === 3) {
     passed += 1;
 } else {
@@ -402,7 +402,7 @@ if (brightFringe === 4 && blackPour === 9) {
 }
 // ── the other gases: a gas is its list of lines, and the door mixes any ──
 total += 1;
-const hydrogenFull = (lightSvg.match(/color\(xyz-d65 0\.312 0\.281 0\.593\)/g) || []).length;
+const hydrogenFull = (lightSvg.match(/color\(xyz-d65 0\.343 0\.406 1\.031\)/g) || []).length;
 const neonFull = (lightSvg.match(/color\(xyz-d65 1\.375 0\.968 0\.000\)/g) || []).length;
 const sodiumFull = (lightSvg.match(/color\(xyz-d65 1\.031 0\.781 0\.000\)/g) || []).length;
 if (hydrogenFull === 2 && neonFull === 1 && sodiumFull === 1) {
@@ -450,7 +450,7 @@ for (const m of plate.matchAll(/^golden: (\w+) = [\w-]+ X=(\d+) Y=(\d+) Z=(\d+)$
 const doorLine = plate.match(/^golden: XYZWrite\(full h-alpha\) = (.*)$/m);
 if (doorLine && lightSvg.includes(doorLine[1])) plateChecked += 1;
 else plateErrors.push("XYZWrite door");
-const walkLine = plate.match(/^golden: PerceptualRung\(HBetaZ walk (\d{8})\) = (\d)$/m);
+const walkLine = plate.match(/^golden: PerceptualRung\(walk (\d{8})\) = (\d)$/m);
 if (walkLine) {
     plateChecked += 1;
     const lit = walkLine[1].indexOf("1");
@@ -485,7 +485,7 @@ if (trapLie === atomSource) {
         atomJudged.parsed.literals, atomJudged.parsed.topAliases);
     const atomSvg = atomArt.canvases.length > 0 ? atomArt.canvases[0].svg : "";
     const alphaTrace = (atomSvg.match(/color\(xyz-d65 0\.031 0\.011 0\.000\)/g) || []).length;
-    const betaTrace = (atomSvg.match(/color\(xyz-d65 0\.007 0\.023 0\.074\)/g) || []).length;
+    const betaTrace = (atomSvg.match(/color\(xyz-d65 0\.011 0\.039 0\.128\)/g) || []).length;
     const roadLie = atomSource.replace("public enum BetaJump: Close {\n    public typealias Drop = Rung2",
         "public enum BetaJump: Close {\n    public typealias Drop = Rung3");
     const roadVerdict = judge("Atom.swift", roadLie, pageKit);

@@ -13,7 +13,7 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-const KIT_PIN = "cf2c358";
+const KIT_PIN = "0c521a5";
 const THEORY = process.env.THEORY_PATH
     || path.join(process.env.HOME || "", "Projects/verification-is-identification");
 

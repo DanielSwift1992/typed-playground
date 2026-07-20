@@ -8,7 +8,7 @@ golden: Rung6.count = 6
 golden: Rung7.count = 7
 golden: Rung8.count = 8
 golden: HAlphaGlow = h-alpha X=8 Y=3 Z=0
-golden: HBetaGlow = h-beta X=2 Y=6 Z=19
+golden: HBetaGlow = h-beta X=3 Y=10 Z=33
 golden: PaschenGlow = paschen-alpha X=0 Y=0 Z=0
 golden: NeonYellowGlow = neon-585 X=31 Y=26 Z=0
 golden: NeonRedGlow = neon-640 X=13 Y=5 Z=0
@@ -27,15 +27,28 @@ golden: PouredCoordinate(Rung8*HAlphaX + Rung0*HBetaX + Rung0*PaschenX).count = 
 golden: XYZWrite(full h-alpha) = color(xyz-d65 0.250 0.093 0.000)
 golden: PerceptualRung(Undimmed) = 8
 golden: PerceptualRung(Quenched) = 0
-golden: PerceptualRung(HBetaZ walk 00010011) = 5
+golden: PerceptualRung(walk 00010011) = 5
 golden: EdgeSame(equal) = <text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+
 golden: EdgeSame(unequal) = 
 golden: EdgeAtLeast(holds) = <text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+
 golden: EdgeAtLeast(short) = 
 golden: EdgeEven(Rung4) = <text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+
 golden: EdgeOdd(Rung4) = 
 golden: EdgeOdd(Rung5) = <text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+
 golden: RuleKey(bare generic) = <g class="vi-rule" data-vi-rules="PlateRule" data-vi-slot="PlateSlot" cursor="pointer">
+<text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+</g>
+
 golden: RuleKey(Exactly instance) = <g class="vi-rule" data-vi-rules="PlateSet<PlateOn>" data-vi-slot="PlateSlot" cursor="pointer">
+<text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+</g>
+
 golden: RuleKey(bare would cut it) = <g class="vi-rule" data-vi-rules="PlateSet" data-vi-slot="PlateSlot" cursor="pointer">
+<text x="480" y="24" text-anchor="middle" fill="var(--vi-text-secondary, rgba(0,0,0,0.54))" font-weight="400" font-size="10">plate</text>
+</g>
+
 golden plate: 40 lines, sealed by this build

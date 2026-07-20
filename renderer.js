@@ -239,7 +239,7 @@ const canonicalShares = new Map([
     // the line weights (Spectrum.swift at ff6c51d): each reads the CIE 1931
     // 2-degree table at its wavelength, rounded as the nearest lattice pair
     // that preserves chromaticity; sodium's blind row is measured, not assumed
-    ["HAlphaGlow", [8, 3, 0]], ["HBetaGlow", [2, 6, 19]],
+    ["HAlphaGlow", [8, 3, 0]], ["HBetaGlow", [3, 10, 33]],
     ["PaschenGlow", [0, 0, 0]], ["NeonYellowGlow", [31, 26, 0]],
     ["NeonRedGlow", [13, 5, 0]], ["SodiumDGlow", [33, 25, 0]],
     ["SodiumIRGlow", [0, 0, 0]],
