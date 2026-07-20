@@ -12,6 +12,17 @@ let package = Package(
         .package(path: "../verification-is-identification"),
     ],
     targets: [
+        // the site's own parts, declared the way the tabs are: build.mjs reads
+        // this one with the page's judge, and the compiler reads it here
+        .target(
+            name: "SiteManifest",
+            dependencies: [
+                .product(name: "VerificationIsIdentification", package: "verification-is-identification"),
+                .product(name: "DocumentKit", package: "verification-is-identification"),
+            ],
+            path: "corpus",
+            sources: ["Manifest.swift"]
+        ),
         .target(
             name: "AtomTab",
             dependencies: [

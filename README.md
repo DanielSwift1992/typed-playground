@@ -16,7 +16,7 @@ every declared canvas from the same dictionary. The one vendored library is Code
 pane. Everything else is hand-written: `judge.js` is a line-for-line port of
 the Swift judge from the theory's repository, `renderer.js` is a mirror of its
 span engine, `press.js` of its rule applier, and `lint.js` of rule 0 of its
-linter. `guards.js` states the four objections the fast judge leaves to the
+linter. `guards.js` states the five objections the fast judge leaves to the
 compiler, and `check.js` runs them over every world.
 
 Live: <https://danielswift1992.github.io/typed-playground/>, or open
@@ -75,11 +75,11 @@ the drawings.
 ## The checks
 
 The badge in the corner re-runs four recorded verdicts against the ported judge
-on every load. In CI, `node check.js` replays twenty-three checks: the four
+on every load. In CI, `node check.js` replays twenty-four checks: the four
 verdicts, every world of the page judged, lawed, drawn clean, and read by the
 page's own guards, the renderer's byte golden against
 `swift run DynamicsDemo draw`, refusal vectors for the conditional `where`
-grammar and the counting canon on the atom's Rydberg lattice, four planted lies
+grammar and the counting canon on the atom's Rydberg lattice, five planted lies
 that each guard must name, and the theory's forty-line golden plate, which the
 port must read value for value. `node check-kit.js` checks all seventy-one ported
 kit names against the theory's sources at a pinned commit, fifty-seven of them

@@ -191,6 +191,50 @@ for (const [literalName, file] of worlds) {
     }
 }
 
+// ── the site's own parts: the manifest is a world too, judged and lawed like
+// the rest, and what it declares must be what the corpus holds and what the
+// shell reads. A world added to the directory and forgotten here would ship
+// unbuilt; a name that drifted from the shell's own const would inline nothing.
+total += 1;
+{
+    const manifestSource = fs.readFileSync(path.join(__dirname, "corpus/Manifest.swift"), "utf8");
+    const manifestJudged = judge("Manifest.swift", manifestSource, pageKit);
+    const outside = new Set([...pageKit.seeds, ...pageKit.generics,
+        "Close", "Open", "Never", "Structure"]);
+    const declared = new Map();
+    for (const declaration of manifestJudged.parsed.declarations.values()) {
+        const file = declaration.aliases.get("File");
+        const name = declaration.aliases.get("Name");
+        if (!file || !name) continue;
+        const spelled = (alias) =>
+            (manifestJudged.parsed.literals.get(alias.target) || {}).value;
+        declared.set(spelled(name), spelled(file));
+    }
+    const onDisk = fs.readdirSync(path.join(__dirname, "corpus/worlds"))
+        .filter((entry) => entry.endsWith(".swift"))
+        .map((entry) => entry.slice(0, -".swift".length)).sort();
+    const shell = fs.readFileSync(path.join(__dirname, "shell.html"), "utf8");
+    const unread = [...declared].filter(([name, file]) =>
+        !shell.includes("const " + name + " = `@@WORLD:" + file + "@@`;"));
+    const complaints = [];
+    if (manifestJudged.refusals.length > 0) {
+        complaints.push("judged: " + manifestJudged.refusals[0].premise.slice(0, 50));
+    }
+    if (lint("Manifest.swift", manifestSource).length > 0) complaints.push("the law objects");
+    const guarded = pageGuards(manifestJudged.parsed, manifestSource.split("\n"), outside);
+    if (guarded.length > 0) complaints.push("the page: " + guarded[0].premise.slice(0, 50));
+    if (JSON.stringify([...declared.values()].sort()) !== JSON.stringify(onDisk)) {
+        complaints.push("declares " + [...declared.values()].sort().join(",")
+            + " and the corpus holds " + onDisk.join(","));
+    }
+    if (unread.length > 0) {
+        complaints.push("the shell reads no world by "
+            + unread.map(([name]) => name).join(", "));
+    }
+    if (complaints.length === 0) passed += 1;
+    else failures.push("the manifest: " + complaints.join("; "));
+}
+
 // ── the guards must still object: a guard that objects to nothing is a green
 // vector for a broken page. Four lies, one per guard, planted in a clean world,
 // and each must be named on its own line. The orphan extension is the pointed
