@@ -3,6 +3,12 @@ import DocumentKit
 
 // THE SITE'S PALETTE, derived from light and held to a stated bound.
 //
+// A neutral is equal parts of the three lights, which is the screen's own
+// white by construction, so every surface and every text on this page stands on
+// one direction and no grey drifts warm while another drifts cool. Its rung is
+// how much of that light stands there. A chromatic role is its own direction: a
+// colour of the same hue but a different purity is not a scaling of another.
+//
 // A role is a mix of the screen's own three lights, and the levels of that mix
 // are what this file states. The coordinates the browser reads fall out of the
 // levels through the kit's own weights, so no colour here is copied from a
@@ -39,13 +45,13 @@ public enum Legible<Bright, Dark, Slack>: Close {}
 extension Legible: ContrastHolds
 where Bright == Plus<Times<Plus<U128, Plus<U32, Plus<U16, U4>>>, Dark>, Plus<Times<Plus<U4, Plus<U2, U1>>, Times<U512, U16>>, Slack>> {}
 
-public typealias PaperLitRed = Plus<U256, Plus<U8, U4>>
-public typealias PaperLitGreen = Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, U1>>>>>>
-public typealias PaperLitBlue = Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>>
+public typealias PaperLitRed = U256
+public typealias PaperLitGreen = U256
+public typealias PaperLitBlue = U256
 public typealias PaperLitY = Luminance<PaperLitRed, PaperLitGreen, PaperLitBlue>
-public typealias PaperDimRed = Plus<U256, Plus<U8, U4>>
-public typealias PaperDimGreen = Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, U1>>>>>>
-public typealias PaperDimBlue = Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>>
+public typealias PaperDimRed = U256
+public typealias PaperDimGreen = U256
+public typealias PaperDimBlue = U256
 public typealias PaperDimY = Luminance<PaperDimRed, PaperDimGreen, PaperDimBlue>
 public enum PaperColour: Close {
     public typealias Names = PaperNamesWord
@@ -57,9 +63,9 @@ extension PaperNamesWord {
     public static var typeName: String { "paper vi-on-action" }
 }
 
-public typealias MistLitRed = Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>>>
-public typealias MistLitGreen = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U2, U1>>>>>
-public typealias MistLitBlue = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>
+public typealias MistLitRed = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>
+public typealias MistLitGreen = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>
+public typealias MistLitBlue = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>
 public typealias MistLitY = Luminance<MistLitRed, MistLitGreen, MistLitBlue>
 public enum MistColour: Close {
     public typealias Names = MistNamesWord
@@ -88,13 +94,13 @@ extension InkNamesWord {
     public static var typeName: String { "ink vi-on-accent" }
 }
 
-public typealias TextLitRed = Plus<U8, U1>
+public typealias TextLitRed = U8
 public typealias TextLitGreen = U8
 public typealias TextLitBlue = U8
 public typealias TextLitY = Luminance<TextLitRed, TextLitGreen, TextLitBlue>
-public typealias TextDimRed = Plus<U128, Plus<U64, Plus<U16, U8>>>
-public typealias TextDimGreen = Plus<U128, Plus<U64, Plus<U8, U4>>>
-public typealias TextDimBlue = Plus<U128, Plus<U64, U16>>
+public typealias TextDimRed = Plus<U128, Plus<U64, U4>>
+public typealias TextDimGreen = Plus<U128, Plus<U64, U4>>
+public typealias TextDimBlue = Plus<U128, Plus<U64, U4>>
 public typealias TextDimY = Luminance<TextDimRed, TextDimGreen, TextDimBlue>
 public enum TextColour: Close {
     public typealias Names = TextNamesWord
@@ -106,13 +112,13 @@ extension TextNamesWord {
     public static var typeName: String { "text vi-text-primary" }
 }
 
-public typealias MutedLitRed = Plus<U32, Plus<U8, Plus<U4, U1>>>
+public typealias MutedLitRed = Plus<U32, Plus<U8, U2>>
 public typealias MutedLitGreen = Plus<U32, Plus<U8, U2>>
 public typealias MutedLitBlue = Plus<U32, Plus<U8, U2>>
 public typealias MutedLitY = Luminance<MutedLitRed, MutedLitGreen, MutedLitBlue>
-public typealias MutedDimRed = Plus<U128, Plus<U4, U1>>
-public typealias MutedDimGreen = Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, U2>>>>>
-public typealias MutedDimBlue = U128
+public typealias MutedDimRed = Plus<U64, Plus<U32, Plus<U4, Plus<U2, U1>>>>
+public typealias MutedDimGreen = Plus<U64, Plus<U32, Plus<U4, Plus<U2, U1>>>>
+public typealias MutedDimBlue = Plus<U64, Plus<U32, Plus<U4, Plus<U2, U1>>>>
 public typealias MutedDimY = Luminance<MutedDimRed, MutedDimGreen, MutedDimBlue>
 public enum MutedColour: Close {
     public typealias Names = MutedNamesWord
@@ -124,13 +130,13 @@ extension MutedNamesWord {
     public static var typeName: String { "muted vi-text-secondary" }
 }
 
-public typealias LineLitRed = Plus<U128, Plus<U64, Plus<U16, Plus<U8, U4>>>>
-public typealias LineLitGreen = Plus<U128, Plus<U64, Plus<U16, U4>>>
-public typealias LineLitBlue = Plus<U128, Plus<U64, Plus<U16, Plus<U8, U2>>>>
+public typealias LineLitRed = Plus<U128, Plus<U64, Plus<U16, Plus<U4, U2>>>>
+public typealias LineLitGreen = Plus<U128, Plus<U64, Plus<U16, Plus<U4, U2>>>>
+public typealias LineLitBlue = Plus<U128, Plus<U64, Plus<U16, Plus<U4, U2>>>>
 public typealias LineLitY = Luminance<LineLitRed, LineLitGreen, LineLitBlue>
-public typealias LineDimRed = Plus<U8, Plus<U4, U1>>
-public typealias LineDimGreen = Plus<U8, U4>
-public typealias LineDimBlue = Plus<U8, Plus<U4, U1>>
+public typealias LineDimRed = Plus<U8, Plus<U2, U1>>
+public typealias LineDimGreen = Plus<U8, Plus<U2, U1>>
+public typealias LineDimBlue = Plus<U8, Plus<U2, U1>>
 public typealias LineDimY = Luminance<LineDimRed, LineDimGreen, LineDimBlue>
 public enum LineColour: Close {
     public typealias Names = LineNamesWord
@@ -297,7 +303,7 @@ extension KnownNameNamesWord {
 
 public typealias BackdropLitRed = U1
 public typealias BackdropLitGreen = U1
-public typealias BackdropLitBlue = U2
+public typealias BackdropLitBlue = U1
 public typealias BackdropLitY = Luminance<BackdropLitRed, BackdropLitGreen, BackdropLitBlue>
 public enum BackdropColour: Close {
     public typealias Names = BackdropNamesWord
@@ -308,9 +314,9 @@ extension BackdropNamesWord {
     public static var typeName: String { "backdrop" }
 }
 
-public typealias SurfaceCardLitRed = Plus<U256, Plus<U8, U4>>
-public typealias SurfaceCardLitGreen = Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, U1>>>>>>
-public typealias SurfaceCardLitBlue = Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>>
+public typealias SurfaceCardLitRed = U256
+public typealias SurfaceCardLitGreen = U256
+public typealias SurfaceCardLitBlue = U256
 public typealias SurfaceCardLitY = Luminance<SurfaceCardLitRed, SurfaceCardLitGreen, SurfaceCardLitBlue>
 public typealias SurfaceCardDimRed = Plus<U2, U1>
 public typealias SurfaceCardDimGreen = Plus<U2, U1>
@@ -326,13 +332,13 @@ extension SurfaceCardNamesWord {
     public static var typeName: String { "vi-surface-card" }
 }
 
-public typealias SurfaceTrackLitRed = Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>>>
-public typealias SurfaceTrackLitGreen = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U2, U1>>>>>
-public typealias SurfaceTrackLitBlue = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>
+public typealias SurfaceTrackLitRed = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>
+public typealias SurfaceTrackLitGreen = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>
+public typealias SurfaceTrackLitBlue = Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>
 public typealias SurfaceTrackLitY = Luminance<SurfaceTrackLitRed, SurfaceTrackLitGreen, SurfaceTrackLitBlue>
-public typealias SurfaceTrackDimRed = Plus<U8, Plus<U4, U1>>
-public typealias SurfaceTrackDimGreen = Plus<U8, U4>
-public typealias SurfaceTrackDimBlue = Plus<U8, Plus<U4, U1>>
+public typealias SurfaceTrackDimRed = Plus<U8, Plus<U2, U1>>
+public typealias SurfaceTrackDimGreen = Plus<U8, Plus<U2, U1>>
+public typealias SurfaceTrackDimBlue = Plus<U8, Plus<U2, U1>>
 public typealias SurfaceTrackDimY = Luminance<SurfaceTrackDimRed, SurfaceTrackDimGreen, SurfaceTrackDimBlue>
 public enum SurfaceTrackColour: Close {
     public typealias Names = SurfaceTrackNamesWord
@@ -345,37 +351,37 @@ extension SurfaceTrackNamesWord {
 }
 
 // every pair a reader actually meets, each with the slack that proves it
-public typealias TextOnPaperSlack = Plus<Times<U512, Plus<U256, Plus<U128, Plus<U32, Plus<U16, U4>>>>>, Plus<U256, Plus<U16, Plus<U8, U4>>>>
+public typealias TextOnPaperSlack = Plus<Times<U512, Plus<U256, Plus<U128, Plus<U32, Plus<U16, Plus<U4, U2>>>>>>, Never>
 public typealias TextOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, TextLitY, TextOnPaperSlack>
-public typealias TextOnMistSlack = Plus<Times<U512, Plus<U256, Plus<U128, Plus<U4, U2>>>>, Plus<U64, Plus<U32, Plus<U16, U4>>>>
+public typealias TextOnMistSlack = Plus<Times<U512, Plus<U256, Plus<U128, Plus<U8, U1>>>>, Never>
 public typealias TextOnMist = Legible<Times<Plus<U32, U8>, MistLitY>, TextLitY, TextOnMistSlack>
-public typealias MutedOnPaperSlack = Plus<Times<U512, Plus<U32, Plus<U16, U1>>>, Plus<U64, U4>>
+public typealias MutedOnPaperSlack = Plus<Times<U512, Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>>, U256>
 public typealias MutedOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, MutedLitY, MutedOnPaperSlack>
-public typealias MutedOnMistSlack = Plus<Times<U512, U2>, Plus<U256, Plus<U128, Plus<U16, Plus<U8, U4>>>>>
+public typealias MutedOnMistSlack = Plus<Times<U512, Plus<U8, U2>>, U256>
 public typealias MutedOnMist = Legible<Times<Plus<U32, U8>, MistLitY>, MutedLitY, MutedOnMistSlack>
 public typealias InkOnAccentSlack = Plus<Times<U512, Plus<U256, Plus<U64, Plus<U2, U1>>>>, Plus<U64, U16>>
 public typealias InkOnAccent = Legible<Times<Plus<U32, U8>, AccentLitY>, InkLitY, InkOnAccentSlack>
-public typealias ActionOnPaperSlack = Plus<Times<U512, Plus<U2, U1>>, Plus<U32, U8>>
+public typealias ActionOnPaperSlack = Plus<Times<U512, U2>, U32>
 public typealias ActionOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, ActionLitY, ActionOnPaperSlack>
-public typealias RefusalOnPaperSlack = Plus<Times<U512, Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>>, Plus<U32, Plus<U16, U8>>>
+public typealias RefusalOnPaperSlack = Plus<Times<U512, Plus<U32, Plus<U16, Plus<U4, U2>>>>, Plus<U32, U16>>
 public typealias RefusalOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, RefusalLitY, RefusalOnPaperSlack>
-public typealias LawOnPaperSlack = Plus<Times<U512, Plus<U64, Plus<U16, Plus<U8, U2>>>>, Plus<U256, Plus<U32, Plus<U16, Plus<U8, U4>>>>>
+public typealias LawOnPaperSlack = Plus<Times<U512, Plus<U64, Plus<U16, Plus<U8, U1>>>>, Plus<U256, Plus<U32, Plus<U16, U4>>>>
 public typealias LawOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, LawLitY, LawOnPaperSlack>
-public typealias OkOnPaperSlack = Plus<Times<U512, Plus<U4, Plus<U2, U1>>>, Plus<U256, Plus<U64, Plus<U8, U4>>>>
+public typealias OkOnPaperSlack = Plus<Times<U512, Plus<U4, U2>>, Plus<U256, Plus<U64, U4>>>
 public typealias OkOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, OkLitY, OkOnPaperSlack>
-public typealias KeywordOnPaperSlack = Plus<Times<U512, Plus<U128, Plus<U64, Plus<U32, Plus<U4, U1>>>>>, Plus<U64, U4>>
+public typealias KeywordOnPaperSlack = Plus<Times<U512, Plus<U128, Plus<U64, Plus<U32, U4>>>>, Plus<U32, Plus<U16, Plus<U8, U4>>>>
 public typealias KeywordOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, KeywordLitY, KeywordOnPaperSlack>
-public typealias LiteralOnPaperSlack = Plus<Times<U512, Plus<U128, Plus<U32, Plus<U8, U1>>>>, Plus<U256, Plus<U64, Plus<U32, U16>>>>
+public typealias LiteralOnPaperSlack = Plus<Times<U512, Plus<U128, Plus<U32, U8>>>, Plus<U256, Plus<U64, Plus<U32, U8>>>>
 public typealias LiteralOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, LiteralLitY, LiteralOnPaperSlack>
-public typealias CommentOnPaperSlack = Plus<Times<U512, Plus<U64, Plus<U32, Plus<U16, Plus<U2, U1>>>>>, Plus<U256, Plus<U128, Plus<U64, Plus<U16, Plus<U8, U4>>>>>>
+public typealias CommentOnPaperSlack = Plus<Times<U512, Plus<U64, Plus<U32, Plus<U16, U2>>>>, Plus<U256, Plus<U128, Plus<U64, Plus<U16, U4>>>>>
 public typealias CommentOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, CommentLitY, CommentOnPaperSlack>
-public typealias AttributeOnPaperSlack = Plus<Times<U512, Plus<U4, U2>>, Plus<U64, Plus<U32, Plus<U16, Plus<U8, U4>>>>>
+public typealias AttributeOnPaperSlack = Plus<Times<U512, Plus<U4, U1>>, Plus<U64, Plus<U32, Plus<U16, U4>>>>
 public typealias AttributeOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, AttributeLitY, AttributeOnPaperSlack>
-public typealias LocalTypeOnPaperSlack = Plus<Times<U512, Plus<U256, Plus<U64, U4>>>, Plus<U256, Plus<U128, U4>>>
+public typealias LocalTypeOnPaperSlack = Plus<Times<U512, Plus<U256, Plus<U64, Plus<U2, U1>>>>, Plus<U256, Plus<U64, Plus<U32, Plus<U16, Plus<U8, U4>>>>>>
 public typealias LocalTypeOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, LocalTypeLitY, LocalTypeOnPaperSlack>
-public typealias KnownNameOnPaperSlack = Plus<Times<U512, Plus<U256, Plus<U128, Plus<U32, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>>, Plus<U256, Plus<U64, U4>>>
+public typealias KnownNameOnPaperSlack = Plus<Times<U512, Plus<U256, Plus<U128, Plus<U32, Plus<U8, Plus<U4, U2>>>>>>, Plus<U256, Plus<U32, Plus<U16, Plus<U8, U4>>>>>
 public typealias KnownNameOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, KnownNameLitY, KnownNameOnPaperSlack>
-public typealias TextOnSurfaceCardDimSlack = Plus<Times<U512, Plus<U256, Plus<U64, Plus<U32, Plus<U16, Plus<U2, U1>>>>>>, Plus<U128, Plus<U64, U32>>>
+public typealias TextOnSurfaceCardDimSlack = Plus<Times<U512, Plus<U256, Plus<U64, Plus<U16, U8>>>>, U128>
 public typealias TextOnSurfaceCardDim = Legible<Times<Plus<U32, U8>, TextDimY>, SurfaceCardDimY, TextOnSurfaceCardDimSlack>
-public typealias MutedOnSurfaceCardDimSlack = Plus<Times<U512, Plus<U128, Plus<U32, Plus<U8, Plus<U4, U1>>>>>, Plus<U128, Plus<U64, U8>>>
+public typealias MutedOnSurfaceCardDimSlack = Plus<Times<U512, Plus<U64, Plus<U32, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>, Plus<U256, U128>>
 public typealias MutedOnSurfaceCardDim = Legible<Times<Plus<U32, U8>, MutedDimY>, SurfaceCardDimY, MutedOnSurfaceCardDimSlack>

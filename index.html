@@ -16,17 +16,17 @@
   /* printed from corpus/Palette.swift: every role states its light, and the
      reader that draws the canvases writes it here as color(xyz-d65 ...) */
   :root {
-    --paper: color(xyz-d65 0.951 1.001 1.090);
-    --vi-on-action: color(xyz-d65 0.951 1.001 1.090);
-    --mist: color(xyz-d65 0.882 0.929 1.020);
+    --paper: color(xyz-d65 0.937 1.000 1.093);
+    --vi-on-action: color(xyz-d65 0.937 1.000 1.093);
+    --mist: color(xyz-d65 0.871 0.929 1.016);
     --ink: color(xyz-d65 0.010 0.011 0.012);
     --vi-on-accent: color(xyz-d65 0.010 0.011 0.012);
-    --text: color(xyz-d65 0.030 0.032 0.034);
-    --vi-text-primary: color(xyz-d65 0.030 0.032 0.034);
-    --muted: color(xyz-d65 0.158 0.166 0.179);
-    --vi-text-secondary: color(xyz-d65 0.158 0.166 0.179);
-    --line: color(xyz-d65 0.793 0.836 0.928);
-    --vi-line: color(xyz-d65 0.793 0.836 0.928);
+    --text: color(xyz-d65 0.029 0.031 0.034);
+    --vi-text-primary: color(xyz-d65 0.029 0.031 0.034);
+    --muted: color(xyz-d65 0.153 0.164 0.179);
+    --vi-text-secondary: color(xyz-d65 0.153 0.164 0.179);
+    --line: color(xyz-d65 0.783 0.835 0.914);
+    --vi-line: color(xyz-d65 0.783 0.835 0.914);
     --vi-accent: color(xyz-d65 0.676 0.732 0.130);
     --action: color(xyz-d65 0.222 0.182 0.824);
     --vi-action: color(xyz-d65 0.222 0.182 0.824);
@@ -39,9 +39,9 @@
     --attribute: color(xyz-d65 0.182 0.181 0.029);
     --localtype: color(xyz-d65 0.064 0.070 0.189);
     --knownname: color(xyz-d65 0.080 0.033 0.335);
-    --backdrop: color(xyz-d65 0.004 0.004 0.007);
-    --vi-surface-card: color(xyz-d65 0.951 1.001 1.090);
-    --vi-surface-track: color(xyz-d65 0.882 0.929 1.020);
+    --backdrop: color(xyz-d65 0.003 0.003 0.004);
+    --vi-surface-card: color(xyz-d65 0.937 1.000 1.093);
+    --vi-surface-track: color(xyz-d65 0.871 0.929 1.016);
   }
   * { box-sizing: border-box; margin: 0; }
   body {
@@ -194,15 +194,15 @@
   #actions button.loud:hover { background: color-mix(in srgb, var(--action) 20%, transparent); color: var(--action); }
   #canvases.dark {
     background: var(--backdrop);
-    --vi-on-action: color(xyz-d65 0.951 1.001 1.090);
+    --vi-on-action: color(xyz-d65 0.937 1.000 1.093);
     --vi-on-accent: color(xyz-d65 0.010 0.011 0.012);
-    --vi-text-primary: color(xyz-d65 0.769 0.808 0.887);
-    --vi-text-secondary: color(xyz-d65 0.473 0.498 0.546);
-    --vi-line: color(xyz-d65 0.046 0.047 0.055);
+    --vi-text-primary: color(xyz-d65 0.717 0.765 0.837);
+    --vi-text-secondary: color(xyz-d65 0.377 0.402 0.440);
+    --vi-line: color(xyz-d65 0.040 0.042 0.046);
     --vi-accent: color(xyz-d65 0.676 0.732 0.130);
     --vi-action: color(xyz-d65 0.200 0.179 0.613);
     --vi-surface-card: color(xyz-d65 0.010 0.011 0.012);
-    --vi-surface-track: color(xyz-d65 0.046 0.047 0.055);
+    --vi-surface-track: color(xyz-d65 0.040 0.042 0.046);
   }
   aside { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   #canvases { padding: 16px; overflow: auto; background: var(--mist); flex: 1; min-height: 0;
