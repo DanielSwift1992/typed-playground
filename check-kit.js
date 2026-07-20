@@ -163,6 +163,37 @@ if (pending.length > 0) {
         + " branches await a native vector: " + pending.join(", "));
 }
 const sealed = supportedSorted.length - pending.length;
+
+// the README states these two numbers, and this file is the one that counts
+// them: a sentence nobody re-reads drifts the moment a branch is added
+const spelled = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+    "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen",
+    "sixteen", "seventeen", "eighteen", "nineteen", "twenty", "twenty-one",
+    "twenty-two", "twenty-three", "twenty-four", "twenty-five", "twenty-six",
+    "twenty-seven", "twenty-eight", "twenty-nine", "thirty"];
+const inWords = (count) => {
+    if (count < spelled.length) return spelled[count];
+    const tens = ["", "", "twenty", "thirty", "forty", "fifty", "sixty", "seventy",
+        "eighty", "ninety"];
+    const rest = count % 10;
+    return rest === 0 ? tens[Math.floor(count / 10)]
+        : tens[Math.floor(count / 10)] + "-" + spelled[rest];
+};
+const readme = fs.readFileSync(path.join(__dirname, "README.md"), "utf8");
+const statedBranches = readme.match(/checks all ([a-z-]+)\s*\n?\s*ported/);
+const statedSealed = readme.match(/([a-z-]+) of them\s*\n?\s*sealed by goldens/);
+for (const [what, stated, real] of [["branches", statedBranches, supportedSorted.length],
+    ["sealed", statedSealed, sealed]]) {
+    if (!stated) {
+        console.error("kit-gates: the README states no " + what + " count");
+        failed = true;
+    } else if (stated[1] !== inWords(real)) {
+        console.error("kit-gates: the README says " + stated[1] + " " + what
+            + " and this run counts " + inWords(real));
+        failed = true;
+    }
+}
+
 console.log("kit-gates: " + (failed ? "REFUSED" : "hold") + " · "
     + supportedSorted.length + " branches vs the kit at " + KIT_PIN
     + " · " + sealed + " sealed by goldens");

@@ -19,6 +19,15 @@ span engine, `press.js` of its rule applier, and `lint.js` of rule 0 of its
 linter. `guards.js` states the five objections the fast judge leaves to the
 compiler, and `check.js` runs them over every world.
 
+The page is printed from its own declarations as well. `corpus/Manifest.swift`
+states the worlds it ships and the tabs it shows, and `corpus/Palette.swift`
+states every colour as a mix of the screen's three lights, with the contrast
+each pair of them must clear written as a certificate. `build.mjs` reads both
+with the same judge the page runs and prints `index.html` from what they state,
+so a world added and forgotten, a name that drifts between two files, or a
+background lightened past the bound is a failed check rather than something a
+reader notices later.
+
 Live: <https://danielswift1992.github.io/typed-playground/>, or open
 `index.html` from a checkout. The page is eight files in one folder:
 `index.html`, `codemirror.js`, `codemirror.css`, `judge.js`, `lint.js`,
@@ -83,7 +92,7 @@ grammar and the counting canon on the atom's Rydberg lattice, five planted lies
 that each guard must name, the theory's forty-line golden plate, which the
 port must read value for value, the palette read against every custom property
 the stylesheet asks for, and the numbers this file states, counted here rather
-than remembered. `node check-kit.js` checks all seventy-one ported
+than remembered. `node check-kit.js` checks all seventy-two ported
 kit names against the theory's sources at a pinned commit, fifty-seven of them
 sealed by goldens. `./check-theory.sh` turns the direction around: the theory's
 own linter and its where-judge read these worlds, so the law that admits the
