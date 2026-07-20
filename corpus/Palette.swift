@@ -3,6 +3,13 @@ import DocumentKit
 
 // THE SITE'S PALETTE, derived from light and held to a stated bound.
 //
+// The three signal colours stand on one rung of light: a refusal, a law and a
+// success differ in hue and in nothing else, so none of them shouts louder than
+// the others. The editor's tokens keep their own rungs, because a theme reads by
+// weight as well as by hue, and a dark violet lifted to one rung leaves the
+// screen's cone and comes back clipped: that limit is the monitor's, not this
+// file's.
+//
 // A neutral is equal parts of the three lights, which is the screen's own
 // white by construction, so every surface and every text on this page stands on
 // one direction and no grey drifts warm while another drifts cool. Its rung is
@@ -184,8 +191,8 @@ extension ActionNamesWord {
     public static var typeName: String { "action vi-action" }
 }
 
-public typealias RefusalLitRed = Plus<U128, Plus<U16, Plus<U2, U1>>>
-public typealias RefusalLitGreen = Plus<U8, Plus<U4, U1>>
+public typealias RefusalLitRed = Plus<U128, Plus<U16, Plus<U8, U2>>>
+public typealias RefusalLitGreen = Plus<U8, Plus<U4, U2>>
 public typealias RefusalLitBlue = Plus<U8, U2>
 public typealias RefusalLitY = Luminance<RefusalLitRed, RefusalLitGreen, RefusalLitBlue>
 public enum RefusalColour: Close {
@@ -197,8 +204,8 @@ extension RefusalNamesWord {
     public static var typeName: String { "refusal" }
 }
 
-public typealias LawLitRed = Plus<U64, Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>>
-public typealias LawLitGreen = Plus<U16, U2>
+public typealias LawLitRed = Plus<U128, Plus<U4, U1>>
+public typealias LawLitGreen = Plus<U16, U4>
 public typealias LawLitBlue = Never
 public typealias LawLitY = Luminance<LawLitRed, LawLitGreen, LawLitBlue>
 public enum LawColour: Close {
@@ -211,8 +218,8 @@ extension LawNamesWord {
 }
 
 public typealias OkLitRed = U8
-public typealias OkLitGreen = Plus<U32, Plus<U16, Plus<U8, Plus<U4, U1>>>>
-public typealias OkLitBlue = Plus<U8, U4>
+public typealias OkLitGreen = Plus<U32, Plus<U16, Plus<U8, U2>>>
+public typealias OkLitBlue = Plus<U8, Plus<U2, U1>>
 public typealias OkLitY = Luminance<OkLitRed, OkLitGreen, OkLitBlue>
 public enum OkColour: Close {
     public typealias Names = OkNamesWord
@@ -363,11 +370,11 @@ public typealias InkOnAccentSlack = Plus<Times<U512, Plus<U256, Plus<U64, Plus<U
 public typealias InkOnAccent = Legible<Times<Plus<U32, U8>, AccentLitY>, InkLitY, InkOnAccentSlack>
 public typealias ActionOnPaperSlack = Plus<Times<U512, U2>, U32>
 public typealias ActionOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, ActionLitY, ActionOnPaperSlack>
-public typealias RefusalOnPaperSlack = Plus<Times<U512, Plus<U32, Plus<U16, Plus<U4, U2>>>>, Plus<U32, U16>>
+public typealias RefusalOnPaperSlack = Plus<Times<U512, Plus<U16, Plus<U8, U4>>>, Plus<U256, Plus<U128, U16>>>
 public typealias RefusalOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, RefusalLitY, RefusalOnPaperSlack>
-public typealias LawOnPaperSlack = Plus<Times<U512, Plus<U64, Plus<U16, Plus<U8, U1>>>>, Plus<U256, Plus<U32, Plus<U16, U4>>>>
+public typealias LawOnPaperSlack = Plus<Times<U512, Plus<U32, Plus<U4, U2>>>, Plus<U256, Plus<U128, Plus<U64, Plus<U32, Plus<U16, U4>>>>>>
 public typealias LawOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, LawLitY, LawOnPaperSlack>
-public typealias OkOnPaperSlack = Plus<Times<U512, Plus<U4, U2>>, Plus<U256, Plus<U64, U4>>>
+public typealias OkOnPaperSlack = Plus<Times<U512, Plus<U16, Plus<U8, Plus<U4, Plus<U2, U1>>>>>, Plus<U256, Plus<U32, U16>>>
 public typealias OkOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, OkLitY, OkOnPaperSlack>
 public typealias KeywordOnPaperSlack = Plus<Times<U512, Plus<U128, Plus<U64, Plus<U32, U4>>>>, Plus<U32, Plus<U16, Plus<U8, U4>>>>
 public typealias KeywordOnPaper = Legible<Times<Plus<U32, U8>, PaperLitY>, KeywordLitY, KeywordOnPaperSlack>
