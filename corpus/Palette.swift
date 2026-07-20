@@ -1,27 +1,31 @@
 import VerificationIsIdentification
 import DocumentKit
 
-// THE SITE'S PALETTE, one set of roles for the drawings and for the page around
-// them. A role states its light: three coordinates on the canonical linear
-// chart, each written as the lattice's own halvings, and XYZWrite prints them
-// as color(xyz-d65 ...), which the device maps onto whatever it can reach. The
-// build reads this file with the page's judge and prints the custom properties
-// the stylesheet and the renderer both read by name, so a colour is declared
-// once instead of picked twice.
+// THE SITE'S PALETTE, derived from light. A role is not a colour code: it is a
+// mix of the screen's own three lights, and the levels of that mix are what
+// this file states. The three coordinates the browser reads fall out of the
+// levels through the kit's own weights, so no colour here is copied from a
+// device's spelling of it.
 //
-// Two mounts, not two palettes: Lit is the theme the page wears, Dim is the one
+// A level is stated in thirty-seconds of a primary's full light: five halvings
+// of a unit, the walk's last door, and the depth is stated once for every role
+// below. A level is never negative, so every colour in this file is one the
+// screen can actually make: the levels are the certificate of that.
+//
+// Two mounts, not two palettes: Lit is the theme the page wears, Dim the one
 // the dark canvas wears, and a role that never dims states Lit alone.
-//
-// The coordinates are stated, not decomposed: a role names a point on the
-// chart, not levels over the display's primaries. The decomposition is the
-// honest form (a colour inside the cone is matched by stated levels), and it
-// needs a deeper walk than the kit's shares carry today: at one eighth of full
-// light per step the dark end of any palette collapses to black.
+
+public typealias Step = Half<Half<Half<Half<Half<Unit>>>>>
+
+public typealias ScreenLight<R: Structure, G: Structure, B: Structure> = XYZWrite<
+    PouredCoordinate<R, SRGBRedPrimary.XShare, G, SRGBGreenPrimary.XShare, B, SRGBBluePrimary.XShare>,
+    PouredCoordinate<R, SRGBRedPrimary.YShare, G, SRGBGreenPrimary.YShare, B, SRGBBluePrimary.YShare>,
+    PouredCoordinate<R, SRGBRedPrimary.ZShare, G, SRGBGreenPrimary.ZShare, B, SRGBBluePrimary.ZShare>>
 
 public enum PaperColour: Close {
     public typealias Names = PaperNamesWord
-    public typealias Lit = XYZWrite<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U2, U1>>>>>, U256, Plus<U256, Plus<U16, Plus<U4, Plus<U2, U1>>>>>
-    public typealias Dim = XYZWrite<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U2, U1>>>>>, U256, Plus<U256, Plus<U16, Plus<U4, Plus<U2, U1>>>>>
+    public typealias Lit = ScreenLight<Times<Plus<U256, Plus<U8, U4>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, U1>>>>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>>, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U256, Plus<U8, U4>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, U1>>>>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>>, Step>>
 }
 public enum PaperNamesWord: Close {}
 extension PaperNamesWord {
@@ -30,7 +34,7 @@ extension PaperNamesWord {
 
 public enum MistColour: Close {
     public typealias Names = MistNamesWord
-    public typealias Lit = XYZWrite<Plus<U128, Plus<U64, Plus<U32, U2>>>, Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>, Plus<U256, Plus<U4, U1>>>
+    public typealias Lit = ScreenLight<Times<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U2, U1>>>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>, Step>>
 }
 public enum MistNamesWord: Close {}
 extension MistNamesWord {
@@ -39,8 +43,8 @@ extension MistNamesWord {
 
 public enum InkColour: Close {
     public typealias Names = InkNamesWord
-    public typealias Lit = XYZWrite<Plus<U2, U1>, Plus<U2, U1>, U4>
-    public typealias Dim = XYZWrite<Plus<U2, U1>, Plus<U2, U1>, U4>
+    public typealias Lit = ScreenLight<Times<Plus<U2, U1>, Step>, Times<Plus<U2, U1>, Step>, Times<Plus<U2, U1>, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U2, U1>, Step>, Times<Plus<U2, U1>, Step>, Times<Plus<U2, U1>, Step>>
 }
 public enum InkNamesWord: Close {}
 extension InkNamesWord {
@@ -49,8 +53,8 @@ extension InkNamesWord {
 
 public enum TextColour: Close {
     public typealias Names = TextNamesWord
-    public typealias Lit = XYZWrite<U8, U8, Plus<U8, U1>>
-    public typealias Dim = XYZWrite<Plus<U128, Plus<U64, Plus<U4, U1>>>, Plus<U128, Plus<U64, Plus<U8, Plus<U4, Plus<U2, U1>>>>>, Plus<U128, Plus<U64, Plus<U32, Plus<U2, U1>>>>>
+    public typealias Lit = ScreenLight<Times<Plus<U8, U1>, Step>, Times<U8, Step>, Times<U8, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U128, Plus<U64, Plus<U16, U8>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U8, U4>>>, Step>, Times<Plus<U128, Plus<U64, U16>>, Step>>
 }
 public enum TextNamesWord: Close {}
 extension TextNamesWord {
@@ -59,8 +63,8 @@ extension TextNamesWord {
 
 public enum MutedColour: Close {
     public typealias Names = MutedNamesWord
-    public typealias Lit = XYZWrite<Plus<U32, Plus<U8, Plus<U2, U1>>>, Plus<U32, Plus<U8, Plus<U4, U2>>>, Plus<U32, Plus<U16, U2>>>
-    public typealias Dim = XYZWrite<Plus<U64, Plus<U32, Plus<U16, Plus<U8, U1>>>>, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>, Plus<U128, Plus<U8, U4>>>
+    public typealias Lit = ScreenLight<Times<Plus<U32, U16>, Step>, Times<Plus<U32, Plus<U8, Plus<U4, U1>>>, Step>, Times<Plus<U32, Plus<U8, Plus<U4, U1>>>, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U128, Plus<U4, U1>>, Step>, Times<Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, U2>>>>>, Step>, Times<U128, Step>>
 }
 public enum MutedNamesWord: Close {}
 extension MutedNamesWord {
@@ -69,8 +73,8 @@ extension MutedNamesWord {
 
 public enum LineColour: Close {
     public typealias Names = LineNamesWord
-    public typealias Lit = XYZWrite<Plus<U128, Plus<U64, Plus<U8, Plus<U2, U1>>>>, Plus<U128, Plus<U64, Plus<U16, Plus<U4, U2>>>>, Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>>
-    public typealias Dim = XYZWrite<Plus<U8, U4>, Plus<U8, U4>, Plus<U8, Plus<U4, U2>>>
+    public typealias Lit = ScreenLight<Times<Plus<U128, Plus<U64, Plus<U16, Plus<U8, U4>>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U16, U4>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U16, Plus<U8, U2>>>>, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U8, Plus<U4, U1>>, Step>, Times<Plus<U8, U4>, Step>, Times<Plus<U8, Plus<U4, U1>>, Step>>
 }
 public enum LineNamesWord: Close {}
 extension LineNamesWord {
@@ -79,8 +83,8 @@ extension LineNamesWord {
 
 public enum AccentColour: Close {
     public typealias Names = AccentNamesWord
-    public typealias Lit = XYZWrite<Plus<U128, Plus<U32, Plus<U8, Plus<U4, U1>>>>, Plus<U128, Plus<U32, Plus<U16, Plus<U8, Plus<U2, U1>>>>>, Plus<U32, U1>>
-    public typealias Dim = XYZWrite<Plus<U128, Plus<U32, Plus<U8, Plus<U4, U1>>>>, Plus<U128, Plus<U32, Plus<U16, Plus<U8, Plus<U2, U1>>>>>, Plus<U32, U1>>
+    public typealias Lit = ScreenLight<Times<Plus<U256, Plus<U16, Plus<U2, U1>>>, Step>, Times<Plus<U128, Plus<U32, Plus<U16, U1>>>, Step>, Times<Plus<U2, U1>, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U256, Plus<U16, Plus<U2, U1>>>, Step>, Times<Plus<U128, Plus<U32, Plus<U16, U1>>>, Step>, Times<Plus<U2, U1>, Step>>
 }
 public enum AccentNamesWord: Close {}
 extension AccentNamesWord {
@@ -89,8 +93,8 @@ extension AccentNamesWord {
 
 public enum ActionColour: Close {
     public typealias Names = ActionNamesWord
-    public typealias Lit = XYZWrite<U64, Plus<U32, Plus<U16, Plus<U4, U2>>>, Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, U1>>>>>>
-    public typealias Dim = XYZWrite<Plus<U32, Plus<U16, Plus<U2, U1>>>, Plus<U32, Plus<U8, Plus<U4, U2>>>, Plus<U128, Plus<U16, Plus<U8, Plus<U4, U1>>>>>
+    public typealias Lit = ScreenLight<Never, Times<Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>, Step>, Times<Plus<U256, Plus<U2, U1>>, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U8, Plus<U4, U1>>, Step>, Times<Plus<U32, Plus<U8, Plus<U4, U2>>>, Step>, Times<Plus<U128, Plus<U32, U1>>, Step>>
 }
 public enum ActionNamesWord: Close {}
 extension ActionNamesWord {
@@ -99,7 +103,7 @@ extension ActionNamesWord {
 
 public enum RefusalColour: Close {
     public typealias Names = RefusalNamesWord
-    public typealias Lit = XYZWrite<Plus<U64, U2>, Plus<U32, Plus<U8, U2>>, Plus<U8, Plus<U4, Plus<U2, U1>>>>
+    public typealias Lit = ScreenLight<Times<Plus<U128, Plus<U16, Plus<U2, U1>>>, Step>, Times<Plus<U8, Plus<U4, U1>>, Step>, Times<Plus<U8, U2>, Step>>
 }
 public enum RefusalNamesWord: Close {}
 extension RefusalNamesWord {
@@ -108,7 +112,7 @@ extension RefusalNamesWord {
 
 public enum LawColour: Close {
     public typealias Names = LawNamesWord
-    public typealias Lit = XYZWrite<Plus<U32, Plus<U16, Plus<U4, U2>>>, Plus<U32, Plus<U4, Plus<U2, U1>>>, Plus<U4, U1>>
+    public typealias Lit = ScreenLight<Times<Plus<U64, Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>>, Step>, Times<Plus<U16, U2>, Step>, Never>
 }
 public enum LawNamesWord: Close {}
 extension LawNamesWord {
@@ -117,26 +121,16 @@ extension LawNamesWord {
 
 public enum OkColour: Close {
     public typealias Names = OkNamesWord
-    public typealias Lit = XYZWrite<Plus<U16, Plus<U8, Plus<U2, U1>>>, Plus<U32, U16>, Plus<U16, Plus<U2, U1>>>
+    public typealias Lit = ScreenLight<Times<U8, Step>, Times<U64, Step>, Times<Plus<U8, U4>, Step>>
 }
 public enum OkNamesWord: Close {}
 extension OkNamesWord {
     public static var typeName: String { "ok" }
 }
 
-public enum SurfaceCardColour: Close {
-    public typealias Names = SurfaceCardNamesWord
-    public typealias Lit = XYZWrite<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U2, U1>>>>>, U256, Plus<U256, Plus<U16, Plus<U4, Plus<U2, U1>>>>>
-    public typealias Dim = XYZWrite<Plus<U2, U1>, Plus<U2, U1>, U4>
-}
-public enum SurfaceCardNamesWord: Close {}
-extension SurfaceCardNamesWord {
-    public static var typeName: String { "vi-surface-card" }
-}
-
 public enum KeywordColour: Close {
     public typealias Names = KeywordNamesWord
-    public typealias Lit = XYZWrite<Plus<U32, Plus<U16, U2>>, Plus<U16, Plus<U8, U2>>, Plus<U64, Plus<U8, U1>>>
+    public typealias Lit = ScreenLight<Times<Plus<U64, Plus<U16, U4>>, Step>, Times<Plus<U4, U1>, Step>, Times<Plus<U64, Plus<U8, Plus<U2, U1>>>, Step>>
 }
 public enum KeywordNamesWord: Close {}
 extension KeywordNamesWord {
@@ -145,7 +139,7 @@ extension KeywordNamesWord {
 
 public enum LiteralColour: Close {
     public typealias Names = LiteralNamesWord
-    public typealias Lit = XYZWrite<Plus<U32, Plus<U16, Plus<U8, U4>>>, U32, Plus<U4, U1>>
+    public typealias Lit = ScreenLight<Times<Plus<U128, Plus<U16, U2>>, Step>, Never, Never>
 }
 public enum LiteralNamesWord: Close {}
 extension LiteralNamesWord {
@@ -154,7 +148,7 @@ extension LiteralNamesWord {
 
 public enum CommentColour: Close {
     public typealias Names = CommentNamesWord
-    public typealias Lit = XYZWrite<Plus<U32, U2>, Plus<U32, Plus<U4, U1>>, Plus<U32, Plus<U16, U4>>>
+    public typealias Lit = ScreenLight<Times<Plus<U16, Plus<U8, Plus<U4, U1>>>, Step>, Times<Plus<U32, Plus<U4, U2>>, Step>, Times<Plus<U32, Plus<U16, U1>>, Step>>
 }
 public enum CommentNamesWord: Close {}
 extension CommentNamesWord {
@@ -163,7 +157,7 @@ extension CommentNamesWord {
 
 public enum AttributeColour: Close {
     public typealias Names = AttributeNamesWord
-    public typealias Lit = XYZWrite<Plus<U32, Plus<U8, Plus<U4, U2>>>, Plus<U32, Plus<U8, Plus<U4, U2>>>, Plus<U4, Plus<U2, U1>>>
+    public typealias Lit = ScreenLight<Times<Plus<U64, Plus<U16, U1>>, Step>, Times<Plus<U32, U8>, Step>, Never>
 }
 public enum AttributeNamesWord: Close {}
 extension AttributeNamesWord {
@@ -172,7 +166,7 @@ extension AttributeNamesWord {
 
 public enum LocalTypeColour: Close {
     public typealias Names = LocalTypeNamesWord
-    public typealias Lit = XYZWrite<U16, Plus<U16, U2>, Plus<U32, Plus<U16, U1>>>
+    public typealias Lit = ScreenLight<Never, Times<Plus<U16, Plus<U4, U1>>, Step>, Times<Plus<U32, Plus<U16, U1>>, Step>>
 }
 public enum LocalTypeNamesWord: Close {}
 extension LocalTypeNamesWord {
@@ -181,7 +175,7 @@ extension LocalTypeNamesWord {
 
 public enum KnownNameColour: Close {
     public typealias Names = KnownNameNamesWord
-    public typealias Lit = XYZWrite<Plus<U16, Plus<U4, U1>>, Plus<U8, U1>, Plus<U64, Plus<U16, Plus<U4, U2>>>>
+    public typealias Lit = ScreenLight<Times<Plus<U4, Plus<U2, U1>>, Step>, Times<U2, Step>, Times<Plus<U64, Plus<U16, Plus<U8, Plus<U2, U1>>>>, Step>>
 }
 public enum KnownNameNamesWord: Close {}
 extension KnownNameNamesWord {
@@ -190,17 +184,27 @@ extension KnownNameNamesWord {
 
 public enum BackdropColour: Close {
     public typealias Names = BackdropNamesWord
-    public typealias Lit = XYZWrite<U1, U1, U2>
+    public typealias Lit = ScreenLight<Times<U1, Step>, Times<U1, Step>, Times<U2, Step>>
 }
 public enum BackdropNamesWord: Close {}
 extension BackdropNamesWord {
     public static var typeName: String { "backdrop" }
 }
 
+public enum SurfaceCardColour: Close {
+    public typealias Names = SurfaceCardNamesWord
+    public typealias Lit = ScreenLight<Times<Plus<U256, Plus<U8, U4>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, U1>>>>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>>, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U2, U1>, Step>, Times<Plus<U2, U1>, Step>, Times<Plus<U2, U1>, Step>>
+}
+public enum SurfaceCardNamesWord: Close {}
+extension SurfaceCardNamesWord {
+    public static var typeName: String { "vi-surface-card" }
+}
+
 public enum SurfaceTrackColour: Close {
     public typealias Names = SurfaceTrackNamesWord
-    public typealias Lit = XYZWrite<Plus<U128, Plus<U64, Plus<U32, U2>>>, Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, U2>>>>>, Plus<U256, Plus<U4, U1>>>
-    public typealias Dim = XYZWrite<Plus<U8, U4>, Plus<U8, U4>, Plus<U8, Plus<U4, U2>>>
+    public typealias Lit = ScreenLight<Times<Plus<U128, Plus<U64, Plus<U32, Plus<U16, Plus<U4, Plus<U2, U1>>>>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U2, U1>>>>>, Step>, Times<Plus<U128, Plus<U64, Plus<U32, Plus<U8, Plus<U4, Plus<U2, U1>>>>>>, Step>>
+    public typealias Dim = ScreenLight<Times<Plus<U8, Plus<U4, U1>>, Step>, Times<Plus<U8, U4>, Step>, Times<Plus<U8, Plus<U4, U1>>, Step>>
 }
 public enum SurfaceTrackNamesWord: Close {}
 extension SurfaceTrackNamesWord {
