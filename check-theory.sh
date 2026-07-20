@@ -15,8 +15,11 @@ WORLDS="$PWD/corpus/worlds"
 DEFS="Sources/VerificationIsIdentification/Primitive.swift Sources/DocumentKit/Spectrum.swift"
 
 cd "$THEORY"
-swift run Tools lint "$WORLDS"/*.swift
+swift run Tools lint "$WORLDS"/*.swift "$WORLDS"/../Manifest.swift "$WORLDS"/../Palette.swift
 for world in Light Atom; do
-    printf '%-6s ' "$world"
+    printf '%-8s ' "$world"
     swift run Tools judge where "$WORLDS/$world.swift" $DEFS
 done
+# the palette states its contrast bounds as certificates: the reference reads them
+printf '%-8s ' "Palette"
+swift run Tools judge where "$WORLDS/../Palette.swift" $DEFS
