@@ -540,29 +540,9 @@ const worldFile = `@@WORLD:World@@`;
 
 const typewriterFile = `@@WORLD:Typewriter@@`;
 
-const tabs = [
-    { id: "readme", group: "intro", title: "Read me", file: "ReadMe.swift", text: introFile,
-      caption: "the page draws its own manual: this introduction is the file on the left" },
-    { id: "organization", group: "company", title: "The organization", file: "Organization.swift",
-      text: organizationFile,
-      caption: "a company as types: the cards count the people declared in the file" },
-    { id: "scale", group: "company", title: "At scale", file: "BigCompany.swift", text: null,
-      caption: "12,800 people, 136,000 lines: a planted lie is named by line, on every edit" },
-    { id: "basics", group: "mechanics", title: "Basics", file: "Basics.swift", text: basicsFile,
-      caption: "layout in four steps: a row, three shares, a dot, a film" },
-    { id: "writer", group: "mechanics", title: "A typewriter", file: "Typewriter.swift", text: typewriterFile,
-      caption: "type on your keyboard: a keystroke appends one character to the Note literal in the file" },
-    { id: "buttons", group: "mechanics", title: "Buttons", file: "World.swift", text: worldFile,
-      caption: "every key on the canvas is a rule declared in the file: a press rewrites one typealias line" },
-    { id: "light", group: "physics", title: "Light", file: "Light.swift", text: lightFile,
-      caption: "the lamp is code: edit a number and every colour is recomputed" },
-    { id: "atom", group: "physics", title: "The atom", file: "Atom.swift", text: atomFile,
-      caption: "the atom is a few lines, not a simulation: change a law and the judge re-checks every line" },
-    { id: "rules", group: "reference", title: "Rules", file: "Rules.swift", text: rulesFile,
-      caption: "how to write here: the two moves, the five forms, the law" },
-    { id: "faq", group: "reference", title: "FAQ", file: "FAQ.swift", text: faqFile,
-      caption: "the FAQ is a file: edit an answer and the page redraws it" },
-];
+// the bar, printed from corpus/Manifest.swift: the tabs, their order, their
+// groups, and the world each one reads are declared there and read here
+const tabs = @@TABS@@;
 
 // the lies the buttons plant on the company tab, anchored on the pristine snippets
 const otherShare = {

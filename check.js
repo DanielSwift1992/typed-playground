@@ -231,6 +231,40 @@ total += 1;
         complaints.push("the shell reads no world by "
             + unread.map(([name]) => name).join(", "));
     }
+    // the tabs: each one reads a declared world or states that the page writes
+    // its text, the file it shows is the file that world is written in, and no
+    // world stands unread — a world nobody opens would ship as dead weight
+    const fileOf = new Map();
+    for (const declaration of manifestJudged.parsed.declarations.values()) {
+        if (declaration.aliases.has("File") && declaration.aliases.has("Name")) {
+            fileOf.set(declaration.name,
+                (manifestJudged.parsed.literals.get(declaration.aliases.get("File").target) || {}).value);
+        }
+    }
+    const used = new Set();
+    const ids = [];
+    for (const declaration of manifestJudged.parsed.declarations.values()) {
+        if (!declaration.aliases.has("Id")) continue;
+        const spelled = (key) => (manifestJudged.parsed.literals
+            .get((declaration.aliases.get(key) || {}).target) || {}).value;
+        ids.push(spelled("Id"));
+        for (const key of ["Reads", "Seeds"]) {
+            const target = (declaration.aliases.get(key) || {}).target;
+            if (!target || target === "GeneratedText") continue;
+            if (!fileOf.has(target)) {
+                complaints.push(declaration.name + " reads " + target + ", and no world is declared by that name");
+                continue;
+            }
+            used.add(target);
+            if (key === "Reads" && spelled("Shown") !== fileOf.get(target) + ".swift") {
+                complaints.push(declaration.name + " shows " + spelled("Shown")
+                    + " and reads " + fileOf.get(target) + ".swift");
+            }
+        }
+    }
+    if (new Set(ids).size !== ids.length) complaints.push("two tabs share an id");
+    const idle = [...fileOf.keys()].filter((world) => !used.has(world));
+    if (idle.length > 0) complaints.push("no tab reads " + idle.join(", "));
     if (complaints.length === 0) passed += 1;
     else failures.push("the manifest: " + complaints.join("; "));
 }

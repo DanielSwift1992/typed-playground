@@ -9924,11 +9924,12 @@ public enum SheetArt: GrownDiagram {
 }
 `;
 
+// the bar, printed from corpus/Manifest.swift: the tabs, their order, their
+// groups, and the world each one reads are declared there and read here
 const tabs = [
     { id: "readme", group: "intro", title: "Read me", file: "ReadMe.swift", text: introFile,
       caption: "the page draws its own manual: this introduction is the file on the left" },
-    { id: "organization", group: "company", title: "The organization", file: "Organization.swift",
-      text: organizationFile,
+    { id: "organization", group: "company", title: "The organization", file: "Organization.swift", text: organizationFile,
       caption: "a company as types: the cards count the people declared in the file" },
     { id: "scale", group: "company", title: "At scale", file: "BigCompany.swift", text: null,
       caption: "12,800 people, 136,000 lines: a planted lie is named by line, on every edit" },
