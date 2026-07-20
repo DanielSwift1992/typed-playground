@@ -848,4 +848,10 @@ function renderAll(declarations, order, literals, topAliases) {
     return { canvases, errors: env.errors, reads: env.reads };
 }
 
-if (typeof module !== "undefined") { module.exports = { renderAll, parseType, canonicalShares, seedCount }; }
+// textOf and makeEnvironment travel with the engine so the build can read a
+// stated colour through the same door the canvas reads it through: the palette
+// is printed by this reader, never by a second copy of it.
+if (typeof module !== "undefined") {
+    module.exports = { renderAll, parseType, canonicalShares, seedCount,
+        textOf, makeEnvironment };
+}

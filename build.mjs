@@ -10,6 +10,7 @@ import fs from "fs";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 const { judge } = require("./judge.js");
+const { textOf, makeEnvironment, parseType } = require("./renderer.js");
 
 const manifestSource = fs.readFileSync("corpus/Manifest.swift", "utf8");
 const manifest = judge("Manifest.swift", manifestSource,
@@ -65,6 +66,42 @@ for (const declaration of manifest.parsed.declarations.values()) {
     caption: spelled(axis(declaration, "Caption")),
   });
 }
+// ── the palette: a role states its light, and the same reader the canvas uses
+// prints it. Lit is the theme the page wears, Dim the one the dark canvas
+// wears, and a role that never dims prints in the light mount alone.
+const palette = judge("Palette.swift", fs.readFileSync("corpus/Palette.swift", "utf8"),
+  { seeds: new Set(), generics: new Set(), bareSeeds: new Set() });
+if (palette.refusals.length > 0) {
+  console.error("the palette is refused: "
+    + palette.refusals.map((r) => r.line + ": " + r.premise).join("; "));
+  process.exit(1);
+}
+const paletteEnv = makeEnvironment(palette.parsed.declarations,
+  palette.parsed.literals, palette.parsed.topAliases);
+const mount = (which) => {
+  const lines = [];
+  for (const role of palette.parsed.declarations.values()) {
+    const stated = role.aliases.get(which);
+    const names = role.aliases.get("Names");
+    if (!stated || !names) continue;
+    const atom = palette.parsed.literals.get(names.target);
+    if (!atom) { console.error("the palette: " + names.target + " states no text"); process.exit(1); }
+    const colour = textOf(paletteEnv, parseType(stated.target));
+    for (const name of atom.value.split(" ")) {
+      if (which === "Dim" && !name.startsWith("vi-")) continue;
+      lines.push("--" + name + ": " + colour + ";");
+    }
+  }
+  return lines.join("\n    ");
+};
+const litMount = mount("Lit");
+const dimMount = mount("Dim");
+if (paletteEnv.errors.length > 0) {
+  console.error("the palette states a colour the reader refuses: "
+    + paletteEnv.errors.join("; "));
+  process.exit(1);
+}
+
 const tabsText = "[\n" + tabs.map((tab) =>
   "    { id: " + JSON.stringify(tab.id) + ", group: " + JSON.stringify(tab.group)
   + ", title: " + JSON.stringify(tab.title) + ", file: " + JSON.stringify(tab.file)
@@ -72,8 +109,11 @@ const tabsText = "[\n" + tabs.map((tab) =>
 ).join("\n") + "\n]";
 
 let out = fs.readFileSync("shell.html", "utf8");
-if (!out.includes("@@TABS@@")) { console.error("missing marker @@TABS@@"); process.exit(1); }
-out = out.replace("@@TABS@@", tabsText);
+for (const [marker, filled] of [["@@TABS@@", tabsText],
+  ["@@PALETTE_LIT@@", litMount], ["@@PALETTE_DIM@@", dimMount]]) {
+  if (!out.includes(marker)) { console.error("missing marker " + marker); process.exit(1); }
+  out = out.replace(marker, filled);
+}
 for (const world of worlds) {
   const swift = fs.readFileSync(`corpus/worlds/${world.file}.swift`, "utf8");
   const marker = `@@WORLD:${world.file}@@`;

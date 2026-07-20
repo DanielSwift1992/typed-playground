@@ -13,12 +13,35 @@
 <link rel="stylesheet" href="codemirror.css">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📐</text></svg>">
 <style>
-  /* the palette mirrors Design.swift's walks: paper, mist, ink at two covers, accent, action, line */
+  /* printed from corpus/Palette.swift: every role states its light, and the
+     reader that draws the canvases writes it here as color(xyz-d65 ...) */
   :root {
-    --paper: #FFFFFF; --mist: #F6F7F8; --ink: #1C1C1E;
-    --text: rgba(0,0,0,0.80); --muted: rgba(0,0,0,0.54);
-    --accent: #FFDD2D; --action: #007AFF; --line: #EAECEE;
-    --refusal: #C4453B; --law: #B25000; --ok: #248A3D;
+    --paper: color(xyz-d65 0.949 1.000 1.089);
+    --vi-on-action: color(xyz-d65 0.949 1.000 1.089);
+    --mist: color(xyz-d65 0.882 0.929 1.019);
+    --ink: color(xyz-d65 0.011 0.011 0.015);
+    --vi-on-accent: color(xyz-d65 0.011 0.011 0.015);
+    --text: color(xyz-d65 0.031 0.031 0.035);
+    --vi-text-primary: color(xyz-d65 0.031 0.031 0.035);
+    --muted: color(xyz-d65 0.167 0.179 0.195);
+    --vi-text-secondary: color(xyz-d65 0.167 0.179 0.195);
+    --line: color(xyz-d65 0.792 0.835 0.929);
+    --vi-line: color(xyz-d65 0.792 0.835 0.929);
+    --vi-accent: color(xyz-d65 0.675 0.730 0.128);
+    --action: color(xyz-d65 0.250 0.210 0.972);
+    --vi-action: color(xyz-d65 0.250 0.210 0.972);
+    --refusal: color(xyz-d65 0.257 0.164 0.058);
+    --law: color(xyz-d65 0.210 0.152 0.019);
+    --ok: color(xyz-d65 0.105 0.187 0.074);
+    --vi-surface-card: color(xyz-d65 0.949 1.000 1.089);
+    --keyword: color(xyz-d65 0.195 0.101 0.285);
+    --literal: color(xyz-d65 0.234 0.125 0.019);
+    --comment: color(xyz-d65 0.132 0.144 0.203);
+    --attribute: color(xyz-d65 0.179 0.179 0.027);
+    --localtype: color(xyz-d65 0.062 0.070 0.191);
+    --knownname: color(xyz-d65 0.082 0.035 0.335);
+    --backdrop: color(xyz-d65 0.003 0.003 0.007);
+    --vi-surface-track: color(xyz-d65 0.882 0.929 1.019);
   }
   * { box-sizing: border-box; margin: 0; }
   body {
@@ -76,30 +99,30 @@
   /* air between the line numbers and the code */
   .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like { padding: 0 4px 0 14px; }
   .CodeMirror-gutters { background: var(--paper); border-right: 1px solid var(--line); }
-  .CodeMirror-linenumber { color: rgba(0,0,0,0.30); font-size: 11px; }
+  .CodeMirror-linenumber { color: color-mix(in srgb, var(--ink) 30%, transparent); font-size: 11px; }
   .CodeMirror-cursor { border-left: 2px solid var(--ink); }
   /* the token walk mirrors Xcode's Default (Light) preset */
-  .cm-keyword { color: #9B2393; font-weight: 600; }
-  .cm-string { color: #C41A16; }
-  .cm-comment { color: #5D6C79; }
-  .cm-attribute { color: #947100; }
-  .cm-localtype { color: #0B4F79; font-weight: 600; }
-  .cm-knownname { color: #3900A0; }
-  .cm-ghost { color: rgba(0,0,0,0.34); }
+  .cm-keyword { color: var(--keyword); font-weight: 600; }
+  .cm-string { color: var(--literal); }
+  .cm-comment { color: var(--comment); }
+  .cm-attribute { color: var(--attribute); }
+  .cm-localtype { color: var(--localtype); font-weight: 600; }
+  .cm-knownname { color: var(--knownname); }
+  .cm-ghost { color: color-mix(in srgb, var(--ink) 34%, transparent); }
   .cm-badname {
     color: var(--refusal); font-weight: 600;
     text-decoration: underline wavy var(--refusal) 1px; text-underline-offset: 3px;
   }
   /* findings: a washed line, a colored number, a note under the line */
-  .line-flag-bad { background: rgba(196,69,59,0.06); }
-  .line-flag-law { background: rgba(178,80,0,0.06); }
+  .line-flag-bad { background: color-mix(in srgb, var(--refusal) 6%, transparent); }
+  .line-flag-law { background: color-mix(in srgb, var(--law) 6%, transparent); }
   .gutter-flag-bad .CodeMirror-linenumber { color: var(--refusal); font-weight: 700; }
   .gutter-flag-law .CodeMirror-linenumber { color: var(--law); font-weight: 700; }
   .flag-note {
     padding: 2px 8px 3px 34px; font-size: 11px; font-style: italic;
-    color: var(--refusal); background: rgba(196,69,59,0.08);
+    color: var(--refusal); background: color-mix(in srgb, var(--refusal) 8%, transparent);
   }
-  .flag-note.law { color: var(--law); background: rgba(178,80,0,0.08); }
+  .flag-note.law { color: var(--law); background: color-mix(in srgb, var(--law) 8%, transparent); }
   #inspector {
     position: absolute; bottom: 0; left: 0; right: 0;
     padding: 5px 18px 5px 60px; font-size: 11.5px; color: var(--muted);
@@ -112,7 +135,7 @@
   #completion {
     display: none; position: absolute; z-index: 5; min-width: 15em;
     background: var(--paper); border: 1px solid var(--line); border-radius: 10px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10); overflow: hidden;
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 10%, transparent); overflow: hidden;
     font: 12px ui-monospace, Menlo, monospace;
   }
   .completion-row {
@@ -167,14 +190,19 @@
     border: 1px solid var(--line); background: var(--paper); color: var(--ink); cursor: pointer;
   }
   #actions button:hover { border-color: var(--action); color: var(--action); }
-  #actions button.loud { background: rgba(0,122,255,0.12); border-color: transparent; color: var(--action); font-weight: 600; }
-  #actions button.loud:hover { background: rgba(0,122,255,0.2); color: var(--action); }
+  #actions button.loud { background: color-mix(in srgb, var(--action) 12%, transparent); border-color: transparent; color: var(--action); font-weight: 600; }
+  #actions button.loud:hover { background: color-mix(in srgb, var(--action) 20%, transparent); color: var(--action); }
   #canvases.dark {
-    background: #101012;
-    --vi-surface-card: #1C1C1E; --vi-surface-track: rgba(255,255,255,0.15);
-    --vi-text-primary: rgba(255,255,255,0.90); --vi-text-secondary: rgba(255,255,255,0.70);
-    --vi-accent: #FFDD2D; --vi-action: #4972CF; --vi-line: rgba(255,255,255,0.15);
-    --vi-on-accent: #1C1C1E; --vi-on-action: #FFFFFF;
+    background: var(--backdrop);
+    --vi-on-action: color(xyz-d65 0.949 1.000 1.089);
+    --vi-on-accent: color(xyz-d65 0.011 0.011 0.015);
+    --vi-text-primary: color(xyz-d65 0.769 0.808 0.886);
+    --vi-text-secondary: color(xyz-d65 0.472 0.496 0.546);
+    --vi-line: color(xyz-d65 0.046 0.046 0.054);
+    --vi-accent: color(xyz-d65 0.675 0.730 0.128);
+    --vi-action: color(xyz-d65 0.199 0.179 0.613);
+    --vi-surface-card: color(xyz-d65 0.011 0.011 0.015);
+    --vi-surface-track: color(xyz-d65 0.046 0.046 0.054);
   }
   aside { flex: 1; display: flex; flex-direction: column; min-width: 0; }
   #canvases { padding: 16px; overflow: auto; background: var(--mist); flex: 1; min-height: 0;
@@ -183,7 +211,7 @@
   #canvases svg { width: 100%; height: auto; display: block; margin: 0 auto 12px; flex: none; }
   #canvases a { cursor: pointer; }
   #canvases a:hover { opacity: 0.8; }
-  .line-pressed { background: rgba(255, 221, 45, 0.35); }
+  .line-pressed { background: color-mix(in srgb, var(--vi-accent) 35%, transparent); }
   /* the table surface: the same file as relations, beside the code surface */
   #table-host { position: absolute; inset: 0 0 28px 0; overflow: auto;
     background: var(--paper); padding: 12px 16px 120px; font-size: 12.5px; }
@@ -197,14 +225,14 @@
     font-family: ui-monospace, Menlo, monospace; vertical-align: top; }
   #table-host td.cell-value { max-width: 300px; white-space: normal;
     overflow-wrap: anywhere; }
-  #table-host tr:hover td { background: rgba(0, 0, 0, 0.02); }
+  #table-host tr:hover td { background: color-mix(in srgb, var(--ink) 2%, transparent); }
   #table-host th { position: sticky; top: -12px; background: var(--paper);
     cursor: pointer; user-select: none; }
   #table-host th:hover { color: var(--text); }
   #table-host th .dir { color: var(--action); }
-  #table-host td.cell-name { color: #0B4F79; font-weight: 600; cursor: pointer; }
+  #table-host td.cell-name { color: var(--localtype); font-weight: 600; cursor: pointer; }
   #table-host td.cell-name:hover { text-decoration: underline; }
-  #table-host td.cell-value { color: #3900A0; }
+  #table-host td.cell-value { color: var(--knownname); }
   #table-host td .computed { color: var(--muted); font-size: 10.5px;
     margin-left: 6px; }
   #table-host td .swatch { display: inline-block; width: 10px; height: 10px;
@@ -213,15 +241,15 @@
   #table-host td .enterable { cursor: pointer; }
   #table-host td .enterable:hover { text-decoration: underline; }
   #table-host td.cell-live { cursor: pointer; }
-  #table-host td.cell-live:hover { background: rgba(0, 122, 255, 0.06); }
-  #table-host td.cell-bad { background: rgba(196, 69, 59, 0.10); }
+  #table-host td.cell-live:hover { background: color-mix(in srgb, var(--action) 6%, transparent); }
+  #table-host td.cell-bad { background: color-mix(in srgb, var(--refusal) 10%, transparent); }
   #table-host td.cell-bad::after { content: " ✗"; color: var(--refusal); }
   #table-host .slot-menu { position: absolute; background: var(--paper);
     border: 1px solid var(--line); border-radius: 8px;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.10); z-index: 30; min-width: 180px; }
+    box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 10%, transparent); z-index: 30; min-width: 180px; }
   #table-host .slot-menu div { padding: 5px 12px; cursor: pointer;
     font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
-  #table-host .slot-menu div:hover { background: rgba(0, 122, 255, 0.08); }
+  #table-host .slot-menu div:hover { background: color-mix(in srgb, var(--action) 8%, transparent); }
   #table-host .slot-menu div .via { color: var(--muted); font-size: 10.5px; }
   /* one file, two writing surfaces: a trough with a pill, the platform's own segment */
   #surface-switch { display: inline-flex; background: var(--mist);
@@ -231,13 +259,13 @@
     padding: 3px 12px; }
   #surface-switch button:hover { color: var(--text); }
   #surface-switch button.active-surface { background: var(--paper);
-    color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+    color: var(--text); box-shadow: 0 1px 2px color-mix(in srgb, var(--ink) 12%, transparent); }
   #verdict-panel { border-top: 1px solid var(--line); background: var(--paper); }
   #verdict-head { display: flex; align-items: center; gap: 10px; padding: 9px 16px 7px; }
   .chip { font-size: 12px; font-weight: 600; padding: 3px 10px; border-radius: 9px; }
-  .chip.ok { background: rgba(36,138,61,0.12); color: var(--ok); }
-  .chip.bad { background: var(--refusal); color: #FFFFFF; }
-  .chip.law { background: rgba(178,80,0,0.12); color: var(--law); }
+  .chip.ok { background: color-mix(in srgb, var(--ok) 12%, transparent); color: var(--ok); }
+  .chip.bad { background: var(--refusal); color: var(--paper); }
+  .chip.law { background: color-mix(in srgb, var(--law) 12%, transparent); color: var(--law); }
   #status { font-size: 12px; color: var(--muted); }
   #status b { color: var(--ink); font-weight: 600; }
   #verdicts { max-height: 30vh; overflow: auto; padding: 0 12px 4px; }
@@ -258,8 +286,8 @@
     color: var(--ink); cursor: pointer;
   }
   #controls button:hover { border-color: var(--action); color: var(--action); }
-  #controls button.primary { background: rgba(0,122,255,0.12); border-color: transparent; color: var(--action); font-weight: 600; }
-  #controls button.primary:hover { background: rgba(0,122,255,0.2); color: var(--action); }
+  #controls button.primary { background: color-mix(in srgb, var(--action) 12%, transparent); border-color: transparent; color: var(--action); font-weight: 600; }
+  #controls button.primary:hover { background: color-mix(in srgb, var(--action) 20%, transparent); color: var(--action); }
   footer { padding: 7px 20px; font-size: 12px; color: var(--muted); border-top: 1px solid var(--line); background: var(--paper); flex: none; }
   footer code { font-family: ui-monospace, Menlo, monospace; }
   footer a { color: var(--action); text-decoration: none; }
@@ -325,7 +353,7 @@
   <span style="float: right; color: var(--muted);">rev 157</span>
 </footer>
 
-<div id="crash" style="display:none; padding:8px 20px; background:#C4453B; color:#fff; font-size:13px;"></div>
+<div id="crash" style="display:none; padding:8px 20px; background:var(--refusal); color:#fff; font-size:13px;"></div>
 
 
 <script>

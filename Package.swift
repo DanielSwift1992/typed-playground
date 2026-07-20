@@ -21,7 +21,7 @@ let package = Package(
                 .product(name: "DocumentKit", package: "verification-is-identification"),
             ],
             path: "corpus",
-            sources: ["Manifest.swift"]
+            sources: ["Manifest.swift", "Palette.swift"]
         ),
         .target(
             name: "AtomTab",

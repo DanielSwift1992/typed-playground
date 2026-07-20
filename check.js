@@ -269,6 +269,49 @@ total += 1;
     else failures.push("the manifest: " + complaints.join("; "));
 }
 
+// ── the palette: one set of roles for the drawings and for the page around
+// them, judged like any world. What it prints must be what the stylesheet and
+// the renderer read by name, both ways: a role nobody reads is a dead variable,
+// and a variable nobody states falls back to nothing.
+total += 1;
+{
+    const paletteSource = fs.readFileSync(path.join(__dirname, "corpus/Palette.swift"), "utf8");
+    const paletteJudged = judge("Palette.swift", paletteSource, pageKit);
+    const outside = new Set([...pageKit.seeds, ...pageKit.generics,
+        "Close", "Open", "Never", "Structure", "XYZWrite"]);
+    const complaints = [];
+    if (paletteJudged.refusals.length > 0) {
+        complaints.push("judged: " + paletteJudged.refusals[0].premise.slice(0, 60));
+    }
+    if (lint("Palette.swift", paletteSource).length > 0) complaints.push("the law objects");
+    const guarded = pageGuards(paletteJudged.parsed, paletteSource.split("\n"), outside);
+    if (guarded.length > 0) complaints.push("the page: " + guarded[0].premise.slice(0, 60));
+    const stated = new Set();
+    for (const role of paletteJudged.parsed.declarations.values()) {
+        const names = role.aliases.get("Names");
+        if (!names || !role.aliases.has("Lit")) continue;
+        const atom = paletteJudged.parsed.literals.get(names.target);
+        if (!atom) { complaints.push(role.name + " states no names"); continue; }
+        for (const name of atom.value.split(" ")) stated.add(name);
+    }
+    const read = new Set();
+    for (const source of ["shell.html", "renderer.js"]) {
+        const text = fs.readFileSync(path.join(__dirname, source), "utf8");
+        for (const hit of text.matchAll(/var\(--([a-z-]+)/g)) read.add(hit[1]);
+    }
+    const unstated = [...read].filter((name) => !stated.has(name));
+    const unread = [...stated].filter((name) => !read.has(name));
+    if (unstated.length > 0) complaints.push("no role states " + unstated.join(", "));
+    if (unread.length > 0) complaints.push("nothing reads " + unread.join(", "));
+    // the shell states no colour of its own: a hex or an rgba in the stylesheet
+    // is a colour picked beside the palette, which is the drift this file ends
+    const shellText = fs.readFileSync(path.join(__dirname, "shell.html"), "utf8");
+    const picked = shellText.match(/#[0-9A-Fa-f]{6}\b|rgba\(/g);
+    if (picked) complaints.push("the shell picks " + [...new Set(picked)].join(", "));
+    if (complaints.length === 0) passed += 1;
+    else failures.push("the palette: " + complaints.join("; "));
+}
+
 // ── the guards must still object: a guard that objects to nothing is a green
 // vector for a broken page. Four lies, one per guard, planted in a clean world,
 // and each must be named on its own line. The orphan extension is the pointed
