@@ -10023,8 +10023,7 @@ const quietNames = new Set(["H", "Radius", "Fill", "Stroke", "Y", "FillColor", "
     "B", "X", "D", "K", "C", "Gap", "ThroughLeft",
     "RedChannel", "GreenChannel", "BlueChannel", "FromEast", "FromWest", "Total", "S",
     "AlphaWeight", "BetaWeight", "IRWeight", "AlphaName", "BetaName", "IRName",
-    "XShare", "YShare", "ZShare",
-    "IntegerValued", "F", "Whole", "Left", "Right",
+    "IntegerValued",
     "L", "RadialNodes", "Seat", "Flash", "Drop",
     "DocumentKit", "VerificationIsIdentification", "Organization"]);
 let localNames = new Set();
@@ -10062,6 +10061,9 @@ CodeMirror.defineMode("playground-swift", () => ({
             const word = stream.current();
             if (word === "self" || keywordSet.has(word)) return "keyword";
             if (/^[A-Z]/.test(word)) {
+                // a word after a dot is an axis read off its owner, and the owner
+                // is the name that must stand: `Weight.XShare` states one name
+                if (stream.string[stream.start - 1] === ".") return "knownname";
                 if (quietNames.has(word)) return null;
                 if (localNames.has(word)) return "localtype";
                 if (knownNames.has(word)) return "knownname";
@@ -10548,8 +10550,14 @@ function render() {
         lastParsed = verdict.parsed;
         localNames = new Set([...verdict.parsed.declarations.keys(),
             ...verdict.parsed.topAliases.keys(), ...verdict.parsed.literals.keys()]);
+        // a generic's parameters are declared by the form that states them, so the
+        // file knows them without any global list: a new world's new parameters
+        // are quiet the moment the judge reads its declarations
         for (const alias of verdict.parsed.topAliases.values()) {
             for (const parameter of alias.params ?? []) localNames.add(parameter);
+        }
+        for (const declaration of verdict.parsed.declarations.values()) {
+            for (const parameter of declaration.params ?? []) localNames.add(parameter);
         }
         knownNames = new Set([...fixedNames, ...localNames]);
         completionPool = [...localNames, ...keywordPool, ...fixedNames];
