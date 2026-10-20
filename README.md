@@ -114,8 +114,8 @@ even gap, a forbidden jump, a wrong road and a forbidden absorption, the lamp's
 eleven equalities, the count question on the atom's ladder with a lie in one
 drop naming both numbers, the palette's bound stated and not judged, the court
 module and the lent definitions as the bytes their records name, four planted
-lies that each guard must name, the theory's forty-line golden plate, which the
-port must read value for value, the palette read against every custom property
+lies that each guard must name, the kit's forty-line golden plate, reprinted byte
+for byte by the showcase at its pin, which the port must read value for value, the palette read against every custom property
 the stylesheet asks for, and the numbers this file states, counted here rather
 than remembered. `node check-kit.js` checks all seventy-two ported
 kit names against the kit's sources at a pinned commit, fifty-seven of them

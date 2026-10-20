@@ -465,8 +465,10 @@ if (slitLie === lightSource) {
     }
 }
 
-// ── the golden plate: the theory's VectorDemo prints every waiting form,
-// and the port must read the same values (goldens/vector-plate.txt) ──
+// ── the golden plate: the kit's VectorDemo prints every waiting form
+// (`swift run VectorDemo goldens`, reprinted byte for byte by the showcase at
+// the pin Package.swift states), and the port must read the same values
+// (goldens/vector-plate.txt) ──
 total += 1;
 const plate = fs.readFileSync(path.join(__dirname, "goldens", "vector-plate.txt"), "utf8");
 const plateErrors = [];
