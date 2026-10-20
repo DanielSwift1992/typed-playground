@@ -1,15 +1,16 @@
 "use strict";
 
 // THE PLAIN COURT, ported: a line-for-line JavaScript reading of the company's court,
-// Sources/Court/OrganizationJudge.swift in the theory's showcase package (its door is
-// `swift run ShowcaseTools judge`). The Swift court stays the reference — index.html
-// carries verdicts captured from it and checks this port against them on every load. A
-// drift is a red badge, never a silent lie. The where court and the count court are not
-// ported here: the page carries the contract's Rust sample of both, a second
-// implementation held to the Swift court by the suite, built for wasm32 (court/).
+// Sources/Court/OrganizationJudge.swift in the theory's showcase, at the pin
+// bin/organization-court.from names. The Swift court stays the reference. What holds this
+// port to it: the organization contract on the company's fragment (8/8), and the battery's
+// parity with bin/organization-judge on the worlds it walks, clocks stripped. On forms
+// outside the company's fragment, the shelf's own pages among them, the two readings
+// differ (12 of 18 pages, measured), and nothing holds them yet: that is T-0034, the
+// contract's next release with fixtures of foreign forms and the Swift court's answers.
 //
 // The fragment, the table, and the message texts mirror the Swift file exactly: the two
-// readings must refuse with the same premise, character for character.
+// ports must refuse with the same premise, character for character.
 
 const ranks = new Set(["IndividualContributor", "Lead", "Manager"]);
 const departments = new Set(["Finance", "Engineering", "Sales", "People"]);
@@ -40,6 +41,56 @@ const gatePremises = new Map([
     ["VerifiedAtRank", ["Rank", null]],
     ["VerifiedAtWorkplace", ["Site", null]],
 ]);
+
+
+// ── THE DOMAIN, READ FROM WHAT WAS PRESENTED. This port was written as a
+// line-for-line mirror of the binary, and it mirrored the table too: one
+// reference world's ranks, departments, workplaces, genders, shares and the
+// axes each of its protocols owes, hard-coded in an arbiter meant to judge any
+// world. That table is a differential seat — the binary's own header calls it
+// the policy stated a second time, on purpose — and that seat is the corpus's
+// business with its reference world, not ours.
+//
+// Everything in it is already said by the forms a world presents: departments
+// are the conformers of `Department`, the axes a protocol owes are its own
+// `associatedtype` lines, a gate's premise is its own `where` clause. So the
+// domain is derived, and the presented form is the better of the two: it says
+// `Home: Department`, naming a declared thing, where the constant said
+// "department", naming a category that exists nowhere.
+//
+// The gates need nothing here: `checkWhereGates` already reads a presented
+// `where` clause and normalises both sides through the dictionary — "the gate
+// is grammar, not domain", as the line that wrote it says. The baked premise
+// map was a second copy of a mechanism that already worked for anybody.
+function domainOf(declarations) {
+    const conformers = new Map();   // protocol -> Set of names that conform
+    const requires = new Map();     // protocol -> [[axis, the form it must be]]
+    for (const [name, declaration] of declarations) {
+        for (const conformance of declaration.conformances) {
+            if (!conformers.has(conformance)) conformers.set(conformance, new Set());
+            conformers.get(conformance).add(name);
+        }
+        if (declaration.axes && declaration.axes.length) {
+            requires.set(name, declaration.axes.map(
+                (axis) => [axis, (declaration.axisKinds || {})[axis] || null]));
+        }
+    }
+    return { conformers, requires };
+}
+
+// a name is what it conforms to, walking the ladder a protocol refines
+function conformsTo(name, form, declarations, seen) {
+    if (name === form) return true;
+    const declaration = declarations.get(name);
+    if (!declaration) return false;
+    seen = seen || new Set();
+    if (seen.has(name)) return false;
+    seen.add(name);
+    for (const conformance of declaration.conformances) {
+        if (conformsTo(conformance, form, declarations, seen)) return true;
+    }
+    return false;
+}
 
 function trimEntry(text) {
     return text.replace(/^[; \n\t]+/, "").replace(/[; \n\t]+$/, "");
@@ -95,6 +146,7 @@ function parse(file, text, declarations, order, refusals, extras) {
     const stack = [];
     let bodyOwner = null;
     let extensionOwner = null;
+    let pendingHead = null, pendingHeadLine = null;
     let pendingAlias = null;
     let buffer = "";
     let bufferLine = 0;
@@ -154,6 +206,23 @@ function parse(file, text, declarations, order, refusals, extras) {
         let line = lines[index].trim();
         if (line === "") continue;
         if (line.startsWith("//")) continue;
+        // A TRAILING NOTE IS NOT PART OF A TYPE. `typealias Tight = Unit  // one
+        // mark` was read as the type `Unit  // one mark`, so the alias matched
+        // nothing anywhere: not the ladder it belongs to, not a comparison, not
+        // a reading of its value. It went unnoticed because the names that wear
+        // a note in these worlds happen to be the short ones. Quotes are
+        // respected — a name may hold a `//` inside a string and mean it.
+        {
+            let quoted = false;
+            for (let j = 0; j < line.length - 1; j += 1) {
+                if (line[j] === '"') quoted = !quoted;
+                else if (!quoted && line[j] === "/" && line[j + 1] === "/") {
+                    line = line.slice(0, j).trim();
+                    break;
+                }
+            }
+        }
+        if (line === "") continue;
         if (line.startsWith("import ")) continue;
         if (line.startsWith("@StructureBuilder")) continue;
 
@@ -203,6 +272,31 @@ function parse(file, text, declarations, order, refusals, extras) {
                 premise: "outside the fragment: `" + line.slice(0, 60) + "`" });
             continue;
         }
+        // AN EXTENSION WRITTEN ON ONE LINE IS AN EXTENSION. The manifest says
+        // `extension TheContract { public static var typeName: String { "…" } }`
+        // on a single line — the shape gate itself writes — and this only ever
+        // looked for a line ENDING in `{`, so the name a row is about was never
+        // read at all. Every record whose subject is a file went unnamed here.
+        if (extras && (line.startsWith("extension ") || line.startsWith("public extension "))
+            && line.endsWith("}")) {
+            const open = line.indexOf("{");
+            const head = line.slice(0, open).replace("public extension ", "")
+                .replace("extension ", "").trim();
+            const colon = head.indexOf(":");
+            const owner = (colon >= 0 ? head.slice(0, colon) : head).trim();
+            const literal = line.slice(open + 1).match(
+                /(?:public )?static var typeName: String \{ "([^"]*)" \}/);
+            // ── AND ONLY WHEN IT CARRIES ONE. This branch was written for the
+            // one shape gate itself emits and swallowed every one-line extension
+            // it saw, `continue`ing past a gated conformance joined from two
+            // lines — `extension Enter: Entered where …` ends in a brace too.
+            // Every where-gate in the shelf stopped being read the day this was
+            // added, and nothing said a word: no check covered them.
+            if (literal) {
+                extras.literals.set(owner, { value: literal[1], line: number });
+                continue;
+            }
+        }
         if (extras && (line.startsWith("extension ") || line.startsWith("public extension "))
             && line.endsWith("{")) {
             const head = line.replace("public extension ", "").replace("extension ", "")
@@ -240,6 +334,18 @@ function parse(file, text, declarations, order, refusals, extras) {
                     right: piece.slice(equals + 2).trim() });
             }
             const standing = declarations.get(owner);
+            if (standing) {
+                // the conformance this gate is conditional ON. The other
+                // extension branch records one; this one never did, so a gated
+                // form came back conforming to nothing and a view drawing what
+                // it is had nothing to draw.
+                const conf = colon >= 0 ? beforeWhere.slice(colon + 1).trim() : "";
+                if (conf && !standing.conformances.includes(conf)) standing.conformances.push(conf);
+                // and the clause as written, for whoever shows it rather than
+                // checks it: the judge reads the equalities, a reader reads the
+                // sentence, and dropping the rest would show less than was said
+                standing.whereText = head.slice(whereAt + 7).replace(/\s+/g, " ").trim();
+            }
             if (standing && conditions.length > 0) {
                 if (!standing.whereGates) standing.whereGates = [];
                 standing.whereGates.push({ conditions, line: number });
@@ -268,23 +374,73 @@ function parse(file, text, declarations, order, refusals, extras) {
             continue;
         }
 
-        if (line.startsWith("public enum ") || line.startsWith("enum ")) {
+        if (line.startsWith("public enum ") || line.startsWith("enum ")
+            || pendingHead !== null) {
+            // ── A HEAD THAT OPENS AN ANGLE ENDS WHERE THE ANGLE CLOSES, WHICH
+            // NEED NOT BE THIS LINE. A gate written down the page —
+            //
+            //     public enum Enter<
+            //         Who: Keeper,
+            //         Into: Room
+            //     > {}
+            //
+            // was read off its first line alone, so its parameters came back
+            // empty: the two holes it opens were invisible to everything
+            // downstream, and a view that shows what a form asks showed a name
+            // with nothing in it. The file already buffers a multi-line alias
+            // exactly this way; a declaration head had never been given the
+            // same courtesy.
+            let raw = line;
+            if (pendingHead !== null) {
+                raw = pendingHead.text + " " + line;
+                pendingHead = null;
+            }
+            if (angleBalance(raw.replace(/\{[\s\S]*$/, "")) > 0) {
+                pendingHead = { text: raw, line: pendingHeadLine || number };
+                pendingHeadLine = pendingHead.line;
+                continue;
+            }
+            pendingHeadLine = null;
+            line = raw.replace(/\s+/g, " ");
             const afterKeyword = line.replaceAll("public enum ", "").replaceAll("enum ", "");
-            const selfClosed = /\{\s*\}$/.test(afterKeyword);
-            const head = afterKeyword.replace(/\s*\{\s*\}$/, "").replace(/\s*\{$/, "");
+            // A DECLARATION WHOSE BODY IS ON ITS OWN LINE CLOSES ON THAT LINE.
+            // The test asked whether the line ended in an empty `{}` — true for
+            // `public enum Finance: Department {}` and false for
+            // `public enum FinanceShare: Document { public typealias Home = Finance }`,
+            // which then went on the stack and never came off. Present the forms
+            // file and every record after the shares nested under them:
+            // `FinanceShare.EngineeringShare.SalesShare.PeopleShare.Edsger`, and
+            // fifty-eight names resolved to nothing. Braces balance on the line or
+            // they do not; nothing else is being asked.
+            const opens = (afterKeyword.match(/\{/g) || []).length;
+            const closes = (afterKeyword.match(/\}/g) || []).length;
+            const selfClosed = opens > 0 && opens === closes;
+            // a body written on the head's own line ends the head: without this the
+            // last conformance carries the body with it, and a kind spelled
+            // `Document { public typealias Home = Finance }` is a kind nobody can
+            // be offered — the shelf knew four documents and the bench saw none.
+            const headAll = afterKeyword.replace(/\s*\{\s*\}$/, "").replace(/\s*\{$/, "");
+            const brace = headAll.indexOf("{");
+            const head = (brace >= 0 ? headAll.slice(0, brace) : headAll).trim();
             // a generic declaration names itself before its angles: `Wrap<T: Counting>`
             // declares Wrap, and the colon that matters is the one past the brackets
             const angle = head.indexOf("<");
             let nameEnd = head.indexOf(":");
             let restStart = nameEnd;
-            let params = [];
+            let params = [], paramKinds = [];
             if (angle >= 0 && (nameEnd < 0 || angle < nameEnd)) {
                 nameEnd = angle;
                 const span = angleSpan(head, angle);
                 restStart = head.indexOf(":", angle + span);
-                params = head.slice(angle + 1, angle + span - 1).split(",")
-                    .map((piece) => piece.split(":")[0].trim())
-                    .filter((piece) => piece !== "");
+                const pieces = head.slice(angle + 1, angle + span - 1).split(",")
+                    .map((piece) => piece.trim()).filter((piece) => piece !== "");
+                params = pieces.map((piece) => piece.split(":")[0].trim());
+                // additive: the kind each parameter takes, in order — the gate's
+                // signature, read once by the judge's own parser (see axisKinds).
+                paramKinds = pieces.map((piece) => {
+                    const c = piece.indexOf(":");
+                    return c >= 0 ? piece.slice(c + 1).trim() : null;
+                });
             }
             const name = (nameEnd >= 0 ? head.slice(0, nameEnd) : head).trim();
             let conformances = [];
@@ -301,10 +457,21 @@ function parse(file, text, declarations, order, refusals, extras) {
                 if (!selfClosed) stack.push(standing);
                 continue;
             }
-            const declaration = { name, qualified, parent, conformances, params,
+            const declaration = { name, qualified, parent, conformances, params, paramKinds,
                 line: number, aliases: new Map(), entries: [] };
             declarations.set(qualified, declaration);
             order.push(qualified);
+            // what the head's own line said inside its braces is what it states
+            if (selfClosed && brace >= 0) {
+                const inner = headAll.slice(brace + 1);
+                for (const piece of inner.split(";")) {
+                    const alias = /(?:public\s+)?typealias\s+(\w+)\s*=\s*([^};]+)/.exec(piece);
+                    if (alias) {
+                        declaration.aliases.set(alias[1].trim(),
+                            { target: alias[2].trim(), line: number });
+                    }
+                }
+            }
             if (!selfClosed) stack.push(declaration);
             continue;
         }
@@ -315,6 +482,16 @@ function parse(file, text, declarations, order, refusals, extras) {
         // judge registers the name so every reference to it settles, and reads
         // the axes the body states.
         if (line.startsWith("public protocol ") || line.startsWith("protocol ")) {
+            // the plain court reads worlds of facts; a protocol is the shelf's
+            // grammar and stands outside this fragment. The binary says so at
+            // the line, and for a while this port registered the name in
+            // silence: the first seeded parity walk found the two apart, a
+            // bench green over a world CI refuses. The name is still
+            // registered below, so scope and references settle the same way.
+            if (!extras) {
+                refusals.push({ file, line: number,
+                    premise: "outside the fragment: `" + line.slice(0, 60) + "`" });
+            }
             const afterKeyword = line.replace("public protocol ", "").replace("protocol ", "");
             const selfClosed = /\{\s*\}$/.test(afterKeyword);
             const head = afterKeyword.replace(/\s*\{\s*\}$/, "").replace(/\s*\{$/, "")
@@ -333,7 +510,7 @@ function parse(file, text, declarations, order, refusals, extras) {
                 continue;
             }
             const declaration = { name, qualified: name, parent: null, conformances,
-                params: [], line: number, aliases: new Map(), entries: [], axes: [] };
+                params: [], line: number, aliases: new Map(), entries: [], axes: [], axisKinds: {} };
             declarations.set(name, declaration);
             order.push(name);
             if (!selfClosed) stack.push(declaration);
@@ -344,7 +521,15 @@ function parse(file, text, declarations, order, refusals, extras) {
         if (line.startsWith("associatedtype ")) {
             const owner = stack.length > 0 ? stack[stack.length - 1] : null;
             if (owner && owner.axes) {
-                owner.axes.push(line.replace("associatedtype ", "").split(":")[0].trim());
+                const stated = line.replace("associatedtype ", "");
+                const axis = stated.split(":")[0].trim();
+                owner.axes.push(axis);
+                // additive, for one reading of the grammar: the kind this axis
+                // takes. Judgement never looks here — the parse only carries it,
+                // so the bench reads `Employee.Home is a Department` from the very
+                // parser that judges, not a second regex over the shelf.
+                const colon = stated.indexOf(":");
+                if (colon >= 0 && owner.axisKinds) owner.axisKinds[axis] = stated.slice(colon + 1).trim();
             }
             continue;
         }
@@ -561,12 +746,15 @@ function coordinate(key, name, declarations, values) {
 function check(file, declarations, order, values, refusals, extras, vocabulary) {
     let premises = 0;
     const gateTouches = values.gateTouches;
+    // what this world presented outranks anything this port was born knowing
+    const domain = domainOf(declarations);
 
     for (const qualified of order) {
         const declaration = declarations.get(qualified);
 
         for (const conformance of declaration.conformances) {
-            const requirements = conformanceRequirements.get(conformance);
+            const requirements = domain.requires.get(conformance)
+                ?? conformanceRequirements.get(conformance);
             if (!requirements) continue;
             for (const [key, wanted] of requirements) {
                 premises += 1;
@@ -584,7 +772,10 @@ function check(file, declarations, order, values, refusals, extras, vocabulary) 
                         premise: declaration.name + "." + key + ": " + reason });
                     continue;
                 }
-                const landed = category(settled, declarations);
+                const presented = declarations.has(wanted);
+                const landed = presented
+                    ? (conformsTo(settled, wanted, declarations) ? wanted : category(settled, declarations))
+                    : category(settled, declarations);
                 if (landed !== wanted) {
                     refusals.push({ file, line: alias.line,
                         premise: conformance + " requires " + key + " in " + wanted + ": "
@@ -669,14 +860,11 @@ function check(file, declarations, order, values, refusals, extras, vocabulary) 
     return premises;
 }
 
-// ── The where court and the count court are not ported here. The page carries
-// the contract's Rust sample of both, a second implementation held to the Swift
-// court by the suite, built for wasm32 (court/vi_court.js, at the pin
-// court/court-wasm.from names), and asks it over the file a judged tab edits.
-// Two readings of one judge agree only under a premise outside both; the
-// sample's is asked of the suite, and a port here would have none.
-
-// ── one full judgment ──
+// ── The where court and the count court are not ported. gate carries the
+// contract's Rust sample of both, a second implementation held to the Swift
+// court by the suite, built for wasm32 (bin/court-wasm, bin/judge-wasm.js); the
+// plain court here reads no `where` clause. A hand-written reading of the
+// canon beside it would be a third one, held by nothing.
 
 function judge(file, text, vocabulary) {
     const started = performance.now();
@@ -696,4 +884,6 @@ function judge(file, text, vocabulary) {
             readers: values.readers, gateTouches: values.gateTouches } };
 }
 
-if (typeof module !== "undefined") { module.exports = { judge }; }
+// conformsTo travels with the verdict: the bench asks the same walk this file
+// judges by, so an offer and a refusal cannot disagree about what a kind is.
+if (typeof module !== "undefined") { module.exports = { judge, conformsTo }; }

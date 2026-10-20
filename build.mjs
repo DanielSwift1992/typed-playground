@@ -9,7 +9,7 @@
 import fs from "fs";
 import { createRequire } from "module";
 const require = createRequire(import.meta.url);
-const { judge } = require("./judge.js");
+const { judge } = require("./court/judge.js");
 const { textOf, makeEnvironment, parseType } = require("./renderer.js");
 
 const manifestSource = fs.readFileSync("corpus/Manifest.swift", "utf8");

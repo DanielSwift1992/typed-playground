@@ -369,7 +369,7 @@ window.addEventListener("error", (event) => {
 });
 </script>
 <script src="codemirror.js"></script>
-<script src="judge.js?v=16"></script>
+<script src="court/judge.js"></script>
 <script src="lint.js?v=4"></script>
 <script src="press.js?v=5"></script>
 <script src="guards.js?v=2"></script>
@@ -405,7 +405,7 @@ if (typeof judge === "undefined" || typeof renderAll === "undefined"
     const banner = document.getElementById("crash");
     banner.style.display = "block";
     banner.textContent = "a script did not load: the page needs its ten files"
-        + " (index.html, judge.js, lint.js, renderer.js, press.js, guards.js,"
+        + " (index.html, court/judge.js, lint.js, renderer.js, press.js, guards.js,"
         + " codemirror.js, codemirror.css, court/vi_court.js, court/vi_court_bytes.js)"
         + " in one folder. On the live site"
         + " this is a fresh deploy mid-flight: a hard reload mends it.";
@@ -11472,6 +11472,13 @@ function render() {
     const allLines = shown.split("\n");
     try {
         verdict = judge(activeTab.file, shown, kitVocabulary);
+        // the plain court is the company's: its premises are read of a world that
+        // presents the company's forms. On a kit world the port is the reader the
+        // renderer draws from, and what it would ask of the kit's own protocols is
+        // not the court's question (the kinds those axes need live outside the file)
+        verdict.companyWorld = [...verdict.parsed.declarations.values()].some((declaration) =>
+            (declaration.conformances || []).some((kind) => kind === "Employee" || kind === "Person"));
+        if (!verdict.companyWorld) verdict.refusals = [];
         lastParsed = verdict.parsed;
         localNames = new Set([...verdict.parsed.declarations.keys(),
             ...verdict.parsed.topAliases.keys(), ...verdict.parsed.literals.keys()]);
@@ -11575,8 +11582,8 @@ function render() {
         if (!broke) lastGood.set(activeTab.id, markup);
     }
     status.innerHTML = counted(verdict.declarations, "declaration") + " · "
-        + (verdict.lookups + verdict.premises === 0
-            ? "no claims in this file"
+        + (!verdict.companyWorld
+            ? "no company claim in this file"
             : counted(verdict.lookups, "lookup") + " · " + counted(verdict.premises, "premise"))
         + " · <b>" + verdict.milliseconds.toFixed(1) + "</b>&nbsp;ms";
     const chip = document.getElementById("verdict-chip");
@@ -11586,7 +11593,7 @@ function render() {
         const lawSaid = lawCount === 0 ? "" : "the law refuses " + lawCount + " line" + (lawCount > 1 ? "s" : "");
         chip.className = "chip " + (brokenCount > 0 ? "bad" : said.tone);
         chip.textContent = [said.text, pageSaid, lawSaid].filter(Boolean).join(" · ");
-    } else if (brokenCount === 0 && lawCount === 0 && verdict.premises === 0) {
+    } else if (brokenCount === 0 && lawCount === 0 && !verdict.companyWorld) {
         // the plain court is the company's: on a world that states no company
         // claim it read the file and judged nothing, and the chip says so
         chip.className = "chip ok";

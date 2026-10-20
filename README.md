@@ -15,9 +15,13 @@ Swift types on the left, the page drawn from them on the right: every tab is
 one Swift file in a stated subset of the language, `swift build` compiles it,
 the judge names a broken claim by its line as you type, and a renderer draws
 every declared canvas from the same dictionary. The one vendored library is CodeMirror 5 (MIT), the editor
-pane. `judge.js` is a line-for-line port of the company's plain court from the
-theory's showcase package, `renderer.js` is a mirror of its span engine,
-`press.js` of its rule applier, and `lint.js` of rule 0 of its linter.
+pane. `court/judge.js` is the gate repository's port of the company's plain
+court, taken at the gate revision `court/module.from` names and held there to
+the showcase's `OrganizationJudge.swift` by the organization contract; the page
+asks it the company's premises on the worlds that present the company's forms,
+and on a kit world it is the reader the renderer draws from, where the plain
+court claims nothing. `renderer.js` is a mirror of the kit's span engine,
+`press.js` of its rule applier, and `lint.js` of rule 0 of the theory's linter.
 `guards.js` states the four objections the fast reader leaves to the compiler,
 and `check.js` runs them over every world. The where court and the count court
 are not ported here: `court/` carries the theory's court contract's Rust
@@ -54,7 +58,7 @@ rather than something a reader notices later.
 
 Live: <https://danielswift1992.github.io/typed-playground/>, or open
 `index.html` from a checkout. The page is ten files in one folder:
-`index.html`, `codemirror.js`, `codemirror.css`, `judge.js`, `lint.js`,
+`index.html`, `codemirror.js`, `codemirror.css`, `court/judge.js`, `lint.js`,
 `press.js`, `guards.js`, `renderer.js`, `court/vi_court.js`, and
 `court/vi_court_bytes.js`.
 

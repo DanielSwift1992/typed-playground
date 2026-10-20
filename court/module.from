@@ -1,5 +1,6 @@
-court-wasm from gate 9eb36196 (bin/court-wasm at that revision: the theory's court contract's Rust sample, a second implementation of the where and count courts, built for wasm32 from verification-is-identification at the pin court-wasm.from names)
+court-wasm from gate 9eb36196, and the plain court's port bin/judge.js from gate ff0b2c92 (bin/court-wasm at the first revision: the theory's court contract's Rust sample, a second implementation of the where and count courts, built for wasm32 from verification-is-identification at the pin court-wasm.from names)
 1cc08eaff69314e4706b555bc481cd567735b7e1eb1fce7a23996a92b58307df  court/vi_court.js
 454384b69492d2d0936fe5606846a5e360e03c642b715491511486430dcd4841  court/vi_court_bytes.js
 d3c59b6118394daf67c81147bc1455a2eb2eb95b3682f5900dcf47d4e7ded436  court/node/vi_court.js
 5ee3322eeb45e5ae72bf00a3fd59254dd8d08ff4d995488762cf02ad22e88b40  court/node/vi_court_bg.wasm
+c4f879e4475c1c64f02d4a34c9f968d4f0ac507eceaf2cd54629e41b38210830  court/judge.js

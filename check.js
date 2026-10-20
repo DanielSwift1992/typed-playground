@@ -6,7 +6,7 @@
 const fs = require("fs");
 const path = require("path");
 const vm = require("vm");
-const { judge } = require("./judge.js");
+const { judge } = require("./court/judge.js");
 
 const page = fs.readFileSync(path.join(__dirname, "index.html"), "utf8");
 
@@ -155,6 +155,12 @@ for (const [literalName, file, pagesLiteral] of worlds) {
     const worldSource = literal(literalName, "`", "\n`;")
         + (pagesLiteral ? "\n" + literal(pagesLiteral, "`", "\n`;") : "");
     const worldJudged = judge(file, worldSource, pageKit);
+    // the plain court's premises are the company's: a world that presents no
+    // Employee or Person is read, not judged, by the port (the same rule the page
+    // applies), and the reader's own refusals are the ones that count here
+    const companyWorld = [...worldJudged.parsed.declarations.values()].some((declaration) =>
+        (declaration.conformances || []).some((kind) => kind === "Employee" || kind === "Person"));
+    if (!companyWorld) worldJudged.refusals = [];
     const worldLaw = lint(file, worldSource);
     const worldArt = renderAll(worldJudged.parsed.declarations, worldJudged.parsed.order,
         worldJudged.parsed.literals, worldJudged.parsed.topAliases);
