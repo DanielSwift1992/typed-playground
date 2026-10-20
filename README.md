@@ -1,148 +1,49 @@
-# The playground
+# The playground has moved
 
-This is zero-runtime programming, applied to everything on one page: layout, a
-company of 12,800 people, the physics of light, a hydrogen atom. Every domain is
-Swift types and nothing executes: the company's plain court reads a file into a
-dictionary and answers every claim by a single lookup, and the theory's where
-and count courts read a world's certificates and answer each by reducing the
-definitions it names. The plain check is linear in the file where compilation
-grows near N^1.3: the company that `swift build` proves in 199 seconds is
-re-checked here in 0.2, on every keystroke, and a broken claim in any domain is
-a line number. All of it is checkable right here: a static page, ten files, no
-server, no build.
+Open the [playground in gate](https://danielswift1992.github.io/gate/playground/). This repository keeps the old web addresses working. The worlds, engine and checks have their own homes:
 
-Swift types on the left, the page drawn from them on the right: every tab is
-one Swift file in a stated subset of the language, `swift build` compiles it,
-the judge names a broken claim by its line as you type, and a renderer draws
-every declared canvas from the same dictionary. The one vendored library is CodeMirror 5 (MIT), the editor
-pane. `court/judge.js` is the gate repository's port of the company's plain
-court, taken at the gate revision `court/module.from` names and held there to
-the showcase's `OrganizationJudge.swift` by the organization contract; the page
-asks it the company's premises on the worlds that present the company's forms,
-and on a kit world it is the reader the renderer draws from, where the plain
-court claims nothing. `renderer.js` is a mirror of the kit's span engine,
-`press.js` of its rule applier, and `lint.js` of rule 0 of the theory's linter.
-`guards.js` states the four objections the fast reader leaves to the compiler,
-and `check.js` runs them over every world. The where court and the count court
-are not ported here: `court/` carries the theory's court contract's Rust
-sample, a second implementation of both courts held to the Swift court by the
-contract's suite and by the line-for-line parity `check-theory.sh` runs, built
-for wasm32 at the theory revision `court/court-wasm.from` names and taken from
-the gate repository at the revision `court/module.from` names. A judged world
-is read beside two lent definitions files, the lattice's `Primitive.swift` and
-the kit's `Spectrum.swift`, laid from the pinned revisions by `court/lay.sh`
-and recorded with their bytes in `court/definitions.from`. Two readings of one
-judge agree only under a premise outside both; the sample's agreement is asked
-of the suite and the parity run, where a hand-written port here would be a
-third reading with nothing holding it.
+| Part | Maintained at |
+| --- | --- |
+| Swift worlds, dictionaries and page bodies | [showcase · Worlds/Playground](https://github.com/DanielSwift1992/verification-is-identification-showcase/tree/902643189a89460153bbeb26088f0e75f84c98e7/Worlds/Playground), beside DocumentKit and Organization. |
+| Tab order, groups, captions and palette | [showcase · Worlds/Playground/Site](https://github.com/DanielSwift1992/verification-is-identification-showcase/tree/902643189a89460153bbeb26088f0e75f84c98e7/Worlds/Playground/Site). Palette now has seventeen checked count readings. |
+| Editor, courts, renderer, press engine and site builder | [gate](https://github.com/DanielSwift1992/gate/tree/c64f242617704f5a458052097448321fdecb7b14); `bin/build-pages.py _site --worlds` builds the site from the showcase revision and file hashes in `bin/playground-worlds.from`. |
+| Golden SVGs, vector plate and check data | [showcase · Checks/Playground](https://github.com/DanielSwift1992/verification-is-identification-showcase/tree/902643189a89460153bbeb26088f0e75f84c98e7/Checks/Playground), consumed by gate's battery. |
 
-Two theory revisions meet on this page, and the pair is lawful for a measured
-reason. The package compiles against the theory at `50a9bb9a`, the revision the
-showcase pins, so SwiftPM resolves one lattice for both; the court is built
-from the theory at `f5a46c38`. The one file of the lattice the court reads,
-`Primitive.swift`, is the same bytes at both revisions (`court/definitions.from`
-names it), and the pins meet when the showcase raises its theory pin.
+The links above name the revisions that completed the move. Gate's record distinguishes the worlds' compiler theory (`b61433ab`) from the judge's theory (`68671515`), and checks their Primitive hashes; future pin changes belong there.
 
-The page is printed from its own declarations as well. `corpus/Manifest.swift`
-states the worlds it ships and the tabs it shows, and `corpus/Palette.swift`
-states every colour as a mix of the screen's three lights, with the contrast
-each pair of them must clear written as a certificate. That contrast law is
-stated and not judged, and the page says so: the where court stops at its
-normalization budget over the palette's arithmetic, and the count court of this
-version reads no product and no side this large (one constant of the bound,
-7 × 8192, is above its budget alone); the law waits for a count court that
-counts a named definition once. `build.mjs` reads both files with the same
-reader the page runs and prints `index.html` from what they state, so a world
-added and forgotten or a name that drifts between two files is a failed check
-rather than something a reader notices later.
+## Old addresses
 
-Live: <https://danielswift1992.github.io/typed-playground/>, or open
-`index.html` from a checkout. The page is ten files in one folder:
-`index.html`, `codemirror.js`, `codemirror.css`, `court/judge.js`, `lint.js`,
-`press.js`, `guards.js`, `renderer.js`, `court/vi_court.js`, and
-`court/vi_court_bytes.js`.
+`/typed-playground/`, `/typed-playground/index.html` and `/typed-playground/shell.html` redirect to the new playground. Both HTML files contain a meta refresh, a canonical URL and a visible link that work without JavaScript. With JavaScript, `?tab=<id>`, `#<id>` and `#tab=<id>` go directly to the corresponding world; a known query tab takes precedence over the fragment. Unknown IDs go to the gallery. Destinations are fixed to gate's playground.
 
-![The playground: the organization world, judged and drawn](screenshot.png)
+At `400b667` the tab buttons did not read or write a URL parameter or fragment: opening the page always selected Read me. These tab URLs add compatibility spellings rather than preserve a previously implemented router.
 
-## What to press
+| Tab ID | Destination under `https://danielswift1992.github.io/gate/playground/` |
+| --- | --- |
+| `readme` | `readme/` |
+| `organization` | `organization/` |
+| `scale` | `scale/` |
+| `basics` | `basics/` |
+| `writer` | `writer/` |
+| `buttons` | `buttons/` |
+| `light` | `light/` |
+| `atom` | `atom/` |
+| `rules` | `rules/` |
+| `faq` | `faq/` |
 
-The first tab, Read me, is the page's own manual, drawn from a Swift file like
-every other tab: the thesis, the measured curve of `swift build` against the
-judge, and what to try. The organization tab is a company as types. Hire one
-more adds a typed employee, and the page redraws the counted cards. Plant a lie flips one
-declaration deep in the file, and the judge refuses it by line and by name. The At
-scale tab is the same company at 12,800 people, about 136,000 lines, and the
-judge re-reads all of it in about 0.2 seconds on each edit, where `swift build`
-on the same company measures 199.
+Existing browser drafts are not copied into gate's storage, which separates edits by showcase pin, world and file.
 
-On the Buttons tab every key on the canvas is a rule declared in the file as
-three aliases: `Slot`, `From`, and `Into`. A press rewrites exactly one
-`typealias` line, a press with no match changes nothing, and a key whose rules
-match twice is refused by name. On the typewriter tab the page routes your keyboard through the same press:
-a keystroke appends one character to a quoted literal in the file.
+## Where the checks run
 
-The Light tab is a lamp written as code. A picker mixes the lamp's spectral
-lines one click per level, the gas itself is one rewritable line with hydrogen,
-neon, and sodium behind it, and the page computes every colour on the canvas
-from the file and prints it as `color(xyz-d65 …)` for the screen to map. The
-line weights are from the CIE 1931 table, and the where court holds
-metamerism, crossed polarizers, and two-slit fringes as eleven type
-equalities. The Light and Atom tabs are two files each: the declarations and
-certificates the court reads, in the editor, and the page bodies the compiler
-reads, drawn behind it.
+| Former command | Destination and execution evidence |
+| --- | --- |
+| `node check.js` | Gate's [tests/smoke.py](https://github.com/DanielSwift1992/gate/blob/c64f242617704f5a458052097448321fdecb7b14/tests/smoke.py) fetches this repository at `400b667`, named by `bin/drawing.from`, applies gate's renderer security patch and executes the original command, requiring `29/29`. Those checks include the old page, company, renderer, courts, guards, palette mounts, provenance and README counts. Separately, `tests/playground.py` builds the current site and invokes `tests/playground.js` over the showcase fixtures: all nine drawings, native/WASM court vectors and twelve published benches. |
+| `node check-kit.js` | Its SUPPORTED/GOLDENS data live in showcase's `Checks/Playground/kit.json`. Gate's [tests/playground.js](https://github.com/DanielSwift1992/gate/blob/c64f242617704f5a458052097448321fdecb7b14/tests/playground.js), under “every supported kit name and its native vector obligation”, checks the same 72 names against pinned theory/kit declarations, fixture paths and the same 15 pending native vectors (57 have golden records). The old executable and its checks of the old README's wording are not run on the new site; the original README count check still runs inside historical `check.js`. The fifteen pending vectors remain pending. |
+| `./check-theory.sh` | The wrapper itself is retired. Its compiler obligation now belongs to showcase's [check.sh](https://github.com/DanielSwift1992/verification-is-identification-showcase/blob/902643189a89460153bbeb26088f0e75f84c98e7/check.sh): the build law runs `swift build && swift test`, including the worlds' explicit targets; [.github/workflows/docs.yml](https://github.com/DanielSwift1992/verification-is-identification-showcase/blob/902643189a89460153bbeb26088f0e75f84c98e7/.github/workflows/docs.yml) runs every law with the pinned theory. Its Light where, Atom where/count and native/module comparison obligations are covered by `courts.json` and gate's `tests/playground.js`, which compares exit codes and addressed court claims from both carriers. This compares claims, not the former wrapper's entire output text. The former Palette budget expectation remains an addressed unsupported control; current Palette holds through seventeen count readings, also checked with negative controls by `palette-count.py`. |
 
-The atom tab is the reason behind the lamp: one electron on a ladder of floors,
-written as one rewritable line. Every key is a written jump, each allowed jump
-is a flash of its own line in a window under the ladder, and the selection rule is a
-judged `where` requirement on every certificate. The energy is recorded as one
-number per floor, 144 over the floor squared. The four energy stitches are
-equalities of counts, not of types: the where court refuses them as type
-equalities, because equal counts do not identify types, and the count court
-holds the same numbers as ten readings of one question, 9 + 7 reading as the
-recorded 16 and 9 + (7 + 20) as the same 36 the direct road reaches. The jump from 2s to the ground
-floor cannot change the lobes by one pair, so it has no key and no certificate:
-the electron there is stuck, the way the real one is stuck for a
-tenth of a second.
+Gate's [.github/workflows/battery.yml](https://github.com/DanielSwift1992/gate/blob/c64f242617704f5a458052097448321fdecb7b14/.github/workflows/battery.yml) runs `python3 tests/smoke.py` on macOS and Linux; that runner calls `tests/playground.py`, which calls the JS vectors, storage and scale controls. The accepted move passed 713 battery checks and seven Windows checks at `c64f242`; this redirect change does not rerun or replace those suites. Swift compilation is checked by showcase, not by gate's JavaScript vector check.
 
-Under the preview a Code · Table switch reads the same file as rows, one row per
-declaration and one column per axis. Nothing is stored, so the table cannot
-differ from the file, and on a click the editor opens the name's line. Beside the canvas,
-Dark canvas repaints the drawings under the dark palette. Type `func` or `var`
-on any line: rule 0 of the linter refuses it in orange, because a file here
-declares types and nothing that runs. The one
-admitted value form is `static var typeName`, a text constant read off the type.
+## This repository
 
-Every tab is a real Swift file. Download it, and the pinned packages check the
-same file again: `swift run ShowcaseTools judge` in the showcase for the
-company, `swift run Tools judge where` in the theory for the certificates,
-`swift build` for the drawings.
+Run `node check-redirect.js` with Node 22 or later. It serves this tree over a local HTTP socket and checks every entry address, all tab spellings, fallback links, meta refresh, canonical URLs and the executed JavaScript destination. CI runs this command only.
 
-## The checks
-
-The badge in the corner re-runs four recorded verdicts against the ported plain
-court on every load. In CI, `node check.js` replays twenty-nine checks: the four
-verdicts, every world of the page read, lawed, drawn clean, and read by the
-page's own guards, the renderer's byte golden against
-`swift run DynamicsDemo draw`, the court's refusals on a broken halving, an
-even gap, a forbidden jump, a wrong road and a forbidden absorption, the lamp's
-eleven equalities, the count question on the atom's ladder with a lie in one
-drop naming both numbers, the palette's bound stated and not judged, the court
-module and the lent definitions as the bytes their records name, four planted
-lies that each guard must name, the kit's forty-line golden plate, reprinted byte
-for byte by the showcase at its pin, which the port must read value for value, the palette read against every custom property
-the stylesheet asks for, and the numbers this file states, counted here rather
-than remembered. `node check-kit.js` checks all seventy-two ported
-kit names against the kit's sources at a pinned commit, fifty-seven of them
-sealed by goldens. `./check-theory.sh` turns the direction around: `swift build`
-compiles every world against the lattice and the kit at the revisions
-`Package.swift` pins, and the court module answers the four questions the
-corpus states; with a theory checkout named, the theory's own `Tools judge`
-answers them too, and the two answers are compared line for line.
-
-## The theory
-
-A verdict is an identification: the dictionary is built once, and every claim is
-one lookup in it, so a lie planted 136,000 lines deep in the generated company
-is refused in milliseconds. The papers, the Swift judge, and the full Swift
-codebase live at
-<https://danielswift1992.github.io/verification-is-identification/>.
+The obsolete engine, Swift package, corpus, goldens, builders, old runners and screenshot files have left the current tree. Their last complete version remains in [commit 400b667](https://github.com/DanielSwift1992/typed-playground/tree/400b6674d1c120bb2b86150631093f86ec4d7994); gate fetches that immutable revision, so deleting them here does not delete its witnesses. This repository remains unarchived; archiving is an account setting for its owner.

@@ -1,4 +1,4 @@
-name: the golden vectors
+name: the old door reaches the worlds
 
 on:
   push:
@@ -6,35 +6,13 @@ on:
   pull_request:
 
 jobs:
-  # the page checking itself: the four recorded verdicts, every world, the court
-  # module over the judged worlds, the records of the bytes the page carries
-  judge:
-    runs-on: ubuntu-latest
+  redirect:
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v4
-      - run: node check.js
-  # every ported kit name stands in the kit's sources at the pins Package.swift
-  # states: the lattice and the examples in the theory, DocumentKit in the showcase
-  kit-gates:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
         with:
-          repository: DanielSwift1992/verification-is-identification
-          path: theory
-          fetch-depth: 0
-      - uses: actions/checkout@v4
-        with:
-          repository: DanielSwift1992/verification-is-identification-showcase
-          path: showcase
-          fetch-depth: 0
-      - run: THEORY_PATH=theory SHOWCASE_PATH=showcase node check-kit.js
-  # the compiler and the court: every world compiles against the pinned
-  # packages, and the court module answers the four questions the corpus states
-  court:
-    runs-on: macos-latest
-    steps:
-      - uses: actions/checkout@v4
-      - run: swift --version
-      - run: ./check-theory.sh
+          node-version: '22'
+      # Serve the actual Pages files, then execute their redirect script for
+      # every former tab. The worlds and engines are checked at their owners.
+      - run: node check-redirect.js
