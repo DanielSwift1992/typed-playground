@@ -381,36 +381,8 @@ if (typeof judge === "undefined" || typeof renderAll === "undefined"
     throw new Error("the engine files did not load");
 }
 
-// ── the kit vocabulary the judge tolerates on drawing tabs ──
-const kitVocabulary = {
-    seeds: new Set(["SpanNothing", "SurfaceCard", "SurfaceTrack", "TextPrimary",
-        "TextSecondary", "AccentRole", "ActionRole", "LineRole", "OnAccent", "OnActionRole",
-        "Paper", "Mist", "Ink", "Accent", "Action", "Muted",
-        "TextXXS", "TextXS", "TextS", "TextM", "TextL", "TitleT", "DisplayS", "Display",
-        "WeightRegular", "WeightBold", "R12", "R20", "HairlineWidth", "FontStack",
-        "U1", "U2", "U4", "U8", "U16", "U32", "U64", "U128", "U256", "U512",
-        "EdgeMargin", "Breath", "HairBreath", "WideSurface", "FilmStripTall", "RestAir",
-        // the dynamics medium, ported from the theory's triples branch
-        "SlotRule", "R10", "TrackHeight", "DotSlot", "KeySide",
-        // the spectral bridge: the weights axis, seven stated weights, the ladder
-        "CanonicalWeights", "HAlphaGlow", "HBetaGlow", "PaschenGlow",
-        "NeonYellowGlow", "NeonRedGlow", "SodiumDGlow", "SodiumIRGlow",
-        "Rung0", "Rung1", "Rung2", "Rung3", "Rung4", "Rung5", "Rung6",
-        "Rung7", "Rung8", "Unit",
-        // the count question's encoding, a lattice name a judged world states
-        "UnaryArithmeticEncoding",
-        "SRGBRedPrimary", "SRGBGreenPrimary", "SRGBBluePrimary",
-        "P3RedPrimary", "P3GreenPrimary", "P3BluePrimary",
-        "Rec2020RedPrimary", "Rec2020GreenPrimary", "Rec2020BluePrimary"]),
-    generics: new Set(["Air", "Flexible", "Layered", "TimedReveal", "FrozenReveal",
-        "Tally", "CanvasSize", "Plus", "Times", "Twice", "Half",
-        "Fixed", "SpanHosted", "SpanLink", "Halfway", "Under", "Paired",
-        "RuleKey", "TermText", "CenteredBaseline", "Chord",
-        "LineTally", "TextWidth", "SpanLabelMidWrapped", "SpanLabelWrapped", "Succ",
-        "XYZWrite", "PouredCoordinate", "Exactly", "EdgeSame", "EdgeEven", "EdgeOdd",
-        "EdgeAtLeast", "PerceptualRung"]),
-    bareSeeds: new Set(["RestAir"]),
-};
+// the kit vocabulary the reader tolerates on drawing tabs travels with the renderer
+// (renderer.js exports kitVocabulary): one list, read by the page, the checks and the bench
 
 // ── THE COURT ON THE PAGE. The where court and the count court are the theory's
 // court contract's Rust sample, a second implementation held to the Swift court

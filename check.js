@@ -113,7 +113,8 @@ if (worldVerdict.refusals.length === 0 && worldDrawn.errors.length === 0
 // ── every world the page ships must hold: judged, lawful, and drawn clean.
 // This is the vector the typewriter's broken push taught: a partial tab walk
 // is not a walk.
-const kitVocabulary = literal("kitVocabulary", "{", "\n};");
+// the vocabulary travels with the renderer, so the checks read the same list the page runs
+const { kitVocabulary } = require("./renderer.js");
 const pageKit = {
     seeds: new Set(kitVocabulary.seeds),
     generics: new Set(kitVocabulary.generics),

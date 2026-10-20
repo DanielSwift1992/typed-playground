@@ -9,6 +9,40 @@
 // HFlow division of a given width, MidOf's midpoint) is ported operation for operation,
 // and the emitted markup mirrors the kit's format strings character for character.
 
+// ── the kit vocabulary the reader tolerates on a drawing world: the seeds and
+//    generics of DocumentKit this engine draws. The page, the checks and the gate
+//    bench pass it to the plain court's port when they read a world to draw it,
+//    so the parse that feeds this engine is one parse everywhere. ──
+const kitVocabulary = {
+    seeds: new Set(["SpanNothing", "SurfaceCard", "SurfaceTrack", "TextPrimary",
+        "TextSecondary", "AccentRole", "ActionRole", "LineRole", "OnAccent", "OnActionRole",
+        "Paper", "Mist", "Ink", "Accent", "Action", "Muted",
+        "TextXXS", "TextXS", "TextS", "TextM", "TextL", "TitleT", "DisplayS", "Display",
+        "WeightRegular", "WeightBold", "R12", "R20", "HairlineWidth", "FontStack",
+        "U1", "U2", "U4", "U8", "U16", "U32", "U64", "U128", "U256", "U512",
+        "EdgeMargin", "Breath", "HairBreath", "WideSurface", "FilmStripTall", "RestAir",
+        // the dynamics medium, ported from the theory's triples branch
+        "SlotRule", "R10", "TrackHeight", "DotSlot", "KeySide",
+        // the spectral bridge: the weights axis, seven stated weights, the ladder
+        "CanonicalWeights", "HAlphaGlow", "HBetaGlow", "PaschenGlow",
+        "NeonYellowGlow", "NeonRedGlow", "SodiumDGlow", "SodiumIRGlow",
+        "Rung0", "Rung1", "Rung2", "Rung3", "Rung4", "Rung5", "Rung6",
+        "Rung7", "Rung8", "Unit",
+        // the count question's encoding, a lattice name a judged world states
+        "UnaryArithmeticEncoding",
+        "SRGBRedPrimary", "SRGBGreenPrimary", "SRGBBluePrimary",
+        "P3RedPrimary", "P3GreenPrimary", "P3BluePrimary",
+        "Rec2020RedPrimary", "Rec2020GreenPrimary", "Rec2020BluePrimary"]),
+    generics: new Set(["Air", "Flexible", "Layered", "TimedReveal", "FrozenReveal",
+        "Tally", "CanvasSize", "Plus", "Times", "Twice", "Half",
+        "Fixed", "SpanHosted", "SpanLink", "Halfway", "Under", "Paired",
+        "RuleKey", "TermText", "CenteredBaseline", "Chord",
+        "LineTally", "TextWidth", "SpanLabelMidWrapped", "SpanLabelWrapped", "Succ",
+        "XYZWrite", "PouredCoordinate", "Exactly", "EdgeSame", "EdgeEven", "EdgeOdd",
+        "EdgeAtLeast", "PerceptualRung"]),
+    bareSeeds: new Set(["RestAir"]),
+};
+
 // ── the dictionary's rungs, mirrored from Design.swift (values, not walks) ──
 
 const seedText = new Map([
@@ -853,5 +887,5 @@ function renderAll(declarations, order, literals, topAliases) {
 // is printed by this reader, never by a second copy of it.
 if (typeof module !== "undefined") {
     module.exports = { renderAll, parseType, canonicalShares, seedCount,
-        textOf, makeEnvironment };
+        textOf, makeEnvironment, kitVocabulary };
 }
