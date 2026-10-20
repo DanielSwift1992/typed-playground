@@ -20,14 +20,24 @@ theory's showcase package, `renderer.js` is a mirror of its span engine,
 `press.js` of its rule applier, and `lint.js` of rule 0 of its linter.
 `guards.js` states the four objections the fast reader leaves to the compiler,
 and `check.js` runs them over every world. The where court and the count court
-are not ported: `court/` carries the corpus court itself, built for wasm32 at
-the theory revision `court/court-wasm.from` names and taken from the gate
-repository at the revision `court/module.from` names. A judged world is read
-beside two lent definitions files, the lattice's `Primitive.swift` and the
-kit's `Spectrum.swift`, laid from the pinned revisions by `court/lay.sh` and
-recorded with their bytes in `court/definitions.from`. A port of a court that
-reduces definitions would be a second record of the canon, and two readings of
-one judge agree only under a premise outside both.
+are not ported here: `court/` carries the theory's court contract's Rust
+sample, a second implementation of both courts held to the Swift court by the
+contract's suite and by the line-for-line parity `check-theory.sh` runs, built
+for wasm32 at the theory revision `court/court-wasm.from` names and taken from
+the gate repository at the revision `court/module.from` names. A judged world
+is read beside two lent definitions files, the lattice's `Primitive.swift` and
+the kit's `Spectrum.swift`, laid from the pinned revisions by `court/lay.sh`
+and recorded with their bytes in `court/definitions.from`. Two readings of one
+judge agree only under a premise outside both; the sample's agreement is asked
+of the suite and the parity run, where a hand-written port here would be a
+third reading with nothing holding it.
+
+Two theory revisions meet on this page, and the pair is lawful for a measured
+reason. The package compiles against the theory at `50a9bb9a`, the revision the
+showcase pins, so SwiftPM resolves one lattice for both; the court is built
+from the theory at `f5a46c38`. The one file of the lattice the court reads,
+`Primitive.swift`, is the same bytes at both revisions (`court/definitions.from`
+names it), and the pins meet when the showcase raises its theory pin.
 
 The page is printed from its own declarations as well. `corpus/Manifest.swift`
 states the worlds it ships and the tabs it shows, and `corpus/Palette.swift`

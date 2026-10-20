@@ -4,8 +4,9 @@
 # checking the corpus. `swift build` compiles every world against the theory's
 # lattice and the showcase's kit at the revisions Package.swift pins
 # (VI_THEORY_PATH and VI_SHOWCASE_PATH name local checkouts instead). The court
-# module (court/node: the corpus court built for wasm32 at the pin
-# court/court-wasm.from names) reads each judged world beside the definitions
+# module (court/node: the contract's Rust sample of the where and count courts,
+# built for wasm32 at the pin court/court-wasm.from names) reads each judged
+# world beside the definitions
 # court/lay.sh laid from the pins: the where court on Atom and Light, the count
 # court on Atom's ladder, and the palette, where the where court stops at its
 # budget and says so. With VI_THEORY_PATH set, the theory's own `Tools judge`

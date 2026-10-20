@@ -5,7 +5,8 @@
 // `swift run ShowcaseTools judge`). The Swift court stays the reference — index.html
 // carries verdicts captured from it and checks this port against them on every load. A
 // drift is a red badge, never a silent lie. The where court and the count court are not
-// ported: the page carries the corpus court itself, built for wasm32 (court/).
+// ported here: the page carries the contract's Rust sample of both, a second
+// implementation held to the Swift court by the suite, built for wasm32 (court/).
 //
 // The fragment, the table, and the message texts mirror the Swift file exactly: the two
 // readings must refuse with the same premise, character for character.
@@ -668,11 +669,12 @@ function check(file, declarations, order, values, refusals, extras, vocabulary) 
     return premises;
 }
 
-// ── The where court and the count court are not ported. The page carries the
-// corpus court itself, built for wasm32 (court/vi_court.js, at the pin
+// ── The where court and the count court are not ported here. The page carries
+// the contract's Rust sample of both, a second implementation held to the Swift
+// court by the suite, built for wasm32 (court/vi_court.js, at the pin
 // court/court-wasm.from names), and asks it over the file a judged tab edits.
-// A port of a court that reduces definitions would be a second record of the
-// canon, and two readings of one judge agree only under a premise outside both.
+// Two readings of one judge agree only under a premise outside both; the
+// sample's is asked of the suite, and a port here would have none.
 
 // ── one full judgment ──
 
