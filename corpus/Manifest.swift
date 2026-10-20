@@ -93,6 +93,11 @@ extension ButtonsNameWord {
 public enum LightWorld: Close {
     public typealias File = LightFileWord
     public typealias Name = LightNameWord
+    public typealias Pages = LightPagesWord
+}
+public enum LightPagesWord: Close {}
+extension LightPagesWord {
+    public static var typeName: String { "LightPages" }
 }
 public enum LightFileWord: Close {}
 extension LightFileWord {
@@ -106,6 +111,26 @@ extension LightNameWord {
 public enum AtomWorld: Close {
     public typealias File = AtomFileWord
     public typealias Name = AtomNameWord
+    public typealias Pages = AtomPagesWord
+    public typealias Predicate = AtomPredicateWord
+    public typealias Encoding = AtomEncodingWord
+    public typealias Sigma = AtomSigmaWord
+}
+public enum AtomPagesWord: Close {}
+extension AtomPagesWord {
+    public static var typeName: String { "AtomPages" }
+}
+public enum AtomPredicateWord: Close {}
+extension AtomPredicateWord {
+    public static var typeName: String { "TickCountQuestion" }
+}
+public enum AtomEncodingWord: Close {}
+extension AtomEncodingWord {
+    public static var typeName: String { "UnaryArithmeticEncoding" }
+}
+public enum AtomSigmaWord: Close {}
+extension AtomSigmaWord {
+    public static var typeName: String { "AtomLevels" }
 }
 public enum AtomFileWord: Close {}
 extension AtomFileWord {
@@ -360,7 +385,7 @@ extension LightShownWord {
 }
 public enum LightCaptionWord: Close {}
 extension LightCaptionWord {
-    public static var typeName: String { "the lamp is code: edit a number and every colour is recomputed" }
+    public static var typeName: String { "the lamp is code: edit a number and every colour is recomputed; the where court holds the certificates beside it" }
 }
 
 public enum AtomTabEntry: Close {
@@ -385,7 +410,7 @@ extension AtomShownWord {
 }
 public enum AtomCaptionWord: Close {}
 extension AtomCaptionWord {
-    public static var typeName: String { "the atom is a few lines, not a simulation: change a law and the judge re-checks every line" }
+    public static var typeName: String { "the atom is a few lines, not a simulation: the certificates are in the editor, the pages behind them; change a law and the courts re-read every claim" }
 }
 
 public enum RulesTab: Close {

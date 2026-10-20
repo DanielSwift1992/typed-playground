@@ -13,9 +13,23 @@ const fs = require("fs");
 const path = require("path");
 const { execSync } = require("child_process");
 
-const KIT_PIN = "0c521a5";
+// the kit's sources at the pins Package.swift states: the lattice and the
+// examples from the theory, DocumentKit from the showcase, where the kit lives
+// since the theory's corpus split. THEORY_PATH and SHOWCASE_PATH name the
+// checkouts the revisions are read from.
+const packageManifest = fs.readFileSync(path.join(__dirname, "Package.swift"), "utf8");
+const pinOf = (name) => {
+    const found = packageManifest.match(new RegExp("let " + name + ' = "([0-9a-f]{40})"'));
+    if (!found) { console.error("kit-gates: Package.swift pins no " + name); process.exit(2); }
+    return found[1];
+};
+const THEORY_PIN = pinOf("theoryRevision");
+const SHOWCASE_PIN = pinOf("showcaseRevision");
+const KIT_PIN = "theory " + THEORY_PIN.slice(0, 7) + " + showcase " + SHOWCASE_PIN.slice(0, 7);
 const THEORY = process.env.THEORY_PATH
     || path.join(process.env.HOME || "", "Projects/verification-is-identification");
+const SHOWCASE = process.env.SHOWCASE_PATH
+    || path.join(process.env.HOME || "", "Projects/verification-is-identification-showcase");
 
 // every kit name the ports understand: the mirror's whole vocabulary
 const SUPPORTED = [
@@ -141,10 +155,14 @@ let kitSource = null;
 try {
     kitSource = execSync(
         "git -C " + JSON.stringify(THEORY) + " grep -h -e enum -e protocol -e typealias "
-        + KIT_PIN + " -- Sources/DocumentKit Sources/Examples Sources/VerificationIsIdentification",
+        + THEORY_PIN + " -- Sources/Examples Sources/VerificationIsIdentification",
+        { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 })
+        + execSync(
+        "git -C " + JSON.stringify(SHOWCASE) + " grep -h -e enum -e protocol -e typealias "
+        + SHOWCASE_PIN + " -- Sources/DocumentKit",
         { encoding: "utf8", maxBuffer: 16 * 1024 * 1024 });
 } catch (error) {
-    console.error("kit-gates: cannot read the kit at " + KIT_PIN + " (set THEORY_PATH)");
+    console.error("kit-gates: cannot read the kit at " + KIT_PIN + " (set THEORY_PATH and SHOWCASE_PATH)");
     process.exit(2);
 }
 for (const name of SUPPORTED) {

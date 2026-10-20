@@ -42,11 +42,23 @@ function named(typeName) {
 
 // a world is a declaration stating the file it is written in and the name the
 // page reads it by; both are atoms, so the manifest spells each one once
+// A world the court judges states `Pages` as well: the file of its page bodies,
+// which the compiler reads and the court does not, so `File` is the file of its
+// declarations and certificates, the one the court reads beside the lent
+// definitions. A world that asks the count question states its three words:
+// Predicate, Encoding, Sigma.
 const worlds = [];
 for (const declaration of manifest.parsed.declarations.values()) {
   if (!declaration.aliases.has("File") || !declaration.aliases.has("Name")) continue;
-  worlds.push({ name: spelled(axis(declaration, "Name")),
-    file: spelled(axis(declaration, "File")) });
+  const pages = declaration.aliases.has("Pages") ? spelled(axis(declaration, "Pages")) : null;
+  const count = declaration.aliases.has("Predicate")
+    ? { predicate: spelled(axis(declaration, "Predicate")),
+        encoding: spelled(axis(declaration, "Encoding")),
+        sigma: spelled(axis(declaration, "Sigma")) }
+    : null;
+  if (count && !pages) complain(declaration.name + " asks the count question and states no Pages");
+  worlds.push({ declaration: declaration.name, name: spelled(axis(declaration, "Name")),
+    file: spelled(axis(declaration, "File")), pages, count });
 }
 
 // a tab states its id, its group, the title and file the page shows, the world
@@ -57,12 +69,18 @@ const tabs = [];
 for (const declaration of manifest.parsed.declarations.values()) {
   if (!declaration.aliases.has("Id")) continue;
   const reads = axis(declaration, "Reads");
+  const world = worlds.find((w) => w.declaration === reads) ?? null;
+  if (reads !== "GeneratedText" && !world) complain(declaration.name + " reads " + reads + ", which no world declares");
   tabs.push({
     id: spelled(axis(declaration, "Id")),
     group: named(axis(declaration, "Group")),
     title: spelled(axis(declaration, "Title")),
     file: spelled(axis(declaration, "Shown")),
     text: reads === "GeneratedText" ? "null" : named(reads),
+    // the pages the compiler reads, as a second constant; the court reads `text`
+    pages: world && world.pages ? world.name.replace(/File$/, "PagesFile") : "null",
+    court: Boolean(world && world.pages),
+    count: world && world.count ? JSON.stringify(world.count) : "null",
     caption: spelled(axis(declaration, "Caption")),
   });
 }
@@ -105,7 +123,8 @@ if (paletteEnv.errors.length > 0) {
 const tabsText = "[\n" + tabs.map((tab) =>
   "    { id: " + JSON.stringify(tab.id) + ", group: " + JSON.stringify(tab.group)
   + ", title: " + JSON.stringify(tab.title) + ", file: " + JSON.stringify(tab.file)
-  + ", text: " + tab.text + ",\n      caption: " + JSON.stringify(tab.caption) + " },"
+  + ", text: " + tab.text + ", pages: " + tab.pages + ", court: " + tab.court
+  + ", count: " + tab.count + ",\n      caption: " + JSON.stringify(tab.caption) + " },"
 ).join("\n") + "\n]";
 
 let out = fs.readFileSync("shell.html", "utf8");
@@ -118,15 +137,28 @@ for (const [marker, filled] of [["@@TABS@@", tabsText], ["@@REV@@", revision[1]]
   if (!out.includes(marker)) { console.error("missing marker " + marker); process.exit(1); }
   out = out.replace(marker, filled);
 }
-for (const world of worlds) {
-  const swift = fs.readFileSync(`corpus/worlds/${world.file}.swift`, "utf8");
-  const marker = `@@WORLD:${world.file}@@`;
+// a world is inlined as it is, so what the editor shows is the file; a lent
+// definitions file is not edited, so its backticks and `${` are escaped for the
+// template literal and come back as themselves when the page reads the constant
+function inline(markerName, filePath, escaped) {
+  const swift = fs.readFileSync(filePath, "utf8");
+  const marker = `@@${markerName}@@`;
   if (!out.includes(marker)) { console.error("missing marker", marker); process.exit(1); }
-  if (swift.includes("`") || swift.includes("${")) {
-    console.error(`${world.file}.swift contains a backtick or \${ — would break the JS literal`);
+  if (!escaped && (swift.includes("`") || swift.includes("${"))) {
+    console.error(`${filePath} contains a backtick or \${ — would break the JS literal`);
     process.exit(1);
   }
-  out = out.replace(marker, swift);
+  const text = escaped ? swift.replaceAll("\\", "\\\\").replaceAll("`", "\\`").replaceAll("${", "\\${") : swift;
+  out = out.replace(marker, () => text);
+}
+for (const world of worlds) {
+  inline(`WORLD:${world.file}`, `corpus/worlds/${world.file}.swift`);
+  if (world.pages) inline(`WORLD:${world.pages}`, `corpus/worlds/${world.pages}.swift`);
+}
+// the definitions the court reads beside a judged file, laid from their pins by
+// court/lay.sh: the lattice's Primitive.swift and the kit's Spectrum.swift
+for (const name of ["Primitive", "Spectrum"]) {
+  inline(`DEFINITIONS:${name}`, `court/definitions/${name}.swift`, true);
 }
 // a marker the manifest never named would ship as itself: the shell asks for a
 // world this file forgot

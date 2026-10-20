@@ -341,6 +341,8 @@ window.addEventListener("error", (event) => {
 <script src="press.js?v=5"></script>
 <script src="guards.js?v=2"></script>
 <script src="renderer.js?v=13"></script>
+<script src="court/vi_court.js"></script>
+<script src="court/vi_court_bytes.js"></script>
 <script>
 "use strict";
 
@@ -364,13 +366,15 @@ const storage = (() => {
 
 if (typeof judge === "undefined" || typeof renderAll === "undefined"
     || typeof lint === "undefined" || typeof press === "undefined"
-    || typeof pageGuards === "undefined" || typeof CodeMirror === "undefined") {
+    || typeof pageGuards === "undefined" || typeof CodeMirror === "undefined"
+    || typeof wasm_bindgen === "undefined" || typeof VI_COURT_WASM_BASE64 === "undefined") {
     window.scriptsMissing = true;
     const banner = document.getElementById("crash");
     banner.style.display = "block";
-    banner.textContent = "a script did not load: the page needs its eight files"
+    banner.textContent = "a script did not load: the page needs its ten files"
         + " (index.html, judge.js, lint.js, renderer.js, press.js, guards.js,"
-        + " codemirror.js, codemirror.css) in one folder. On the live site"
+        + " codemirror.js, codemirror.css, court/vi_court.js, court/vi_court_bytes.js)"
+        + " in one folder. On the live site"
         + " this is a fresh deploy mid-flight: a hard reload mends it.";
     // nothing below can run without the engines: stop here so no stray error
     // overwrites the one banner that names the cause
@@ -393,6 +397,8 @@ const kitVocabulary = {
         "NeonYellowGlow", "NeonRedGlow", "SodiumDGlow", "SodiumIRGlow",
         "Rung0", "Rung1", "Rung2", "Rung3", "Rung4", "Rung5", "Rung6",
         "Rung7", "Rung8", "Unit",
+        // the count question's encoding, a lattice name a judged world states
+        "UnaryArithmeticEncoding",
         "SRGBRedPrimary", "SRGBGreenPrimary", "SRGBBluePrimary",
         "P3RedPrimary", "P3GreenPrimary", "P3BluePrimary",
         "Rec2020RedPrimary", "Rec2020GreenPrimary", "Rec2020BluePrimary"]),
@@ -405,6 +411,86 @@ const kitVocabulary = {
         "EdgeAtLeast", "PerceptualRung"]),
     bareSeeds: new Set(["RestAir"]),
 };
+
+// ── THE COURT ON THE PAGE. The where court and the count court are the corpus
+// court itself, built for wasm32 at the pin court/court-wasm.from names and
+// carried into the page as bytes (court/module.from). A judged tab's file is
+// read beside two lent definitions files, laid from their pins by court/lay.sh
+// (court/definitions.from): the lattice's Primitive.swift and the kit's
+// Spectrum.swift. The court's lines are its own; the page repeats them.
+const primitiveDefinitions = `@@DEFINITIONS:Primitive@@`;
+const spectrumDefinitions = `@@DEFINITIONS:Spectrum@@`;
+let courtReady = false;
+try {
+    wasm_bindgen.initSync({ module: Uint8Array.from(atob(VI_COURT_WASM_BASE64), (c) => c.charCodeAt(0)) });
+    courtReady = true;
+} catch (failure) {
+    console.error("the court did not instantiate", failure);
+}
+function askCourt(args, text) {
+    const files = [{ name: "world.swift", text },
+        { name: "Primitive.swift", text: primitiveDefinitions },
+        { name: "Spectrum.swift", text: spectrumDefinitions }];
+    const answer = JSON.parse(wasm_bindgen.judge(JSON.stringify({ arguments: args, files })));
+    return { exit: answer.exit,
+        lines: (answer.stdout + answer.stderr).split("\n").filter((line) => line.length > 0) };
+}
+function courtVerdict(tab, text) {
+    const where = askCourt(["where", "world.swift", "Primitive.swift", "Spectrum.swift"], text);
+    const count = tab.count
+        ? askCourt(["count", "world.swift", "Primitive.swift", "--predicate", tab.count.predicate,
+            "--encoding", tab.count.encoding, "--sigma", tab.count.sigma], text)
+        : null;
+    return { where, count };
+}
+// a court line names its line itself, or the alias it refuses; the card points there
+function courtLine(line, lines) {
+    const at = line.match(/\bline (\d+)\b/);
+    if (at) return Number(at[1]);
+    const named = line.match(/'([A-Za-z_]\w*) = /) || line.match(/'([A-Za-z_]\w*)'/);
+    if (named) {
+        const pattern = new RegExp("^(?:public\\s+)?typealias " + named[1] + "\\b");
+        const index = lines.findIndex((candidate) => pattern.test(candidate.trim()));
+        if (index >= 0) return index + 1;
+    }
+    return null;
+}
+function courtSummary(court) {
+    const parts = [];
+    let tone = "ok";
+    const where = court.where;
+    const held = where.lines.find((line) => line.startsWith("✓"));
+    if (where.exit === 0 && held) {
+        const m = held.match(/(\d+) equalities and (\d+) memberships/);
+        parts.push("✓ the where court holds" + (m ? " " + m[1] + " equalit" + (m[1] === "1" ? "y" : "ies")
+            + (m[2] !== "0" ? " and " + m[2] + " membership" + (m[2] === "1" ? "" : "s") : "") : ""));
+    } else if (where.exit === 1) {
+        const n = where.lines.filter((line) => line.startsWith("✗")).length;
+        parts.push("✗ the where court refuses " + n + " claim" + (n === 1 ? "" : "s"));
+        tone = "bad";
+    } else {
+        const why = (where.lines.find((line) => line.startsWith("✗")) || "no verdict")
+            .replace(/^✗ (THE WHERE: )?/, "");
+        parts.push("the where court gives no verdict: " + why);
+        tone = "law";
+    }
+    const count = court.count;
+    if (count) {
+        const ok = count.lines.find((line) => line.startsWith("✓"));
+        if (count.exit === 0 && ok) {
+            const m = ok.match(/(\d+) source-bound readings/);
+            parts.push("✓ the count court holds" + (m ? " " + m[1] + " reading" + (m[1] === "1" ? "" : "s") : ""));
+        } else if (count.exit === 1) {
+            parts.push("✗ the count court refuses");
+            tone = "bad";
+        } else {
+            parts.push("the count court: " + ((count.lines.find((line) => line.startsWith("✗")) || "no verdict")
+                .replace(/^✗ (COUNT[^:]*: )?/, "")));
+            if (tone === "ok") tone = "law";
+        }
+    }
+    return { text: parts.join(" · "), tone };
+}
 
 const basicsFile = `@@WORLD:Basics@@`;
 
@@ -524,8 +610,12 @@ const introFile = `@@WORLD:ReadMe@@`;
 
 const lightFile = `@@WORLD:Light@@`;
 
+const lightPagesFile = `@@WORLD:LightPages@@`;
+
 
 const atomFile = `@@WORLD:Atom@@`;
+
+const atomPagesFile = `@@WORLD:AtomPages@@`;
 
 const rulesFile = `@@WORLD:Rules@@`;
 
@@ -1040,7 +1130,7 @@ let activeTab = tabs[0];
 
 // the revision of the worlds' content: bump it when any world's text changes,
 // and every stale save in localStorage steps aside for the fresh file
-const contentRevision = 157;
+const contentRevision = 158;
 function storageKey(tab) { return "playground-r" + contentRevision + "-" + tab.id; }
 for (let index = localStorage.length - 1; index >= 0; index -= 1) {
     const key = localStorage.key(index);
@@ -1106,9 +1196,12 @@ function render() {
     let verdict;
     let drawn;
     const full = fullText();
-    const allLines = full.split("\n");
+    // a judged world's page bodies ride behind the edited file for the renderer
+    // and the guards: the compiler reads them, the court reads the edited file alone
+    const shown = activeTab.pages ? full + "\n" + activeTab.pages : full;
+    const allLines = shown.split("\n");
     try {
-        verdict = judge(activeTab.file, full, kitVocabulary);
+        verdict = judge(activeTab.file, shown, kitVocabulary);
         lastParsed = verdict.parsed;
         localNames = new Set([...verdict.parsed.declarations.keys(),
             ...verdict.parsed.topAliases.keys(), ...verdict.parsed.literals.keys()]);
@@ -1166,6 +1259,22 @@ function render() {
         findings.push({ source: "the law", kind: "law", counts: false,
             shownLine: objection.line, premise: objection.premise, rule: objection.rule });
     }
+    // ── the court over the edited file: its refusals as cards, pinned to the
+    // line that declares the name each refuses; a count verdict as one card
+    let court = null;
+    if (activeTab.court && courtReady) {
+        court = courtVerdict(activeTab, full);
+        const editedLines = full.split("\n");
+        for (const [who, answer] of [["the where court", court.where], ["the count court", court.count]]) {
+            if (!answer) continue;
+            for (const line of answer.lines) {
+                if (!line.startsWith("✗") && !(who === "the count court" && line.startsWith("✓"))) continue;
+                findings.push({ source: who, kind: "court", counts: false,
+                    shownLine: line.startsWith("✗") ? courtLine(line, editedLines) : null,
+                    premise: line.replace(/^✗ (THE WHERE: |COUNT(?: unresolved)?: )?/, "") });
+            }
+        }
+    }
     findings.sort((a, b) => (a.shownLine ?? Infinity) - (b.shownLine ?? Infinity));
     lastFindings = findings;
     if (tableMode) buildTables();
@@ -1178,7 +1287,7 @@ function render() {
     }
     applyFlags();
     const brokenCount = findings.filter((finding) => finding.counts).length;
-    const lawCount = findings.length - brokenCount;
+    const lawCount = findings.filter((finding) => finding.kind === "law").length;
     const broke = brokenCount > 0;
     const markup = drawn.canvases.map((canvas) => canvas.svg).join("");
     if (broke && lastGood.has(activeTab.id)) {
@@ -1201,7 +1310,16 @@ function render() {
             : counted(verdict.lookups, "lookup") + " · " + counted(verdict.premises, "premise"))
         + " · <b>" + verdict.milliseconds.toFixed(1) + "</b>&nbsp;ms";
     const chip = document.getElementById("verdict-chip");
-    if (brokenCount === 0 && lawCount > 0) {
+    if (activeTab.court) {
+        const said = court ? courtSummary(court) : { text: "the court did not instantiate", tone: "law" };
+        const pageSaid = brokenCount === 0 ? "" : "✗ the page refuses " + brokenCount + " claim" + (brokenCount > 1 ? "s" : "");
+        const lawSaid = lawCount === 0 ? "" : "the law refuses " + lawCount + " line" + (lawCount > 1 ? "s" : "");
+        chip.className = "chip " + (brokenCount > 0 ? "bad" : said.tone);
+        chip.textContent = [said.text, pageSaid, lawSaid].filter(Boolean).join(" · ");
+    } else if (brokenCount === 0 && lawCount === 0 && verdict.lookups + verdict.premises === 0) {
+        chip.className = "chip ok";
+        chip.textContent = "✓ no claim to judge in this file · the compiler reads its pages";
+    } else if (brokenCount === 0 && lawCount > 0) {
         chip.className = "chip law";
         chip.textContent = "✓ all claims checked · the law refuses " + lawCount
             + " line" + (lawCount > 1 ? "s" : "");
@@ -1216,7 +1334,9 @@ function render() {
     verdicts.innerHTML = "";
     for (const finding of findings) {
         const card = document.createElement("div");
-        card.className = "refusal" + (finding.kind === "law" ? " law" : "");
+        card.className = "refusal" + (finding.kind === "law" ? " law" : "")
+            + (finding.kind === "court" && !finding.premise.startsWith("✓") && finding.source !== "the count court" ? "" : "")
+            + (finding.kind === "court" && finding.premise.startsWith("✓") ? " law" : "");
         const where = document.createElement("div");
         where.className = "where";
         where.textContent = finding.source

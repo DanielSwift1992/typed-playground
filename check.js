@@ -71,10 +71,12 @@ for (const name of ["cross", "rank", "site"]) {
 }
 
 // ── the renderer's seat: the ported engine against a recorded swift draw ──
-// goldens/dynamics-world.swift is the theory's own world (commit 7954eed),
+// goldens/dynamics-world.swift is the theory's own world (theory commit 7954eed),
 // glued into this page's fragment; goldens/dynamics-draw.svg is the byte
-// output of `swift run DynamicsDemo draw` at that commit. The ported renderer
-// must reproduce it byte for byte.
+// output of `swift run DynamicsDemo draw`, recorded at that commit and
+// reprinted byte for byte by the showcase at the revision Package.swift pins
+// (DynamicsDemo lives there since the theory's corpus split). The ported
+// renderer must reproduce it byte for byte.
 const { renderAll, canonicalShares, seedCount } = require("./renderer.js");
 const gameKit = {
     seeds: new Set(["SpanNothing", "SurfaceCard", "SurfaceTrack", "TextPrimary",
@@ -119,20 +121,39 @@ const pageKit = {
 };
 const { lint } = require("./lint.js");
 const { pageGuards } = require("./guards.js");
+// the court on the page, run here under node: the same module bytes
+// (court/node, court/module.from) over the same lent definitions
+const crypto = require("crypto");
+const court = require("./court/node/vi_court.js");
+const definitions = ["Primitive", "Spectrum"].map((name) => ({ name: name + ".swift",
+    text: fs.readFileSync(path.join(__dirname, "court/definitions", name + ".swift"), "utf8") }));
+function askCourt(args, worldName, text) {
+    const answer = JSON.parse(court.judge(JSON.stringify({ arguments: args,
+        files: [{ name: worldName, text }, ...definitions] })));
+    return { exit: answer.exit, lines: (answer.stdout + answer.stderr).split("\n").filter(Boolean) };
+}
+const courtWhere = (worldName, text) =>
+    askCourt(["where", worldName, "Primitive.swift", "Spectrum.swift"], worldName, text);
+const courtCount = (worldName, text, question) =>
+    askCourt(["count", worldName, "Primitive.swift", "--predicate", question.predicate,
+        "--encoding", question.encoding, "--sigma", question.sigma], worldName, text);
+const refusing = (answer, name) => answer.lines.filter((line) =>
+    line.startsWith("✗") && line.includes("'" + name + " = ") && line.includes("be equivalent"));
 const worlds = [
     ["introFile", "ReadMe.swift"],
     ["organizationFile", "Organization.swift"],
     ["basicsFile", "Basics.swift"],
     ["typewriterFile", "Typewriter.swift"],
     ["worldFile", "World.swift"],
-    ["lightFile", "Light.swift"],
-    ["atomFile", "Atom.swift"],
+    ["lightFile", "Light.swift", "lightPagesFile"],
+    ["atomFile", "Atom.swift", "atomPagesFile"],
     ["rulesFile", "Rules.swift"],
     ["faqFile", "FAQ.swift"],
 ];
-for (const [literalName, file] of worlds) {
+for (const [literalName, file, pagesLiteral] of worlds) {
     total += 1;
-    const worldSource = literal(literalName, "`", "\n`;");
+    const worldSource = literal(literalName, "`", "\n`;")
+        + (pagesLiteral ? "\n" + literal(pagesLiteral, "`", "\n`;") : "");
     const worldJudged = judge(file, worldSource, pageKit);
     const worldLaw = lint(file, worldSource);
     const worldArt = renderAll(worldJudged.parsed.declarations, worldJudged.parsed.order,
@@ -202,6 +223,7 @@ total += 1;
     const outside = new Set([...pageKit.seeds, ...pageKit.generics,
         "Close", "Open", "Never", "Structure"]);
     const declared = new Map();
+    const pagesDeclared = new Map();
     for (const declaration of manifestJudged.parsed.declarations.values()) {
         const file = declaration.aliases.get("File");
         const name = declaration.aliases.get("Name");
@@ -209,12 +231,14 @@ total += 1;
         const spelled = (alias) =>
             (manifestJudged.parsed.literals.get(alias.target) || {}).value;
         declared.set(spelled(name), spelled(file));
+        const pages = declaration.aliases.get("Pages");
+        if (pages) pagesDeclared.set(spelled(name).replace(/File$/, "PagesFile"), spelled(pages));
     }
     const onDisk = fs.readdirSync(path.join(__dirname, "corpus/worlds"))
         .filter((entry) => entry.endsWith(".swift"))
         .map((entry) => entry.slice(0, -".swift".length)).sort();
     const shell = fs.readFileSync(path.join(__dirname, "shell.html"), "utf8");
-    const unread = [...declared].filter(([name, file]) =>
+    const unread = [...declared, ...pagesDeclared].filter(([name, file]) =>
         !shell.includes("const " + name + " = `@@WORLD:" + file + "@@`;"));
     const complaints = [];
     if (manifestJudged.refusals.length > 0) {
@@ -223,8 +247,9 @@ total += 1;
     if (lint("Manifest.swift", manifestSource).length > 0) complaints.push("the law objects");
     const guarded = pageGuards(manifestJudged.parsed, manifestSource.split("\n"), outside);
     if (guarded.length > 0) complaints.push("the page: " + guarded[0].premise.slice(0, 50));
-    if (JSON.stringify([...declared.values()].sort()) !== JSON.stringify(onDisk)) {
-        complaints.push("declares " + [...declared.values()].sort().join(",")
+    const declaredFiles = [...declared.values(), ...pagesDeclared.values()].sort();
+    if (JSON.stringify(declaredFiles) !== JSON.stringify(onDisk)) {
+        complaints.push("declares " + declaredFiles.join(",")
             + " and the corpus holds " + onDisk.join(","));
     }
     if (unread.length > 0) {
@@ -333,9 +358,6 @@ total += 1;
             + "\npublic enum ProbeRow: HFlow {\n    public typealias Given = U512\n"
             + "    public static var body: some Structure & Divides {\n        Air<U2>.self\n    }\n}\n",
             "states no @StructureBuilder"],
-        ["a gate on one line", clean
-            + "\npublic enum ProbePair<A, B>: Close {}\nextension ProbePair: Close where A == B {}\n",
-            "on the same line"],
     ];
     const missed = [];
     for (const [name, source, wanted] of lies) {
@@ -348,31 +370,44 @@ total += 1;
     else failures.push("the guards: " + missed.join(", "));
 }
 
-// ── the where-grammar's own refusal: a broken halving must name both sides.
-// The lie flips the diagonal's Vertical level; the two quarter facts stand on
-// it, and each must refuse with the compiler's equivalence voice.
+// ── the court over the lamp: a broken halving must name both sides. The lie
+// flips the diagonal's Vertical level; the two quarter facts stand on it, and
+// the where court refuses each with the compiler's equivalence voice.
 total += 1;
 const lightSource = literal("lightFile", "`", "\n`;");
+const lightShown = lightSource + "\n" + literal("lightPagesFile", "`", "\n`;");
 const lightAnchor = "    public typealias Vertical = Twice<Lit1>\n}";
 const lightLie = lightSource.replace(lightAnchor,
     "    public typealias Vertical = Lit1\n}");
 if (lightLie === lightSource) {
     failures.push("light-lie: the anchor is not in lightFile");
 } else {
-    const lieVerdict = judge("Light.swift", lightLie, pageKit);
-    const equivalence = lieVerdict.refusals.filter((refusal) =>
-        refusal.premise.includes("be equivalent"));
-    if (equivalence.length === 2) {
+    const lieVerdict = courtWhere("Light.swift", lightLie);
+    const half = refusing(lieVerdict, "HalfFact");
+    const quarter = refusing(lieVerdict, "QuarterFact");
+    if (lieVerdict.exit === 1 && half.length === 1 && quarter.length === 1
+        && lieVerdict.lines.filter((line) => line.startsWith("✗")).length === 2) {
         passed += 1;
     } else {
-        failures.push("light-lie: want 2 equivalence refusals, got "
-            + equivalence.length + " of " + lieVerdict.refusals.length);
+        failures.push("light-lie: want the court to refuse HalfFact and QuarterFact and nothing else, got "
+            + lieVerdict.exit + " / " + lieVerdict.lines.filter((line) => line.startsWith("✗")).length);
     }
+}
+
+// ── and the lamp as it stands: the court holds its certificates, in numbers ──
+total += 1;
+const lightClean = courtWhere("Light.swift", lightSource);
+if (lightClean.exit === 0 && lightClean.lines.some((line) =>
+    line.startsWith("✓ THE WHERE holds: 11 equalities and 0 memberships"))) {
+    passed += 1;
+} else {
+    failures.push("light: want the where court to hold 11 equalities, got "
+        + lightClean.exit + " " + (lightClean.lines[0] || "").slice(0, 80));
 }
 
 // ── the additive door: the twins mix to one colour by construction ──
 total += 1;
-const lightJudged = judge("Light.swift", lightSource, pageKit);
+const lightJudged = judge("Light.swift", lightShown, pageKit);
 const lightArt = renderAll(lightJudged.parsed.declarations, lightJudged.parsed.order,
     lightJudged.parsed.literals, lightJudged.parsed.topAliases);
 const lightSvg = lightArt.canvases.length > 0 ? lightArt.canvases[0].svg : "";
@@ -419,14 +454,14 @@ const slitLie = lightSource.replace(slitAnchor, "    public typealias Gap = Twic
 if (slitLie === lightSource) {
     failures.push("slit-lie: the anchor is not in lightFile");
 } else {
-    const slitVerdict = judge("Light.swift", slitLie, pageKit);
-    const parity = slitVerdict.refusals.filter((refusal) =>
-        refusal.premise.includes("OddGap") && refusal.premise.includes("be equivalent"));
-    if (parity.length === 1) {
+    const slitVerdict = courtWhere("Light.swift", slitLie);
+    const parity = refusing(slitVerdict, "FirstDark");
+    if (slitVerdict.exit === 1 && parity.length === 1
+        && slitVerdict.lines.filter((line) => line.startsWith("✗")).length === 1) {
         passed += 1;
     } else {
-        failures.push("slit-lie: want 1 OddGap equivalence refusal, got "
-            + parity.length + " of " + slitVerdict.refusals.length);
+        failures.push("slit-lie: want the court to refuse FirstDark alone, got "
+            + slitVerdict.exit + " / " + slitVerdict.lines.filter((line) => line.startsWith("✗")).length);
     }
 }
 
@@ -467,20 +502,18 @@ if (plateErrors.length === 0 && plateChecked >= 28) {
         + (plateErrors.join(", ") || "count"));
 }
 
-// ── the atom: the forbidden jump refuses in the compiler's voice, and the
-// two visible lines leave their faint traces poured by the door ──
+// ── the atom: the forbidden jump refuses in the court's voice, and the two
+// visible lines leave their faint traces poured by the door ──
 total += 1;
 const atomSource = literal("atomFile", "`", "\n`;");
+const atomShown = atomSource + "\n" + literal("atomPagesFile", "`", "\n`;");
 const trapLie = atomSource.replace("public typealias LymanFact = Lowers<Orbital2p, Orbital1s>",
     "public typealias LymanFact = Lowers<Orbital2p, Orbital1s>\npublic typealias Trap = Lowers<Orbital2s, Orbital1s>");
 if (trapLie === atomSource) {
     failures.push("atom-trap: the anchor is not in atomFile");
 } else {
-    const trapVerdict = judge("Atom.swift", trapLie, pageKit);
-    const trapRefusals = trapVerdict.refusals.filter((refusal) =>
-        refusal.premise.includes("Lowers<Orbital2s, Orbital1s>")
-        && refusal.premise.includes("be equivalent"));
-    const atomJudged = judge("Atom.swift", atomSource, pageKit);
+    const trapRefusals = refusing(courtWhere("Atom.swift", trapLie), "Trap");
+    const atomJudged = judge("Atom.swift", atomShown, pageKit);
     const atomArt = renderAll(atomJudged.parsed.declarations, atomJudged.parsed.order,
         atomJudged.parsed.literals, atomJudged.parsed.topAliases);
     const atomSvg = atomArt.canvases.length > 0 ? atomArt.canvases[0].svg : "";
@@ -488,16 +521,13 @@ if (trapLie === atomSource) {
     const betaTrace = (atomSvg.match(/color\(xyz-d65 0\.011 0\.039 0\.128\)/g) || []).length;
     const roadLie = atomSource.replace("public enum BetaJump: Close {\n    public typealias Drop = Rung2",
         "public enum BetaJump: Close {\n    public typealias Drop = Rung3");
-    const roadVerdict = judge("Atom.swift", roadLie, pageKit);
-    const roadRefusals = roadVerdict.refusals.filter((refusal) =>
-        refusal.premise.includes("RoadPair") && refusal.premise.includes("be equivalent"));
+    const roadRefusals = refusing(courtWhere("Atom.swift", roadLie), "TwoRoadsFact");
     // absorption is the same selection rule, upward: a shine certificate whose
     // two floors do not change shape refuses like a forbidden emission
     const shineLie = atomSource.replace(
         "public typealias ShineBetaFact = Raises<Orbital2s, Orbital4p>",
         "public typealias ShineBetaFact = Raises<Orbital2s, Orbital3s>");
-    const shineRefusals = judge("Atom.swift", shineLie, pageKit).refusals.filter((refusal) =>
-        refusal.premise.includes("ShineBetaFact") && refusal.premise.includes("be equivalent"));
+    const shineRefusals = refusing(courtWhere("Atom.swift", shineLie), "ShineBetaFact");
     if (trapRefusals.length === 1 && roadRefusals.length === 1
         && shineLie !== atomSource && shineRefusals.length === 1
         && alphaTrace === 1 && betaTrace === 1
@@ -512,32 +542,84 @@ if (trapLie === atomSource) {
     }
 }
 
-// ── the counting canon: the Rydberg lattice holds, and a lie in one number
-// refuses twice, each refusal naming both numbers (the reference judge's
-// arithmetic pass, 8172b07, mirrored) ──
+// ── the count question: the four energy stitches are equalities of counts,
+// not of types. The where court refuses exactly those four as type equalities
+// and nothing else in the clean atom; the count court holds its ten readings;
+// and a lie in one drop refuses the two readings that read through it, each
+// naming both numbers ──
 total += 1;
-const latticeSource = literal("atomFile", "`", "\n`;");
-const energyLie = latticeSource.replace("public typealias BalmerAlphaDrop = Plus<U16, U4>",
-    "public typealias BalmerAlphaDrop = Plus<U16, Plus<U4, U1>>");
-if (energyLie === latticeSource) {
-    failures.push("lattice: the BalmerAlphaDrop anchor is not in atomFile");
-} else {
-    const latticeClean = judge("Atom.swift", latticeSource, pageKit).refusals.filter(
-        (refusal) => refusal.premise.includes("EnergySum"));
-    const lieRefusals = judge("Atom.swift", energyLie, pageKit).refusals.filter(
-        (refusal) => refusal.premise.includes("be equivalent")
-            && refusal.premise.includes("aka"));
-    const stitchNamed = lieRefusals.some((refusal) =>
-        refusal.premise.includes("`#36`") && refusal.premise.includes("`#37`"));
-    const roadsNamed = lieRefusals.some((refusal) =>
-        refusal.premise.includes("`#27`") && refusal.premise.includes("`#28`"));
-    if (latticeClean.length === 0 && lieRefusals.length === 2 && stitchNamed && roadsNamed) {
+{
+    const question = { predicate: "TickCountQuestion", encoding: "UnaryArithmeticEncoding", sigma: "AtomLevels" };
+    const stitches = ["GroundFloorStitch", "SecondFloorStitch", "ThirdFloorStitch", "TwoRoadsOneDrop"];
+    const cleanWhere = courtWhere("Atom.swift", atomSource);
+    const nominal = stitches.every((name) => refusing(cleanWhere, name).length === 1)
+        && cleanWhere.lines.filter((line) => line.startsWith("✗")).length === stitches.length;
+    const cleanCount = courtCount("Atom.swift", atomSource, question);
+    const tenHeld = cleanCount.exit === 0
+        && cleanCount.lines.some((line) => line.startsWith("✓ COUNT holds: 10 source-bound readings"));
+    const energyLie = atomSource.replace("public typealias BalmerAlphaDrop = Plus<U16, U4>",
+        "public typealias BalmerAlphaDrop = Plus<U16, Plus<U4, U1>>");
+    const lieCount = energyLie === atomSource ? null : courtCount("Atom.swift", energyLie, question);
+    const lieLines = lieCount ? lieCount.lines.filter((line) => line.startsWith("✗")) : [];
+    const named = (reading) => lieLines.some((line) =>
+        line.includes("'" + reading + "' count Left = 37, but Answer = 36"));
+    if (nominal && tenHeld && lieCount && lieCount.exit === 1 && lieLines.length === 2
+        && named("BalmerAlphaBinding.Right") && named("ThroughFloorThreeBinding.Right")) {
         passed += 1;
     } else {
-        failures.push("lattice: want 0 clean, 2 lie refusals naming #36/#37 and #27/#28, got "
-            + latticeClean.length + " / " + lieRefusals.length + " / "
-            + stitchNamed + " / " + roadsNamed);
+        failures.push("count: want 4 nominal where refusals, count holds 10, lie refuses 2 readings "
+            + "naming 37 against 36, got " + nominal + " / " + tenHeld + " / "
+            + (lieCount ? lieCount.exit + ":" + lieLines.length : "no lie"));
     }
+}
+
+// ── the palette's contrast is stated and not judged, and said so: the where
+// court stops at its normalization budget over the palette's arithmetic, the
+// count court of this version reads no product and no side this large, and the
+// README says which court the law waits for ──
+total += 1;
+{
+    const paletteSource = fs.readFileSync(path.join(__dirname, "corpus/Palette.swift"), "utf8");
+    const paletteWhere = courtWhere("Palette.swift", paletteSource);
+    const readme = fs.readFileSync(path.join(__dirname, "README.md"), "utf8");
+    if (paletteWhere.exit === 2
+        && paletteWhere.lines.some((line) => line.includes("normalization limit reached"))
+        && readme.includes("stated and not judged")) {
+        passed += 1;
+    } else {
+        failures.push("palette: want the where court to stop at its budget and the README to say so, got "
+            + paletteWhere.exit + " / " + (paletteWhere.lines[0] || "").slice(0, 60));
+    }
+}
+
+// ── the court and the definitions are the bytes their records name: the
+// module from the gate's revision, the two definitions files from the pins
+// Package.swift states, laid by court/lay.sh ──
+total += 1;
+{
+    const complaints = [];
+    const sha = (file) => crypto.createHash("sha256")
+        .update(fs.readFileSync(path.join(__dirname, file))).digest("hex");
+    for (const record of ["court/module.from", "court/definitions.from"]) {
+        const text = fs.readFileSync(path.join(__dirname, record), "utf8");
+        const named = [...text.matchAll(/^([0-9a-f]{64})  (\S+)$/gm)];
+        if (named.length === 0) complaints.push(record + " names no file");
+        for (const [, digest, file] of named) {
+            if (!fs.existsSync(path.join(__dirname, file))) complaints.push(file + " is not here");
+            else if (sha(file) !== digest) complaints.push(file + " is not the bytes " + record + " names");
+        }
+    }
+    const manifest = fs.readFileSync(path.join(__dirname, "Package.swift"), "utf8");
+    const definitionsFrom = fs.readFileSync(path.join(__dirname, "court/definitions.from"), "utf8");
+    for (const [pin, name] of [["theoryRevision", "Primitive.swift"], ["showcaseRevision", "Spectrum.swift"]]) {
+        const revision = (manifest.match(new RegExp("let " + pin + " = \"([0-9a-f]{40})\"")) || [])[1];
+        if (!revision) complaints.push("Package.swift pins no " + pin);
+        else if (!definitionsFrom.includes(name + " ") || !definitionsFrom.includes(revision)) {
+            complaints.push(name + " is not laid from " + pin + " " + revision.slice(0, 8));
+        }
+    }
+    if (complaints.length === 0) passed += 1;
+    else failures.push("the records: " + complaints.join("; "));
 }
 
 // ── the numbers the README states are counted, never remembered. The theory
