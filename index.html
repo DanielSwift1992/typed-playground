@@ -11586,9 +11586,11 @@ function render() {
         const lawSaid = lawCount === 0 ? "" : "the law refuses " + lawCount + " line" + (lawCount > 1 ? "s" : "");
         chip.className = "chip " + (brokenCount > 0 ? "bad" : said.tone);
         chip.textContent = [said.text, pageSaid, lawSaid].filter(Boolean).join(" · ");
-    } else if (brokenCount === 0 && lawCount === 0 && verdict.lookups + verdict.premises === 0) {
+    } else if (brokenCount === 0 && lawCount === 0 && verdict.premises === 0) {
+        // the plain court is the company's: on a world that states no company
+        // claim it read the file and judged nothing, and the chip says so
         chip.className = "chip ok";
-        chip.textContent = "✓ no claim to judge in this file · the compiler reads its pages";
+        chip.textContent = "✓ read · the plain court is the company's, and nothing of it is claimed here · the compiler reads the pages";
     } else if (brokenCount === 0 && lawCount > 0) {
         chip.className = "chip law";
         chip.textContent = "✓ all claims checked · the law refuses " + lawCount
